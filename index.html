@@ -136,6 +136,17 @@ body.round-table .taunt::before{left:-8px;top:18px;transform:none;border:8px sol
 .table-topbar .special-box{display:flex;align-items:center;gap:8px;text-align:left;flex:0 1 auto}
 .table-topbar .special-star{width:40px;height:40px;margin:0;flex:none}
 .table-topbar .special-star span{font-size:18px}
+/* the special die: tumbles when a ★ is dealt, then lands on the roll (0, 1, 2) */
+.die-wrap{display:flex;flex-direction:column;align-items:center;gap:2px;flex:none}
+.die{width:42px;height:42px;background:linear-gradient(145deg,#fff,#e2e2e2);border:2px solid #333;border-radius:9px;display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);padding:6px;box-shadow:0 3px 8px rgba(0,0,0,.45)}
+.die .pip{width:8px;height:8px;border-radius:50%;background:#222;place-self:center;opacity:0}
+.die.face-1 .pip:nth-child(5){opacity:1}
+.die.face-2 .pip:nth-child(1),.die.face-2 .pip:nth-child(9){opacity:1}
+.die.rolling{animation:dieTumble .75s ease-in-out}
+.die.landed{animation:dieLand .25s ease-out}
+@keyframes dieTumble{0%{transform:rotate(0) translateY(0)}25%{transform:rotate(200deg) translate(-6px,-8px)}50%{transform:rotate(420deg) translate(5px,2px)}75%{transform:rotate(620deg) translate(-3px,-5px)}100%{transform:rotate(720deg) translate(0,0)}}
+@keyframes dieLand{0%{transform:scale(1.3)}100%{transform:scale(1)}}
+.die-cap{font-size:9px;color:var(--mut);font-weight:700;letter-spacing:.5px}
 .table-topbar .special-text{display:flex;flex-direction:column}
 .table-topbar .special-label{margin-top:0;font-size:12px}
 .table-topbar .special-sub{font-size:11px}
@@ -219,13 +230,13 @@ footer{color:var(--mut);font-size:12.5px;text-align:center;margin-top:26px;line-
       <ul>
         <li><b>Bet 5, 10, 20, 40 or 50</b> casino coins to enter a round, or spectate until the next one. Everyone starts with <b>1000</b> coins; broke players rebuy 1000 free coins between rounds.</li>
         <li><b>Hit, stay, or double down</b> (2 cards only). Get <b>5 cards without busting</b> and you beat even a dealer 21 — 5 cards totalling exactly 21 is the strongest hand there is.</li>
-        <li><b>Special cards:</b> 6 in the deck. Every time one is dealt, a die (0, 0, 1, 1, 2, 2) is rolled and the result is <b>added to a shared total</b> — every special card on the table is worth that total. Specials are always face-up.</li>
+        <li><b>Special cards:</b> 6 in the deck. Every time one is dealt, a die (0, 0, 1, 1, 2, 2) is rolled and the result is <b>added to a shared total</b> — every special card on the table is worth that total. Watch the die tumble and land in the SPECIAL box. Specials are always face-up.</li>
         <li><b>Battle Nyau:</b> a rare secret round (12%) where the single best winning hand takes a huge bonus — up to <b>1200 coins</b> on a 50-coin doubled-down bet.</li>
         <li>The dealer stands on 17 (including soft 17). The full rules are under <b>📖 Rules</b>.</li>
         <li>🎵 The main song loops every match; the battle song plays only during a Battle Nyau round.</li>
       </ul>
     </div>
-    <footer>Black Nyack v1.2.1 — a fan-made game, just for fun.<br>
+    <footer>Black Nyack v1.3 — a fan-made game, just for fun.<br>
     Nyau and all SEGA characters are © SEGA. All credit to SEGA — the creator of this site holds no rights to Nyau or any SEGA property, and this game is not affiliated with or endorsed by SEGA.<br>
     Free play coins only — no real money. Hosted on Cloudflare Pages. Code on GitHub.</footer>
   </div>
@@ -250,6 +261,10 @@ footer{color:var(--mut);font-size:12.5px;text-align:center;margin-top:26px;line-
       <div class="bet-list" id="betList"></div>
       <div class="special-box" id="specialBox">
         <div class="special-star"><span id="specialTotal">0</span></div>
+        <div class="die-wrap hidden" id="specialDieWrap">
+          <div class="die face-0" id="specialDie"><span class="pip"></span><span class="pip"></span><span class="pip"></span><span class="pip"></span><span class="pip"></span><span class="pip"></span><span class="pip"></span><span class="pip"></span><span class="pip"></span></div>
+          <div class="die-cap">LAST ROLL</div>
+        </div>
         <div class="special-text">
           <div class="special-label">SPECIAL<br>CARD</div>
           <div class="special-sub" id="specialSub">Every ★ is worth 0</div>
@@ -325,7 +340,6 @@ footer{color:var(--mut);font-size:12.5px;text-align:center;margin-top:26px;line-
       <div class="seats" id="opponentsBox"></div>
       <div id="mySeat"></div>
     </div>
-    <div class="log" id="logBox">Game started.</div>
     <div id="betBox" class="hidden" style="text-align:center;margin-top:12px">
       <div style="font-weight:800;margin-bottom:6px" id="betPrompt">Place your bet — or spectate this round</div>
       <div class="chip-rack" id="betChips"></div>
@@ -352,6 +366,7 @@ footer{color:var(--mut);font-size:12.5px;text-align:center;margin-top:26px;line-
       <button id="btnRules2" type="button" class="ghost small">📖 Rules</button>
     </div>
     <div id="connBox" style="font-size:13px;color:var(--mut);margin-top:10px">Local game</div>
+    <div class="log" id="logBox">Game started.</div>
   </div>
 
   <div id="bannedModal" class="modal hidden"><div class="box">
@@ -1014,6 +1029,8 @@ const TAUNT_CHANCE=0.35;      // a dealerSay actually speaks this often — rare
 const TAUNT_IDLE_MS=60000;    // idle chatter at most once a minute
 const BUBBLE_HIDE_MS=6000;    // the bubble goes away a few seconds after he speaks
 const FACE_RESET_MS=7000;     // his face goes back to normal 7 seconds after a reaction
+const DIE_ROLL_MS=750;        // how long the special die tumbles before it lands
+const DIE_TICK_MS=70;         // how fast the die faces flicker while tumbling
 const LEG_REGEN_MS=3*60*1000; // broken legs grow back after 3 minutes
 const BAT_HIDE_MS=2000;       // the bat disappears 2 seconds after the hit
 const WIN_HOLD_MS=8000;       // the WIN screen stays up this long before the next round auto-starts (local games)
@@ -1022,6 +1039,7 @@ let tauntChance=TAUNT_CHANCE; // tests can set 0 / 1; the game leaves it at 0.35
 let legBreaks=0, legsBroken=false, lastTauntAt=0, tauntTimer=null, legsHealTimer=null, batHideTimer=null;
 let dealerMood='happy'; // happy | sad | pain
 let faceKey='happy', faceTimer=null, bubbleHideTimer=null;
+let dieQueue=[], dieRolling=false, dieTimer=null, dieTick=null, seenRolls=0, lastDieRound=0;
 const TAUNTS={
   idle:["Welcome to MY table. The coins are basically already mine.","I have never lost. Not once. Ask anyone. (Don't ask anyone.)","You play like my grandmother. And she is a chair.","Nice cards. Shame about the player holding them.","I deal the cards, I take the coins, I look fabulous. That's the job.","Hurry up. My ears are getting tired just watching you think."],
   bust:["HA! Busted! Did you even LOOK at your cards?","Beautiful. Just beautiful. Another one bites the felt.","Over 21! I saw that coming from the next table.","Busted. The house thanks you for your donation."],
@@ -1060,6 +1078,46 @@ function setDealerFace(mood){
   if(mood!=='happy') faceTimer=setTimeout(resetDealerFace, FACE_RESET_MS); // back to normal after 7s
 }
 function resetDealerFace(){ setDealerFace('happy'); }
+
+/* ---- the special die: tumbles, then lands on the roll (0, 1 or 2) ---- */
+function setDieFace(n){
+  const el=$('specialDie'); if(!el) return;
+  el.classList.remove('face-0','face-1','face-2');
+  el.classList.add('face-'+(n===1?1:n===2?2:0));
+}
+function showDie(){ const w=$('specialDieWrap'); if(w) w.classList.remove('hidden'); }
+function hideDie(){ const w=$('specialDieWrap'); if(w) w.classList.add('hidden'); }
+function landDie(face){
+  const el=$('specialDie'); if(!el) return;
+  clearInterval(dieTick);
+  setDieFace(face);
+  el.classList.remove('rolling');
+  el.classList.add('landed');
+  setTimeout(()=>el.classList.remove('landed'), 300);
+  dieRolling=false;
+  if(dieQueue.length) setTimeout(runNextDieRoll, 150);
+}
+function runNextDieRoll(){
+  if(dieRolling||!dieQueue.length) return;
+  const face=dieQueue.shift();
+  const el=$('specialDie'); if(!el) return;
+  dieRolling=true;
+  showDie();
+  el.classList.add('rolling');
+  dieTick=setInterval(()=>setDieFace(Math.floor(Math.random()*3)), DIE_TICK_MS);
+  clearTimeout(dieTimer);
+  dieTimer=setTimeout(()=>landDie(face), DIE_ROLL_MS);
+}
+function queueDieRoll(face){ dieQueue.push(face===1?1:face===2?2:0); runNextDieRoll(); }
+/* Watch the game log for fresh "rolled N" lines — every special dealt rolls
+   the die once, and the log is the one place that names each single roll. */
+function detectSpecialRolls(){
+  if(!view||!view.log) return;
+  const rolls=view.log.map(l=>{ const m=/ rolled ([0-2]) /.exec(l); return m?+m[1]:null; }).filter(x=>x!==null);
+  if(rolls.length<seenRolls) seenRolls=rolls.length; // log trimmed to the last 40 — re-baseline, don't replay
+  for(let i=seenRolls;i<rolls.length;i++) queueDieRoll(rolls[i]);
+  seenRolls=rolls.length;
+}
 function dealerLostRound(){
   if(!view||view.phase!=='settled') return false;
   if(view.dealer&&view.dealer.total!==null&&view.dealer.total!==undefined&&view.dealer.total>21) return true;
@@ -1271,6 +1329,9 @@ function render(){
   const st=view.round?view.round.specialTotal:0;
   $('specialTotal').textContent=st;
   $('specialSub').textContent=st>0?('Every ★ is worth '+st):'No special value yet — deal a ★ to roll the die';
+  // a new round starts with a clean die; rolls in this round re-show it
+  if(view.roundNumber!==lastDieRound){ lastDieRound=view.roundNumber; hideDie(); dieQueue.length=0; clearTimeout(dieTimer); clearInterval(dieTick); dieRolling=false; }
+  detectSpecialRolls();
 
   /* dealer hand (center) */
   const d=view.dealer;

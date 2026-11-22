@@ -41,7 +41,11 @@ function check(name, cond, extra) {
   check('taunt bubble starts hidden — it only appears when he speaks', $('tauntBubble').classList.contains('hidden'));
   check('bet list sits above the table, not on the felt', !$('tableWrap').contains($('betList')) && $('tableTopbar').contains($('betList')));
   check('special box sits above the table, not on the felt', !$('tableWrap').contains($('specialBox')) && $('tableTopbar').contains($('specialBox')));
-  check('log sits below the table, not over the seats', !$('tableWrap').contains($('logBox')));
+  check('log sits below the chips and buttons, so it never pushes them down', (() => {
+    const kids=[...$('gameScreen').children];
+    return kids.indexOf($('logBox')) > kids.indexOf($('actionBox')) && kids.indexOf($('logBox')) > kids.indexOf($('betBox'));
+  })());
+  check('special box has a die, hidden until a ★ is dealt', !!$('specialDie') && $('specialDieWrap').classList.contains('hidden'));
   check('break-legs button sits next to Nyau inside the table', $('dealerZone').contains($('breakLegsBtn')) && $('breakLegsBtn').classList.contains('break-mini'));
   check('break-legs button exists', !!$('breakLegsBtn'));
   check('legs counter exists', !!$('legsCount'));
@@ -284,6 +288,28 @@ function check(name, cond, extra) {
   check('win screen holds 8s before auto-advance', ev(`WIN_HOLD_MS`) === 8000);
   check('legs regrow after 3 minutes', ev(`LEG_REGEN_MS`) === 3 * 60 * 1000);
   check('bat vanishes 2s after the hit', ev(`BAT_HIDE_MS`) === 2000);
+
+  /* ---- scenario 7: v1.3 — the special die rolls and lands; log below the chips ---- */
+  check('die shows face 2 (two pips)', (() => { ev(`setDieFace(2)`); return $('specialDie').classList.contains('face-2'); })());
+  check('die shows face 1 (one pip)', (() => { ev(`setDieFace(1)`); return $('specialDie').classList.contains('face-1'); })());
+  check('die shows face 0 (blank)', (() => { ev(`setDieFace(0)`); return $('specialDie').classList.contains('face-0') && !$('specialDie').classList.contains('face-1') && !$('specialDie').classList.contains('face-2'); })());
+  check('die tumbles when a roll is queued', (() => {
+    ev(`queueDieRoll(2)`);
+    return !$('specialDieWrap').classList.contains('hidden') && $('specialDie').classList.contains('rolling');
+  })());
+  check('die lands on the rolled face (landDie)', (() => { ev(`landDie(2)`); return $('specialDie').classList.contains('face-2') && !$('specialDie').classList.contains('rolling'); })());
+  check('a fresh "rolled N" log line makes the die roll', (() => {
+    // start a real game first: scenario 6 replaced view with a stub that has no log
+    window.eval(`startLocalGame([{name:'Test',isBot:false},{name:'Bot',isBot:true}], 99, {forceBattle:false})`);
+    ev(`view.log.push('Ada rolled 1 — special cards now worth 1.')`);
+    ev(`hideDie()`); ev(`render()`);
+    return !$('specialDieWrap').classList.contains('hidden') && $('specialDie').classList.contains('rolling');
+  })());
+  check('die hides again on a new round', (() => {
+    ev(`lastDieRound=0`); ev(`render()`);
+    return $('specialDieWrap').classList.contains('hidden');
+  })());
+  check('die tumbles about 0.75s before landing', ev(`DIE_ROLL_MS`) === 750);
 
   console.log('\n' + pass + ' passed, ' + fail + ' failed');
   process.exit(fail ? 1 : 0);
