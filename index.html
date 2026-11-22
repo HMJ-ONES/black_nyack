@@ -54,10 +54,7 @@ table.points th{color:var(--gold)}
 body.round-table .table-wrap{height:clamp(430px,78vh,700px);border-radius:50%/46%}
 body.round-table #opponentsBox,body.round-table #mySeat{display:contents}
 body.round-table .table-wrap .seat{position:absolute;z-index:3;width:210px}
-body.round-table .dealer-hand{position:absolute;left:50%;top:46%;transform:translateX(-50%);z-index:2;text-align:center}
-body.round-table .bet-list{position:absolute;left:14px;top:12px;z-index:3}
-body.round-table .special-box{position:absolute;right:16px;top:10px;z-index:3}
-body.round-table .log{position:absolute;right:12px;bottom:12px;width:300px;max-height:120px;z-index:4;background:rgba(6,20,12,.82)}
+body.round-table .dealer-hand{position:absolute;left:50%;top:52%;transform:translateX(-50%);z-index:2;text-align:center}
 body.round-table .dealer-zone{position:absolute;left:50%;top:0;transform:translateX(-50%);z-index:2}
 .seats{display:grid;grid-template-columns:1fr;gap:10px;position:relative;z-index:2}
 .seat{background:rgba(0,0,0,.28);border:2px solid transparent;border-radius:12px;padding:8px 10px;position:relative}
@@ -94,13 +91,19 @@ body.round-table .dealer-zone{position:absolute;left:50%;top:0;transform:transla
 @keyframes bannerPop{0%{transform:translate(-50%,-50%) rotate(-4deg) scale(.4);opacity:0}70%{transform:translate(-50%,-50%) rotate(-4deg) scale(1.15);opacity:1}100%{transform:translate(-50%,-50%) rotate(-4deg) scale(1);opacity:1}}
 /* dealer alcove + fox */
 .dealer-zone{text-align:center;position:relative;z-index:2;margin-bottom:4px}
+.dealer-row{display:flex;align-items:center;justify-content:center;gap:8px}
+.break-mini{font-size:11px;line-height:1.3;padding:7px 8px;max-width:60px;white-space:normal}
 .dealer-ring{position:relative;display:inline-block}
 .dealer-ring svg{width:170px;height:155px;display:block;filter:drop-shadow(0 6px 12px rgba(0,0,0,.5))}
 .dealer-ring::before{content:"";position:absolute;left:50%;top:6px;transform:translateX(-50%);width:196px;height:150px;border:5px solid #7a5230;border-radius:50%;background:radial-gradient(circle at 50% 30%,#1e3a6e 0%,#0d1a3a 70%);z-index:-1;box-shadow:0 0 30px rgba(255,220,120,.35)}
 .dealer-arc{position:absolute;left:50%;top:-14px;transform:translateX(-50%);width:230px;pointer-events:none}
 .dealer-arc text{fill:#f2c14e;font-weight:900;font-size:15px;letter-spacing:3px}
-.taunt{max-width:330px;margin:2px auto 0;background:#fff;color:#222;border-radius:12px;padding:8px 12px;font-size:13.5px;font-weight:600;line-height:1.35;position:relative;box-shadow:0 4px 14px rgba(0,0,0,.4)}
+.taunt{max-width:240px;margin:2px auto 0;background:#fff;color:#222;border-radius:12px;padding:6px 10px;font-size:12px;font-weight:600;line-height:1.35;position:relative;box-shadow:0 4px 14px rgba(0,0,0,.4)}
 .taunt::before{content:"";position:absolute;left:50%;top:-8px;transform:translateX(-50%);border:8px solid transparent;border-bottom-color:#fff;border-top:0}
+/* round table: the bubble sits small at Nyau's side (top right of the dealer),
+   so it never covers the cards or the legs line */
+body.round-table .taunt{position:absolute;left:calc(50% + 100px);top:40px;width:170px;max-width:170px;margin:0;text-align:left}
+body.round-table .taunt::before{left:-8px;top:18px;transform:none;border:8px solid transparent;border-right-color:#fff;border-left:0}
 .legs-line{font-size:12px;color:var(--mut);margin-top:4px}
 .legs-line b{color:var(--gold)}
 #dealerSvg.bonked{animation:bonkShake .5s ease}
@@ -126,6 +129,16 @@ body.round-table .dealer-zone{position:absolute;left:50%;top:0;transform:transla
 .coin-fall{position:absolute;top:-30px;animation:coinFall 1.7s ease-in forwards;text-shadow:0 2px 4px rgba(0,0,0,.6)}
 @keyframes coinFall{0%{transform:translateY(0) rotate(0deg);opacity:0}10%{opacity:1}85%{opacity:1}100%{transform:translateY(420px) rotate(320deg);opacity:0}}
 /* special card box + bet list (screenshots) */
+/* boxes on the extremities live ABOVE / BELOW the round table now, never
+   on the felt — the ellipse used to clip them and they covered the seats */
+.table-topbar{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap;margin-bottom:8px;position:relative;z-index:2}
+.table-topbar .bet-list{min-width:0;flex:1 1 200px}
+.table-topbar .special-box{display:flex;align-items:center;gap:8px;text-align:left;flex:0 1 auto}
+.table-topbar .special-star{width:40px;height:40px;margin:0;flex:none}
+.table-topbar .special-star span{font-size:18px}
+.table-topbar .special-text{display:flex;flex-direction:column}
+.table-topbar .special-label{margin-top:0;font-size:12px}
+.table-topbar .special-sub{font-size:11px}
 .special-box{text-align:center;position:relative;z-index:2}
 .special-star{width:58px;height:58px;margin:0 auto;background:linear-gradient(160deg,#ffe27a,#f2c14e);transform:rotate(45deg);border:3px solid #8a5c10;border-radius:12px;display:flex;align-items:center;justify-content:center;box-shadow:0 0 18px rgba(242,193,78,.7)}
 .special-star span{transform:rotate(-45deg);font-size:26px;font-weight:900;color:#1d4ed8}
@@ -212,7 +225,7 @@ footer{color:var(--mut);font-size:12.5px;text-align:center;margin-top:26px;line-
         <li>🎵 The main song loops every match; the battle song plays only during a Battle Nyau round.</li>
       </ul>
     </div>
-    <footer>Black Nyack v1.1 — a fan-made game, just for fun.<br>
+    <footer>Black Nyack v1.2 — a fan-made game, just for fun.<br>
     Nyau and all SEGA characters are © SEGA. All credit to SEGA — the creator of this site holds no rights to Nyau or any SEGA property, and this game is not affiliated with or endorsed by SEGA.<br>
     Free play coins only — no real money. Hosted on Cloudflare Pages. Code on GitHub.</footer>
   </div>
@@ -233,17 +246,23 @@ footer{color:var(--mut);font-size:12.5px;text-align:center;margin-top:26px;line-
     <div class="rotate-hint">🔄 Turn your phone sideways for the full round table — the dealer sits in the middle, just like on PC.</div>
     <div id="battleBanner" class="battle-banner hidden">⚔️ BATTLE NYAU! ⚔️<br><span style="font-size:14px">The single best winning hand this round takes a huge bonus — up to 1200 coins!</span></div>
     <div class="status" id="statusBox">Waiting…<small id="statusSub"></small></div>
-    <div class="table-wrap" id="tableWrap">
-      <div id="coinLayer"></div>
+    <div class="table-topbar" id="tableTopbar">
       <div class="bet-list" id="betList"></div>
       <div class="special-box" id="specialBox">
         <div class="special-star"><span id="specialTotal">0</span></div>
-        <div class="special-label">SPECIAL<br>CARD</div>
-        <div class="special-sub" id="specialSub">Every ★ is worth 0</div>
+        <div class="special-text">
+          <div class="special-label">SPECIAL<br>CARD</div>
+          <div class="special-sub" id="specialSub">Every ★ is worth 0</div>
+        </div>
       </div>
+    </div>
+    <div class="table-wrap" id="tableWrap">
+      <div id="coinLayer"></div>
       <div class="dealer-zone" id="dealerZone">
         <svg class="dealer-arc" viewBox="0 0 230 40" aria-hidden="true"><defs><path id="arcPath" d="M15,36 A100,100 0 0,1 215,36" fill="none"/></defs><text><textPath href="#arcPath" startOffset="50%" text-anchor="middle">BLACK NYACK</textPath></text></svg>
-        <div class="dealer-ring">
+        <div class="dealer-row">
+          <button id="breakLegsBtn" type="button" class="danger break-mini">🦵⚾<br>Break<br>legs</button>
+          <div class="dealer-ring">
           <svg id="dealerSvg" viewBox="0 0 220 200" role="img" aria-label="Nyau the dealer">
             <ellipse cx="110" cy="186" rx="88" ry="13" fill="#ffe27a" opacity="0.45"/>
             <ellipse cx="110" cy="184" rx="70" ry="10" fill="#fff3b0" opacity="0.65"/>
@@ -298,14 +317,15 @@ footer{color:var(--mut);font-size:12.5px;text-align:center;margin-top:26px;line-
           </svg>
           <div id="bat" class="bat"></div>
         </div>
-        <div class="taunt" id="tauntBubble">Welcome to MY table. The coins are basically already mine.</div>
+        </div>
+        <div class="taunt hidden" id="tauntBubble">Welcome to MY table. The coins are basically already mine.</div>
         <div class="legs-line">🦵 Legs broken: <b id="legsCount">0</b> — Nyau the dealer</div>
       </div>
       <div class="dealer-hand" id="dealerHand"></div>
       <div class="seats" id="opponentsBox"></div>
       <div id="mySeat"></div>
-      <div class="log" id="logBox">Game started.</div>
     </div>
+    <div class="log" id="logBox">Game started.</div>
     <div id="betBox" class="hidden" style="text-align:center;margin-top:12px">
       <div style="font-weight:800;margin-bottom:6px" id="betPrompt">Place your bet — or spectate this round</div>
       <div class="chip-rack" id="betChips"></div>
@@ -327,7 +347,6 @@ footer{color:var(--mut);font-size:12.5px;text-align:center;margin-top:26px;line-
     <div class="row" style="justify-content:center">
       <button id="btnNextRound" type="button" class="hidden">▶ Next round</button>
       <button id="btnRebuy" type="button" class="ghost small hidden">💰 Rebuy 1000 free coins</button>
-      <button id="breakLegsBtn" type="button" class="danger">🦵⚾ Break his legs</button>
       <button id="btnLeaveMatch" type="button" class="danger small">🚪 Leave match</button>
       <button id="btnMenu2" type="button" class="ghost small">← Menu</button>
       <button id="btnRules2" type="button" class="ghost small">📖 Rules</button>
@@ -991,14 +1010,18 @@ function playThwack(){
    while his legs are broken. Legs grow back after LEG_REGEN_MS; the bat
    vanishes BAT_HIDE_MS after the hit. ---------- */
 const DEALER_NAME='Nyau';
-const TAUNT_CHANCE=0.5;       // a dealerSay actually speaks this often — sometimes, not every time
+const TAUNT_CHANCE=0.35;      // a dealerSay actually speaks this often — rarely, not every time
+const TAUNT_IDLE_MS=60000;    // idle chatter at most once a minute
+const BUBBLE_HIDE_MS=6000;    // the bubble goes away a few seconds after he speaks
+const FACE_RESET_MS=7000;     // his face goes back to normal 7 seconds after a reaction
 const LEG_REGEN_MS=3*60*1000; // broken legs grow back after 3 minutes
 const BAT_HIDE_MS=2000;       // the bat disappears 2 seconds after the hit
 const WIN_HOLD_MS=8000;       // the WIN screen stays up this long before the next round auto-starts (local games)
 const COIN_BURST_BASE=12, COIN_BURST_PER=30, COIN_BURST_MAX=48; // coin rain scales with the win
-let tauntChance=TAUNT_CHANCE; // tests can set 0 / 1; the game leaves it at 0.5
+let tauntChance=TAUNT_CHANCE; // tests can set 0 / 1; the game leaves it at 0.35
 let legBreaks=0, legsBroken=false, lastTauntAt=0, tauntTimer=null, legsHealTimer=null, batHideTimer=null;
 let dealerMood='happy'; // happy | sad | pain
+let faceKey='happy', faceTimer=null, bubbleHideTimer=null;
 const TAUNTS={
   idle:["Welcome to MY table. The coins are basically already mine.","I have never lost. Not once. Ask anyone. (Don't ask anyone.)","You play like my grandmother. And she is a chair.","Nice cards. Shame about the player holding them.","I deal the cards, I take the coins, I look fabulous. That's the job.","Hurry up. My ears are getting tired just watching you think."],
   bust:["HA! Busted! Did you even LOOK at your cards?","Beautiful. Just beautiful. Another one bites the felt.","Over 21! I saw that coming from the next table.","Busted. The house thanks you for your donation."],
@@ -1011,11 +1034,21 @@ const TAUNTS={
   battleWin:["Battle Nyau winner! ...I hope you're happy. I'm not."]
 };
 function pickTaunt(kind){ const arr=TAUNTS[kind]||TAUNTS.idle; return arr[Math.floor(Math.random()*arr.length)]; }
+/* The bubble only appears when he actually speaks, and goes away a few
+   seconds later — most of the time there is no bubble at all. */
+function hideBubble(){ const el=$('tauntBubble'); if(el) el.classList.add('hidden'); }
+function showBubble(){
+  const el=$('tauntBubble'); if(!el) return;
+  el.classList.remove('hidden');
+  clearTimeout(bubbleHideTimer);
+  bubbleHideTimer=setTimeout(hideBubble, BUBBLE_HIDE_MS);
+}
 function dealerSay(kindOrText, chance){
-  if(Math.random()>=(chance===undefined?tauntChance:chance)) return; // sometimes he just stays quiet
+  if(Math.random()>=(chance===undefined?tauntChance:chance)) return; // most of the time he just stays quiet
   const el=$('tauntBubble'); if(!el) return;
   el.textContent=(TAUNTS[kindOrText]?pickTaunt(kindOrText):kindOrText);
   lastTauntAt=Date.now();
+  showBubble();
 }
 /* Nyau's face: sad when he loses a round, in pain while his legs are broken. */
 function setDealerFace(mood){
@@ -1023,7 +1056,10 @@ function setDealerFace(mood){
   const svg=$('dealerSvg'); if(!svg) return;
   svg.classList.toggle('sad', mood==='sad');
   svg.classList.toggle('pain', mood==='pain');
+  clearTimeout(faceTimer);
+  if(mood!=='happy') faceTimer=setTimeout(resetDealerFace, FACE_RESET_MS); // back to normal after 7s
 }
+function resetDealerFace(){ setDealerFace('happy'); }
 function dealerLostRound(){
   if(!view||view.phase!=='settled') return false;
   if(view.dealer&&view.dealer.total!==null&&view.dealer.total!==undefined&&view.dealer.total>21) return true;
@@ -1031,8 +1067,13 @@ function dealerLostRound(){
   return Object.keys(view.results).some(id=>view.results[id].outcome==='win');
 }
 function updateDealerFace(){
-  if(legsBroken){ setDealerFace('pain'); return; }
-  setDealerFace(dealerLostRound() ? 'sad' : 'happy');
+  // Only trigger on a NEW reason to react (a new break, a newly lost round).
+  // The 7s reset back to happy must not be undone by the next render.
+  const key=legsBroken ? 'pain-'+legBreaks
+    : (dealerLostRound() ? 'sad-'+(view?view.roundNumber:0) : 'happy');
+  if(key===faceKey) return;
+  faceKey=key;
+  setDealerFace(legsBroken ? 'pain' : (dealerLostRound() ? 'sad' : 'happy'));
 }
 /* Coin rain on a win — the bigger the win, the more coins fall. */
 function coinBurstCount(payout){ return Math.min(COIN_BURST_MAX, COIN_BURST_BASE + Math.round((payout||0)/COIN_BURST_PER)); }
@@ -1054,7 +1095,7 @@ function startTauntTimer(){
   stopTauntTimer();
   tauntTimer=setInterval(()=>{
     if($('gameScreen').classList.contains('hidden')) return;
-    if(Date.now()-lastTauntAt>25000) dealerSay('idle');
+    if(Date.now()-lastTauntAt>TAUNT_IDLE_MS) dealerSay('idle');
   }, 5000);
 }
 function stopTauntTimer(){ clearInterval(tauntTimer); tauntTimer=null; }
@@ -1449,7 +1490,6 @@ function startLocalGame(names, seed, opts){
   $('connBox').textContent='Local game vs bots — no network needed. The dealer is already being rude.';
   startMatchMusic();
   refreshView(); render(); scheduleBots(); startTauntTimer();
-  dealerSay('idle');
 }
 function scheduleBots(delay){
   clearTimeout(botTimer);
@@ -1734,7 +1774,6 @@ function startHostedGame(){
     try{ conns[cid].send({t:'seat', yourId:idMap[cid]}); conns[cid].send({t:'view', view:filteredView(fullState, idMap[cid]), hash:stateFingerprint(fullState), yourId:idMap[cid]}); }catch(e){}
   }
   broadcastViews(); startHeartbeat(); scheduleBots(); startTauntTimer();
-  dealerSay('idle');
 }
 
 /* ---------- multiplayer: join / host messages / disconnects ---------- */

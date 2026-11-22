@@ -38,6 +38,11 @@ function check(name, cond, extra) {
   check('dealer legs group exists', !!$('dealerLegs'));
   check('baseball bat element exists', !!$('bat'));
   check('taunt bubble exists', !!$('tauntBubble'));
+  check('taunt bubble starts hidden — it only appears when he speaks', $('tauntBubble').classList.contains('hidden'));
+  check('bet list sits above the table, not on the felt', !$('tableWrap').contains($('betList')) && $('tableTopbar').contains($('betList')));
+  check('special box sits above the table, not on the felt', !$('tableWrap').contains($('specialBox')) && $('tableTopbar').contains($('specialBox')));
+  check('log sits below the table, not over the seats', !$('tableWrap').contains($('logBox')));
+  check('break-legs button sits next to Nyau inside the table', $('dealerZone').contains($('breakLegsBtn')) && $('breakLegsBtn').classList.contains('break-mini'));
   check('break-legs button exists', !!$('breakLegsBtn'));
   check('legs counter exists', !!$('legsCount'));
   check('special card box exists', !!$('specialBox'));
@@ -196,7 +201,7 @@ function check(name, cond, extra) {
     return $('legsCount').textContent === '3' && !$('dealerLegs').classList.contains('broken');
   })());
   check('dealer face leaves pain once legs heal', !$('dealerSvg').classList.contains('pain'));
-  ev(`tauntChance=0.5`); // back to the game's sometimes-only default
+  ev(`tauntChance=0.35`); // back to the game's rarely-speaks default
 
   /* ---- scenario 4: solo game (0 bots) works ---- */
   window.eval(`startLocalGame([{name:'Solo',isBot:false}], 7, {})`);
@@ -219,8 +224,9 @@ function check(name, cond, extra) {
   check('dealer art is labelled Nyau', /Nyau/.test($('dealerSvg').getAttribute('aria-label') || ''));
   check('legs line names Nyau', /Nyau/.test(window.document.querySelector('.legs-line').textContent));
   check('coin layer exists', !!$('coinLayer'));
-  // Taunts: sometimes, not every time — gated by tauntChance.
-  check('taunt chance defaults to 0.5', ev(`TAUNT_CHANCE`) === 0.5);
+  // Taunts: rarely, not every time — gated by tauntChance; the bubble
+  // only appears when he speaks and goes away a few seconds later.
+  check('taunt chance defaults to 0.35', ev(`TAUNT_CHANCE`) === 0.35);
   check('dealer stays quiet when tauntChance is 0', (() => {
     const before = $('tauntBubble').textContent;
     ev(`tauntChance=0`); ev(`dealerSay('idle')`);
@@ -230,7 +236,12 @@ function check(name, cond, extra) {
     ev(`tauntChance=1`); ev(`dealerSay('idle')`);
     return ev(`TAUNTS.idle.includes($('tauntBubble').textContent)`);
   })());
-  ev(`tauntChance=0.5`);
+  check('bubble appears when he speaks', !$('tauntBubble').classList.contains('hidden'));
+  check('bubble goes away (hideBubble)', (() => {
+    ev(`hideBubble()`);
+    return $('tauntBubble').classList.contains('hidden');
+  })());
+  ev(`tauntChance=0.35`);
   // Banners: red BUST, shining golden DOUBLE DOWN, WIN! with the amount.
   check('bust banner is red BUST', (() => {
     const h = ev(`bannerFor({busted:true,cards:[],total:25})`);
@@ -260,7 +271,11 @@ function check(name, cond, extra) {
   // Faces: sad when he loses, pain when his legs are broken.
   check('dealer face can be sad', (() => { ev(`setDealerFace('sad')`); return $('dealerSvg').classList.contains('sad'); })());
   check('dealer face can be in pain', (() => { ev(`setDealerFace('pain')`); return $('dealerSvg').classList.contains('pain') && !$('dealerSvg').classList.contains('sad'); })());
+  check('dealer face goes back to normal after 7s (resetDealerFace)', (() => { ev(`resetDealerFace()`); return !$('dealerSvg').classList.contains('sad') && !$('dealerSvg').classList.contains('pain'); })());
   check('dealer face can be happy again', (() => { ev(`setDealerFace('happy')`); return !$('dealerSvg').classList.contains('sad') && !$('dealerSvg').classList.contains('pain'); })());
+  check('face resets after 7 seconds', ev(`FACE_RESET_MS`) === 7000);
+  check('bubble hides after 6 seconds', ev(`BUBBLE_HIDE_MS`) === 6000);
+  check('idle chatter at most once a minute', ev(`TAUNT_IDLE_MS`) === 60000);
   check('win screen holds 8s before auto-advance', ev(`WIN_HOLD_MS`) === 8000);
   check('legs regrow after 3 minutes', ev(`LEG_REGEN_MS`) === 3 * 60 * 1000);
   check('bat vanishes 2s after the hit', ev(`BAT_HIDE_MS`) === 2000);

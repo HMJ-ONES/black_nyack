@@ -4,14 +4,33 @@
 in the same format as Wellington and Five-Card Poker: a single `index.html`, no sign-up,
 no cost, multiplayer peer-to-peer via PeerJS, hosted free on Cloudflare Pages.
 
-> **v1.1.0:** the dealer is **Nyau** now — he only talks sometimes, his face goes
-> sad when he loses and pained when his legs are broken, wins rain coins, and the
-> WIN screen stays up longer. All tests green: `npm test` (see [Tests](#tests)).
+> **v1.2.0:** the table breathes — the bet list, special box and log sit above /
+> below the round table instead of on the felt, Nyau's bubble is small, at his
+> side, and goes away after a few seconds, he talks even less, his face goes back
+> to normal 7 seconds after a reaction, and the break-legs button moved up next to
+> him inside the table. All tests green: `npm test` (see [Tests](#tests)).
 
 - **Repo:** https://github.com/HMJ-ONES/black_nyack
 - **Live:** https://black-nyack.pages.dev *(connected + verified Nov 22 — home page and both songs serve 200)*
 - **Players:** 1–5 at a round table, dealer in the middle (mobile sideways = same round table as PC)
 - **Currency:** casino coins — free play coins only, no real money
+
+## v1.2 — Room to breathe (Nov 22)
+
+- **Text boxes off the felt** — the bet list and special card box sit in a row
+  **above** the round table, and the log sits **below** it. Before, the ellipse
+  clipped the bet list and the boxes covered the seats and the dealer hand.
+- **Small bubble, at his side** — Nyau's speech bubble is smaller now and sits
+  to his top right, next to the dealer ring, instead of sprawling across the
+  middle and covering the cards.
+- **He talks even less** — taunts fire ~35% of the time (was 50%), idle chatter
+  at most once a minute (was 25s), and no taunt at game start. The bubble only
+  appears when he actually speaks and **goes away 6 seconds later**.
+- **Face back to normal after 7 seconds** — a sad or pained face fades back to
+  happy 7 seconds after the reaction; a new break or a newly lost round triggers
+  it again.
+- **Break his legs, moved up** — the button is a small one **inside the table,
+  next to Nyau**, so mobile players can tap it and watch the hit at the same time.
 
 ## v1.1 — Nyau (Nov 22)
 
@@ -326,14 +345,14 @@ npm test
 # node test/engine.test.js && node test/payout.test.js && node test/battle.test.js && node test/ui.test.js
 ```
 
-Current (v1.1, Nov 22): engine **131**, payout **37**, battle **29**, UI **120** — **317 total, 0 failed**.
+Current (v1.2, Nov 22): engine **131**, payout **37**, battle **29**, UI **131** — **328 total, 0 failed**.
 
 | File | Covers |
 |---|---|
 | `test/engine.test.js` | Constants, 58-card deck, deal + face-up/hole flags, hand values + classes, betting (invalid/insufficient/double-decide, dead rounds, dead-round bot retry, spectators, rebuy), hit/stay/double rules (3-hit max, double only on 2 cards, forced stand), special-die rolls, dealer (stands on 17 incl. soft 17, hits on 16, busts, no draw when all bust), filtered views (hole cards never leak, special 2nd card visible, log clean), leave/remove, bots, plus a **500-round bot soak** (no throws, no negative stacks, no payout over 1200, every round terminates) |
 | `test/payout.test.js` | The payout table (plain win, dealer bust, 21 bonus, 5-card bonus, special bonus, push, lose, bust-vs-bust) and all four regression cases: (a) 50 / 5-card 21 → **500**; (b) 50 doubled / 3-card 21 / 1 special / battle winner → **1200**; (c) same without battle → **700**; (d) doubled 3-card 21 / 2 specials / battle winner → 1400 uncapped, **capped to 1200** |
 | `test/battle.test.js` | 12% odds (constant + statistical check over 500 seeded rounds), single winner, ranking (class → total → specials → earliest seat), no winner when the dealer wins all / pushes / everyone busts, re-trigger across rounds, battle lasts exactly one round, battle bonus never leaks to other winners |
-| `test/ui.test.js` | jsdom DOM smoke test: every screen/panel/button exists, music elements + track selection (`music.mp3` / `battle.mp3`), layout helpers (round vs stacked, arc seat positions), rules modal, menu flow through the real buttons (bot picker → game → back to menu), a full round through the DOM (bet chip → deal → hole-card peek → Stay → settle → WIN dialog → next round), spectate + auto-offered entry next round (incl. dead-round retry), break-the-legs button ×3 (bat hides, legs regrow, pain face), solo game (0 bots), forced Battle Nyau round, and the v1.1 checks: SEGA footer credit, sometimes-only taunts, red BUST / shining DOUBLE DOWN / WIN! +amount banners, coin rain scaling with the win, sad/pain/happy faces, 8s win hold |
+| `test/ui.test.js` | jsdom DOM smoke test: every screen/panel/button exists, music elements + track selection (`music.mp3` / `battle.mp3`), layout helpers (round vs stacked, arc seat positions), rules modal, menu flow through the real buttons (bot picker → game → back to menu), a full round through the DOM (bet chip → deal → hole-card peek → Stay → settle → WIN dialog → next round), spectate + auto-offered entry next round (incl. dead-round retry), break-the-legs button ×3 (bat hides, legs regrow, pain face), solo game (0 bots), forced Battle Nyau round, the v1.1 checks: SEGA footer credit, sometimes-only taunts, red BUST / shining DOUBLE DOWN / WIN! +amount banners, coin rain scaling with the win, sad/pain/happy faces, 8s win hold; and the v1.2 checks: bet list / special box above the table, log below it, bubble starts hidden and goes away after 6s, taunts at 35% with idle chatter once a minute, face resets after 7s, break-legs button next to Nyau |
 
 ## Deploy to Cloudflare Pages ($0)
 
