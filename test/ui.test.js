@@ -217,6 +217,11 @@ function check(name, cond, extra) {
   check('battle banner says BATTLE NYAU', /BATTLE NYAU/.test($('battleBanner').textContent));
   check('battle song is the selected track', ev(`musicTrackFor(view.round.battle)`) === 'battle.mp3');
   check('battle track is active after match start', ev(`currentTrack`) === 'battle.mp3');
+  check('battle round does not make him speak — the banner announces it', (() => {
+    ev(`tauntChance=1`); ev(`hideBubble()`); ev(`render()`);
+    return $('tauntBubble').classList.contains('hidden');
+  })());
+  ev(`tauntChance=0.35`);
 
   /* ---- scenario 6: v1.1 — Nyau, sometimes-only taunts, faces, coin rain ---- */
   check('footer credits SEGA', /SEGA/.test(window.document.body.textContent));

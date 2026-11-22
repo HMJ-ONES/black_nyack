@@ -225,7 +225,7 @@ footer{color:var(--mut);font-size:12.5px;text-align:center;margin-top:26px;line-
         <li>🎵 The main song loops every match; the battle song plays only during a Battle Nyau round.</li>
       </ul>
     </div>
-    <footer>Black Nyack v1.2 — a fan-made game, just for fun.<br>
+    <footer>Black Nyack v1.2.1 — a fan-made game, just for fun.<br>
     Nyau and all SEGA characters are © SEGA. All credit to SEGA — the creator of this site holds no rights to Nyau or any SEGA property, and this game is not affiliated with or endorsed by SEGA.<br>
     Free play coins only — no real money. Hosted on Cloudflare Pages. Code on GitHub.</footer>
   </div>
@@ -1218,7 +1218,7 @@ function bannerFor(p){
 function seatColor(seat){ return SEAT_COLORS[(seat||0)%SEAT_COLORS.length]; }
 
 /* ---- render: everything on the table comes from the filtered view ---- */
-let prevPhase='', prevBusted=false, prevFive=false, lastBattleRound=0;
+let prevPhase='', prevBusted=false, prevFive=false;
 function amSpectator(){
   const me=view?view.players.find(p=>p.id===myId):null;
   return isSpectator || !me || !!me.spectating;
@@ -1235,10 +1235,8 @@ function render(){
   const settled=view.phase==='settled';
 
   show('battleBanner', !!(view.round&&view.round.battle));
-  if(view.round&&view.round.battle&&lastBattleRound!==view.roundNumber){
-    lastBattleRound=view.roundNumber;
-    dealerSay('battle');
-  }
+  // No bubble line for a battle round — the banner already announces it, and
+  // the bubble should never pop up the moment a round (or game) starts.
   if(me&&me.busted&&!prevBusted) dealerSay('bust');
   if(me&&me.cards&&me.cards.length>=5&&!prevFive) dealerSay('fiveCard');
   prevBusted=!!(me&&me.busted);
@@ -1485,7 +1483,7 @@ function startLocalGame(names, seed, opts){
   myId=fullState.players[0].id;
   playMode='local'; isHost=true; isSpectator=false; leaving=false;
   gameId++;
-  winDialogShownFor=0; lastRoundSeen=0; prevPhase=''; prevBusted=false; prevFive=false; lastBattleRound=0;
+  winDialogShownFor=0; lastRoundSeen=0; prevPhase=''; prevBusted=false; prevFive=false;
   show('menuScreen',false); show('lobbyScreen',false); show('gameScreen',true);
   $('connBox').textContent='Local game vs bots — no network needed. The dealer is already being rude.';
   startMatchMusic();
@@ -1765,7 +1763,7 @@ function startHostedGame(){
   myId=seatIds[0];
   isHost=true; playMode='online'; isSpectator=false; leaving=false;
   gameId++;
-  winDialogShownFor=0; lastRoundSeen=0; prevPhase=''; prevBusted=false; prevFive=false; lastBattleRound=0;
+  winDialogShownFor=0; lastRoundSeen=0; prevPhase=''; prevBusted=false; prevFive=false;
   show('lobbyScreen',false); show('menuScreen',false); show('gameScreen',true);
   $('connBox').innerHTML='Lobby <b>'+roomCode+'</b> — you are the host. Bets are per-player (5 / 10 / 20 / 40 / 50) or spectate. Bots run on your device.';
   startMatchMusic();

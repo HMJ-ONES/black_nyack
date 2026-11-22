@@ -31,6 +31,9 @@ no cost, multiplayer peer-to-peer via PeerJS, hosted free on Cloudflare Pages.
   it again.
 - **Break his legs, moved up** — the button is a small one **inside the table,
   next to Nyau**, so mobile players can tap it and watch the hit at the same time.
+- **v1.2.1:** a Battle Nyau round no longer makes him speak when the round starts —
+  the banner already announces it, so the bubble stays hidden until he actually
+  has something to say mid-round.
 
 ## v1.1 — Nyau (Nov 22)
 
@@ -345,7 +348,7 @@ npm test
 # node test/engine.test.js && node test/payout.test.js && node test/battle.test.js && node test/ui.test.js
 ```
 
-Current (v1.2, Nov 22): engine **131**, payout **37**, battle **29**, UI **131** — **328 total, 0 failed**.
+Current (v1.2.1, Nov 22): engine **131**, payout **37**, battle **29**, UI **132** — **329 total, 0 failed**.
 
 | File | Covers |
 |---|---|
