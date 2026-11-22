@@ -8,7 +8,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Black Nyack — free browser blackjack</title>
-<meta name="description" content="Black Nyack: a free browser blackjack game for 1-5 players vs the dealer. Bets of 5-50 casino coins, special cards, 5-card hands, and the secret Battle Bonyas round. No sign-up, no cost.">
+<meta name="description" content="Black Nyack: a free browser blackjack game for 1-5 players vs the dealer Nyau. Bets of 5-50 casino coins, special cards, 5-card hands, and the secret Battle Nyau round. No sign-up, no cost.">
 <style>
 :root{--bg:#0d1a12;--felt:#14532d;--felt2:#0e5c34;--panel:#12261a;--panel2:#1a3323;--line:#2c4a35;--txt:#f5eeda;--mut:#b9cbb4;--gold:#f2c14e;--green:#58b368;--red:#e5484d;--blue:#4c9aff;--purple:#b388ff}
 *{box-sizing:border-box;margin:0;padding:0}
@@ -84,8 +84,10 @@ body.round-table .dealer-zone{position:absolute;left:50%;top:0;transform:transla
 .peek-hint{font-size:11px;color:var(--gold);font-weight:700}
 /* banners over hands, like the original: BLACK NYACK / 5 CARD / DOUBLE DOWN / BUST / WIN! */
 .banner{position:absolute;left:50%;top:38%;transform:translate(-50%,-50%) rotate(-4deg);font-weight:900;letter-spacing:.5px;white-space:nowrap;pointer-events:none;z-index:5;animation:bannerPop .35s ease-out}
-.banner.gold{font-size:26px;color:#ffe27a;text-shadow:0 2px 0 #8a5c10,0 0 18px rgba(242,193,78,.8),0 4px 10px rgba(0,0,0,.6)}
-.banner.win{font-size:34px;color:#cfe6ff;text-shadow:0 2px 0 #1d4ed8,0 0 22px rgba(76,154,255,.9),0 4px 10px rgba(0,0,0,.6)}
+.banner.gold{font-size:26px;color:#ffe27a;text-shadow:0 2px 0 #8a5c10,0 0 18px rgba(242,193,78,.8),0 4px 10px rgba(0,0,0,.6);animation:bannerPop .35s ease-out,goldShine 1.6s ease-in-out .4s infinite}
+@keyframes goldShine{0%,100%{text-shadow:0 2px 0 #8a5c10,0 0 14px rgba(242,193,78,.55),0 4px 10px rgba(0,0,0,.6)}50%{text-shadow:0 2px 0 #8a5c10,0 0 32px rgba(255,232,140,1),0 0 48px rgba(242,193,78,.95),0 4px 10px rgba(0,0,0,.6)}}
+.banner.win{font-size:34px;color:#cfe6ff;text-shadow:0 2px 0 #1d4ed8,0 0 22px rgba(76,154,255,.9),0 4px 10px rgba(0,0,0,.6);animation:bannerPop .35s ease-out,winPulse 1.5s ease-in-out .45s infinite}
+@keyframes winPulse{0%,100%{transform:translate(-50%,-50%) rotate(-4deg) scale(1)}50%{transform:translate(-50%,-50%) rotate(-4deg) scale(1.08)}}
 .banner.bust{font-size:30px;color:#ff5a5a;text-shadow:0 2px 0 #7f1d1d,0 0 18px rgba(229,72,77,.8),0 4px 10px rgba(0,0,0,.6)}
 .banner.battle{font-size:20px;color:#e9d5ff;text-shadow:0 2px 0 #6b21a8,0 0 18px rgba(179,136,255,.9)}
 .banner.push{font-size:24px;color:#e5e7eb;text-shadow:0 2px 0 #374151,0 0 14px rgba(255,255,255,.5)}
@@ -108,11 +110,21 @@ body.round-table .dealer-zone{position:absolute;left:50%;top:0;transform:transla
 #dealerLegs.broken .leg-r{transform:rotate(-38deg);transform-origin:122px 152px}
 #dealerLegs .bandage{display:none;fill:#fff;font-weight:900;font-size:13px}
 #dealerLegs.broken .bandage{display:block}
+/* Nyau's faces: happy (default), sad when he loses, in pain when his legs are broken */
+#dealerSvg .face-sad,#dealerSvg .face-pain{display:none}
+#dealerSvg.sad .face-happy{display:none}
+#dealerSvg.sad .face-sad{display:block}
+#dealerSvg.pain .face-happy{display:none}
+#dealerSvg.pain .face-pain{display:block}
 .bat{position:absolute;right:-6px;bottom:8px;width:16px;height:96px;border-radius:8px 8px 4px 4px;background:linear-gradient(90deg,#8a5a2b,#d9a441 45%,#8a5a2b);border:2px solid #5b3a1e;transform:rotate(-58deg);transform-origin:50% 92%;opacity:0;pointer-events:none;z-index:6}
 .bat.swing{opacity:1;animation:batSwing .5s ease-in-out}
 @keyframes batSwing{0%{transform:rotate(-115deg)}55%{transform:rotate(38deg)}100%{transform:rotate(-58deg);opacity:0}}
 .bat-hit-float{position:absolute;right:8px;top:30%;color:#ffe27a;font-weight:900;font-size:20px;text-shadow:0 2px 4px #000;animation:floatUp 1s ease-out forwards;pointer-events:none;z-index:7}
 @keyframes floatUp{0%{opacity:1;transform:translateY(0)}100%{opacity:0;transform:translateY(-34px)}}
+/* coin rain on a win — more coins the bigger the win */
+#coinLayer{position:absolute;inset:0;overflow:hidden;pointer-events:none;z-index:8}
+.coin-fall{position:absolute;top:-30px;animation:coinFall 1.7s ease-in forwards;text-shadow:0 2px 4px rgba(0,0,0,.6)}
+@keyframes coinFall{0%{transform:translateY(0) rotate(0deg);opacity:0}10%{opacity:1}85%{opacity:1}100%{transform:translateY(420px) rotate(320deg);opacity:0}}
 /* special card box + bet list (screenshots) */
 .special-box{text-align:center;position:relative;z-index:2}
 .special-star{width:58px;height:58px;margin:0 auto;background:linear-gradient(160deg,#ffe27a,#f2c14e);transform:rotate(45deg);border:3px solid #8a5c10;border-radius:12px;display:flex;align-items:center;justify-content:center;box-shadow:0 0 18px rgba(242,193,78,.7)}
@@ -165,7 +177,7 @@ footer{color:var(--mut);font-size:12.5px;text-align:center;margin-top:26px;line-
   <div id="menuScreen">
     <div class="card">
       <h2>Beat the dealer. Take his coins.</h2>
-      <p>Bet <b style="color:var(--txt)">5 / 10 / 20 / 40 / 50</b> casino coins to enter a round — or spectate until the next one. <b style="color:var(--txt)">Hit</b>, <b style="color:var(--txt)">stay</b>, or <b style="color:var(--txt)">double down</b>. Get <b style="color:var(--txt)">5 cards without busting</b> and you beat even a dealer 21. Watch for the <b style="color:var(--txt)">special cards</b> and the secret <b style="color:var(--txt)">Battle Bonyas</b> round — one winner takes up to <b style="color:var(--txt)">1200 coins</b>.</p>
+      <p>Bet <b style="color:var(--txt)">5 / 10 / 20 / 40 / 50</b> casino coins to enter a round — or spectate until the next one. <b style="color:var(--txt)">Hit</b>, <b style="color:var(--txt)">stay</b>, or <b style="color:var(--txt)">double down</b>. Get <b style="color:var(--txt)">5 cards without busting</b> and you beat even a dealer 21. Watch for the <b style="color:var(--txt)">special cards</b> and the secret <b style="color:var(--txt)">Battle Nyau</b> round — one winner takes up to <b style="color:var(--txt)">1200 coins</b>.</p>
       <div class="row">
         <span style="font-size:14px;color:var(--mut)">Your name</span>
         <input type="text" id="nameInput" placeholder="e.g. Henrique" maxlength="20" style="flex:1;min-width:140px">
@@ -195,13 +207,14 @@ footer{color:var(--mut);font-size:12.5px;text-align:center;margin-top:26px;line-
         <li><b>Bet 5, 10, 20, 40 or 50</b> casino coins to enter a round, or spectate until the next one. Everyone starts with <b>1000</b> coins; broke players rebuy 1000 free coins between rounds.</li>
         <li><b>Hit, stay, or double down</b> (2 cards only). Get <b>5 cards without busting</b> and you beat even a dealer 21 — 5 cards totalling exactly 21 is the strongest hand there is.</li>
         <li><b>Special cards:</b> 6 in the deck. Every time one is dealt, a die (0, 0, 1, 1, 2, 2) is rolled and the result is <b>added to a shared total</b> — every special card on the table is worth that total. Specials are always face-up.</li>
-        <li><b>Battle Bonyas:</b> a rare secret round (12%) where the single best winning hand takes a huge bonus — up to <b>1200 coins</b> on a 50-coin doubled-down bet.</li>
+        <li><b>Battle Nyau:</b> a rare secret round (12%) where the single best winning hand takes a huge bonus — up to <b>1200 coins</b> on a 50-coin doubled-down bet.</li>
         <li>The dealer stands on 17 (including soft 17). The full rules are under <b>📖 Rules</b>.</li>
-        <li>🎵 The main song loops every match; the battle song plays only during a Battle Bonyas round.</li>
+        <li>🎵 The main song loops every match; the battle song plays only during a Battle Nyau round.</li>
       </ul>
     </div>
-    <footer>Black Nyack v1.0 — free, no accounts, no ads. Hosted on Cloudflare Pages. Code on GitHub.<br>
-    Free play coins only — no real money.</footer>
+    <footer>Black Nyack v1.1 — a fan-made game, just for fun.<br>
+    Nyau and all SEGA characters are © SEGA. All credit to SEGA — the creator of this site holds no rights to Nyau or any SEGA property, and this game is not affiliated with or endorsed by SEGA.<br>
+    Free play coins only — no real money. Hosted on Cloudflare Pages. Code on GitHub.</footer>
   </div>
 
   <div id="lobbyScreen" class="hidden">
@@ -218,9 +231,10 @@ footer{color:var(--mut);font-size:12.5px;text-align:center;margin-top:26px;line-
 
   <div id="gameScreen" class="hidden">
     <div class="rotate-hint">🔄 Turn your phone sideways for the full round table — the dealer sits in the middle, just like on PC.</div>
-    <div id="battleBanner" class="battle-banner hidden">⚔️ BATTLE BONYAS! ⚔️<br><span style="font-size:14px">The single best winning hand this round takes a huge bonus — up to 1200 coins!</span></div>
+    <div id="battleBanner" class="battle-banner hidden">⚔️ BATTLE NYAU! ⚔️<br><span style="font-size:14px">The single best winning hand this round takes a huge bonus — up to 1200 coins!</span></div>
     <div class="status" id="statusBox">Waiting…<small id="statusSub"></small></div>
     <div class="table-wrap" id="tableWrap">
+      <div id="coinLayer"></div>
       <div class="bet-list" id="betList"></div>
       <div class="special-box" id="specialBox">
         <div class="special-star"><span id="specialTotal">0</span></div>
@@ -230,7 +244,7 @@ footer{color:var(--mut);font-size:12.5px;text-align:center;margin-top:26px;line-
       <div class="dealer-zone" id="dealerZone">
         <svg class="dealer-arc" viewBox="0 0 230 40" aria-hidden="true"><defs><path id="arcPath" d="M15,36 A100,100 0 0,1 215,36" fill="none"/></defs><text><textPath href="#arcPath" startOffset="50%" text-anchor="middle">BLACK NYACK</textPath></text></svg>
         <div class="dealer-ring">
-          <svg id="dealerSvg" viewBox="0 0 220 200" role="img" aria-label="Bonyas the dealer, an obnoxious little fox in a vest">
+          <svg id="dealerSvg" viewBox="0 0 220 200" role="img" aria-label="Nyau the dealer">
             <ellipse cx="110" cy="186" rx="88" ry="13" fill="#ffe27a" opacity="0.45"/>
             <ellipse cx="110" cy="184" rx="70" ry="10" fill="#fff3b0" opacity="0.65"/>
             <g id="dealerLegs">
@@ -251,19 +265,41 @@ footer{color:var(--mut);font-size:12.5px;text-align:center;margin-top:26px;line-
             <ellipse cx="110" cy="66" rx="46" ry="42" fill="#f7cf8a"/>
             <path d="M66 78 L52 84 L66 90 Z" fill="#f6a93b"/>
             <path d="M154 78 L168 84 L154 90 Z" fill="#f6a93b"/>
-            <ellipse cx="92" cy="62" rx="8" ry="10" fill="#fff"/>
-            <ellipse cx="128" cy="62" rx="8" ry="10" fill="#fff"/>
-            <ellipse cx="93" cy="64" rx="4" ry="6" fill="#1f7a3a"/>
-            <ellipse cx="127" cy="64" rx="4" ry="6" fill="#1f7a3a"/>
-            <circle cx="93" cy="64" r="2" fill="#111"/>
-            <circle cx="127" cy="64" r="2" fill="#111"/>
+            <g class="face-happy">
+              <ellipse cx="92" cy="62" rx="8" ry="10" fill="#fff"/>
+              <ellipse cx="128" cy="62" rx="8" ry="10" fill="#fff"/>
+              <ellipse cx="93" cy="64" rx="4" ry="6" fill="#1f7a3a"/>
+              <ellipse cx="127" cy="64" rx="4" ry="6" fill="#1f7a3a"/>
+              <circle cx="93" cy="64" r="2" fill="#111"/>
+              <circle cx="127" cy="64" r="2" fill="#111"/>
+            </g>
+            <g class="face-sad">
+              <path d="M84 56 L100 62" stroke="#7a4a22" stroke-width="3" fill="none" stroke-linecap="round"/>
+              <path d="M120 62 L136 56" stroke="#7a4a22" stroke-width="3" fill="none" stroke-linecap="round"/>
+              <ellipse cx="92" cy="66" rx="6" ry="7" fill="#fff"/>
+              <ellipse cx="128" cy="66" rx="6" ry="7" fill="#fff"/>
+              <ellipse cx="92" cy="68" rx="3" ry="4.5" fill="#1f7a3a"/>
+              <ellipse cx="128" cy="68" rx="3" ry="4.5" fill="#1f7a3a"/>
+              <circle cx="92" cy="68" r="1.6" fill="#111"/>
+              <circle cx="128" cy="68" r="1.6" fill="#111"/>
+              <path d="M140 78 q3 8 -2 12" stroke="#7fb3ff" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+              <circle cx="139" cy="92" r="2.5" fill="#7fb3ff"/>
+            </g>
+            <g class="face-pain">
+              <path d="M86 56 L98 68 M98 56 L86 68" stroke="#111" stroke-width="3" fill="none" stroke-linecap="round"/>
+              <path d="M122 56 L134 68 M134 56 L122 68" stroke="#111" stroke-width="3" fill="none" stroke-linecap="round"/>
+              <path d="M84 50 Q92 44 100 50" stroke="#7a4a22" stroke-width="3" fill="none" stroke-linecap="round"/>
+              <path d="M120 50 Q128 44 136 50" stroke="#7a4a22" stroke-width="3" fill="none" stroke-linecap="round"/>
+            </g>
             <path d="M106 78 L114 78 L110 83 Z" fill="#c25e3a"/>
-            <path d="M102 88 Q112 94 122 86" stroke="#7a4a22" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+            <path class="face-happy" d="M102 88 Q112 94 122 86" stroke="#7a4a22" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+            <path class="face-sad" d="M102 92 Q110 86 118 92" stroke="#7a4a22" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+            <ellipse class="face-pain" cx="110" cy="90" rx="6" ry="8" fill="#7f1d1d"/>
           </svg>
           <div id="bat" class="bat"></div>
         </div>
         <div class="taunt" id="tauntBubble">Welcome to MY table. The coins are basically already mine.</div>
-        <div class="legs-line">🦵 Legs broken: <b id="legsCount">0</b> — Bonyas the dealer</div>
+        <div class="legs-line">🦵 Legs broken: <b id="legsCount">0</b> — Nyau the dealer</div>
       </div>
       <div class="dealer-hand" id="dealerHand"></div>
       <div class="seats" id="opponentsBox"></div>
@@ -355,7 +391,7 @@ const BETS = [5, 10, 20, 40, 50];   // allowed bets (casino coins)
 const START_STACK = 1000;           // free coins every player starts with (and rebuys)
 const MAX_PLAYERS = 5;              // seats at the table
 const MAX_PAYOUT = 1200;            // hard cap on one player's payout in one round
-const BATTLE_ODDS = 0.12;           // chance a round is a Battle Bonyas round
+const BATTLE_ODDS = 0.12;           // chance a round is a Battle Nyau round
 const DEALER_STAND = 17;            // dealer stands on 17, including soft 17
 const SPECIAL_DIE_FACES = [0, 0, 1, 1, 2, 2]; // the special-card die
 const RANKS = ['2','3','4','5','6','7','8','9','10','J','Q','K','A'];
@@ -365,7 +401,7 @@ const MAX_HITS = 3;
 function mulberry32(a){ return function(){ a|=0; a=a+0x6D2B79F5|0; let t=Math.imul(a^a>>>15,1|a); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; }; }
 function randomSeed(){ if (typeof crypto!=='undefined' && crypto.getRandomValues){ const a=new Uint32Array(1); crypto.getRandomValues(a); return a[0]>>>0; } return (Math.random()*4294967296)>>>0; }
 /* Seeded rng carried in the state (serializable — just an integer).
-   Every deck shuffle, special-die roll and Battle Bonyas roll advances it. */
+   Every deck shuffle, special-die roll and Battle Nyau roll advances it. */
 function rngNext(st){
   let a=(st.rngState|0)+0x6D2B79F5|0; st.rngState=a;
   let t=Math.imul(a^a>>>15,1|a); t=t+Math.imul(t^t>>>7,61|t)^t;
@@ -437,7 +473,7 @@ function newGame(playerNames, seed, opts){
   return st;
 }
 
-/* Battle Bonyas roll: at the START of each round, when betting opens.
+/* Battle Nyau roll: at the START of each round, when betting opens.
    opts.forceBattle (true/false) overrides the roll — used by tests. */
 function rollBattle(st, force){
   let on;
@@ -445,7 +481,7 @@ function rollBattle(st, force){
   else if(force===false) on=false;
   else on=rngNext(st)<BATTLE_ODDS;
   st.round.battle=on; st.round.battleWinnerId=null;
-  if(on) st.round.log.push('BATTLE BONYAS is live this round! The single best winning hand takes a huge bonus.');
+  if(on) st.round.log.push('BATTLE NYAU is live this round! The single best winning hand takes a huge bonus.');
   return on;
 }
 
@@ -483,7 +519,7 @@ function checkBettingComplete(st){
   const ent=seated.filter(p=>p.bet>0);
   if(!ent.length){
     // DEAD ROUND: nobody bet. No cards are dealt, bets reset (none were
-    // placed), the same round's Battle Bonyas flag stands, betting re-opens.
+    // placed), the same round's Battle Nyau flag stands, betting re-opens.
     // The dead-round count is kept so a bot's seeded coin-flip changes on
     // the retry — without it a bot that spectated once would spectate
     // forever (same seed, same round, same decision) and the table could
@@ -530,7 +566,7 @@ function dealerPlay(st){
    Lose -> 0. Push -> B (stake back). Win -> 2*B, +3*B if the player's
    total is exactly 21 (Blacknyack bonus), +5*B if the player holds 5
    cards, +2*B per special card in the player's hand, +5*B if the player
-   is the Battle Bonyas winner. Total payout is capped at MAX_PAYOUT. */
+   is the Battle Nyau winner. Total payout is capped at MAX_PAYOUT. */
 function settle(st){
   const dc=handClass(st.dealer.hand, st.round.specialTotal);
   const results={};
@@ -585,7 +621,7 @@ function settle(st){
     p.bet=0; p.doubled=false;
     st.round.log.push(p.name+' '+(r.outcome==='win' ? 'wins '+r.payout+' ('+r.total+')'
       : r.outcome==='push' ? 'pushes — stake back '+r.payout+' ('+r.total+')'
-      : 'loses ('+r.total+')')+(r.battleWinner?' — BATTLE BONYAS WINNER!':''));
+      : 'loses ('+r.total+')')+(r.battleWinner?' — BATTLE NYAU WINNER!':''));
   }
   st.results=results;
   st.phase='settled';
@@ -593,7 +629,7 @@ function settle(st){
   return {ok:true, results:results};
 }
 
-/* ---- next round: back to betting, fresh Battle Bonyas roll ---- */
+/* ---- next round: back to betting, fresh Battle Nyau roll ---- */
 function nextRound(st, opts){
   opts=opts||{};
   st.roundNumber++;
@@ -841,7 +877,7 @@ if(typeof module!=='undefined'&&module.exports){ module.exports={BETS,START_STAC
    BLACK NYACK — UI + multiplayer (pass 2).
    The engine lives in the script block above (pure JS, no DOM). This
    block renders it: the round table from the screenshots, the dealer
-   Bonyas with his taunts and breakable legs, the two songs, and the
+   Nyau with his taunts and breakable legs, the two songs, and the
    PeerJS multiplayer (host-authoritative, filtered views) copied from
    the Five-Card Poker / Wellington pattern. Local cosmetic fun (leg
    breaking, taunts) never touches game state and is never synced.
@@ -894,7 +930,7 @@ function makeCode(){ const chars='ABCDEFGHJKMNPQRSTUVWXYZ23456789'; let s=''; fo
 function myPlayerName(){ return ($('nameInput').value||'').trim()||'Player'; }
 function botNames(n){ const pool=['Ada','Boris','Cleo','Dante','Esme']; return pool.slice(0,n).map(x=>x+' (bot)'); }
 
-/* ---------- music: main loop every match, battle song only in Battle Bonyas ---------- */
+/* ---------- music: main loop every match, battle song only in Battle Nyau ---------- */
 let musicOn=true, musicStarted=false, currentTrack=null;
 function musicTrackFor(battle){ return battle ? 'battle.mp3' : 'music.mp3'; }
 function audioFor(track){ return track==='battle.mp3' ? $('musicBattle') : $('musicMain'); }
@@ -949,23 +985,70 @@ function playThwack(){
   }catch(e){ /* sound is cosmetic — never break the game */ }
 }
 
-/* ---------- Bonyas the dealer: taunts + breakable legs (LOCAL cosmetic only) ---------- */
-let legBreaks=0, lastTauntAt=0, tauntTimer=null;
+/* ---------- Nyau the dealer: taunts + breakable legs (LOCAL cosmetic only) ----------
+   He only speaks SOMETIMES (tauntChance) — the bubble stays quiet the rest
+   of the time. His FACE always reacts though: sad when he loses, in pain
+   while his legs are broken. Legs grow back after LEG_REGEN_MS; the bat
+   vanishes BAT_HIDE_MS after the hit. ---------- */
+const DEALER_NAME='Nyau';
+const TAUNT_CHANCE=0.5;       // a dealerSay actually speaks this often — sometimes, not every time
+const LEG_REGEN_MS=3*60*1000; // broken legs grow back after 3 minutes
+const BAT_HIDE_MS=2000;       // the bat disappears 2 seconds after the hit
+const WIN_HOLD_MS=8000;       // the WIN screen stays up this long before the next round auto-starts (local games)
+const COIN_BURST_BASE=12, COIN_BURST_PER=30, COIN_BURST_MAX=48; // coin rain scales with the win
+let tauntChance=TAUNT_CHANCE; // tests can set 0 / 1; the game leaves it at 0.5
+let legBreaks=0, legsBroken=false, lastTauntAt=0, tauntTimer=null, legsHealTimer=null, batHideTimer=null;
+let dealerMood='happy'; // happy | sad | pain
 const TAUNTS={
-  idle:["Welcome to MY table. The coins are basically already mine.","I have never lost. Not once. Ask anyone. (Don't ask anyone.)","You play like my grandmother. And she is a chair.","Nice cards. Shame about the player holding them.","I deal the cards, I take the coins, I look fabulous. That's the job.","Hurry up. My legs are getting tired just watching you think."],
+  idle:["Welcome to MY table. The coins are basically already mine.","I have never lost. Not once. Ask anyone. (Don't ask anyone.)","You play like my grandmother. And she is a chair.","Nice cards. Shame about the player holding them.","I deal the cards, I take the coins, I look fabulous. That's the job.","Hurry up. My ears are getting tired just watching you think."],
   bust:["HA! Busted! Did you even LOOK at your cards?","Beautiful. Just beautiful. Another one bites the felt.","Over 21! I saw that coming from the next table.","Busted. The house thanks you for your donation."],
   dealerWin:["The dealer wins again. Shocking. Truly shocking.","I win. You lose. The natural order is restored.","All your coins are belong to me. ...What? I said what I said."],
   playerWin:["Twenty-one. How... original. Enjoy it. It won't happen again.","You won. Don't get used to it.","Hmph. Beginner's luck. Obviously."],
   fiveCard:["Five cards?! ...That shouldn't be allowed. I'm checking the deck.","FIVE cards? Who taught you to play like that?"],
-  battle:["Battle Bonyas?! Ugh. FINE. One of you gets lucky. Exactly ONE.","Battle Bonyas! Don't get excited — the bonus is still basically mine."],
+  battle:["Battle Nyau?! Ugh. FINE. One of you gets lucky. Exactly ONE.","Battle Nyau! Don't get excited — the bonus is still basically mine."],
   legs:["OW! MY LEGS! ...You know what? I'm still dealing. Sit down.","MY LEGS! That hurt! A lot! ...You're still losing, though.","Again?! My legs! Fine. FINE. The game goes on."],
-  battleWin:["Battle Bonyas winner! ...I hope you're happy. I'm not."]
+  healed:["My legs grew back! ...I hate this table.","Legs: back. Dignity: still missing. Carry on."],
+  battleWin:["Battle Nyau winner! ...I hope you're happy. I'm not."]
 };
 function pickTaunt(kind){ const arr=TAUNTS[kind]||TAUNTS.idle; return arr[Math.floor(Math.random()*arr.length)]; }
-function dealerSay(kindOrText){
+function dealerSay(kindOrText, chance){
+  if(Math.random()>=(chance===undefined?tauntChance:chance)) return; // sometimes he just stays quiet
   const el=$('tauntBubble'); if(!el) return;
   el.textContent=(TAUNTS[kindOrText]?pickTaunt(kindOrText):kindOrText);
   lastTauntAt=Date.now();
+}
+/* Nyau's face: sad when he loses a round, in pain while his legs are broken. */
+function setDealerFace(mood){
+  dealerMood=mood;
+  const svg=$('dealerSvg'); if(!svg) return;
+  svg.classList.toggle('sad', mood==='sad');
+  svg.classList.toggle('pain', mood==='pain');
+}
+function dealerLostRound(){
+  if(!view||view.phase!=='settled') return false;
+  if(view.dealer&&view.dealer.total!==null&&view.dealer.total!==undefined&&view.dealer.total>21) return true;
+  if(!view.results) return false;
+  return Object.keys(view.results).some(id=>view.results[id].outcome==='win');
+}
+function updateDealerFace(){
+  if(legsBroken){ setDealerFace('pain'); return; }
+  setDealerFace(dealerLostRound() ? 'sad' : 'happy');
+}
+/* Coin rain on a win — the bigger the win, the more coins fall. */
+function coinBurstCount(payout){ return Math.min(COIN_BURST_MAX, COIN_BURST_BASE + Math.round((payout||0)/COIN_BURST_PER)); }
+function coinBurstFor(payout){
+  const layer=$('coinLayer'); if(!layer) return 0;
+  const n=coinBurstCount(payout);
+  for(let i=0;i<n;i++){
+    const c=document.createElement('div');
+    c.className='coin-fall'; c.textContent='🪙';
+    c.style.left=(3+Math.random()*92).toFixed(1)+'%';
+    c.style.animationDelay=(Math.random()*0.7).toFixed(2)+'s';
+    c.style.fontSize=(18+Math.random()*16).toFixed(0)+'px';
+    layer.appendChild(c);
+    setTimeout(()=>{ if(c.parentNode) c.parentNode.removeChild(c); }, 2600);
+  }
+  return n;
 }
 function startTauntTimer(){
   stopTauntTimer();
@@ -975,6 +1058,14 @@ function startTauntTimer(){
   }, 5000);
 }
 function stopTauntTimer(){ clearInterval(tauntTimer); tauntTimer=null; }
+function hideBat(){ const bat=$('bat'); if(bat) bat.classList.remove('swing'); }
+function healLegs(){
+  legsBroken=false;
+  const legs=$('dealerLegs'); if(legs) legs.classList.remove('broken');
+  updateDealerFace();
+  dealerSay('healed');
+  toast('🦵 Nyau\'s legs grew back. He\'s walking again — break them as many times as you like. (Local fun only.)');
+}
 function breakLegs(){
   legBreaks++;
   const n=$('legsCount'); if(n) n.textContent=legBreaks;
@@ -982,8 +1073,11 @@ function breakLegs(){
   const svg=$('dealerSvg'), legs=$('dealerLegs'), bat=$('bat');
   if(svg){ svg.classList.remove('bonked'); void svg.getBoundingClientRect(); svg.classList.add('bonked'); }
   if(legs) legs.classList.add('broken');
+  legsBroken=true; updateDealerFace(); // his face shows the pain, always — the words only sometimes
   if(bat){ bat.classList.remove('swing'); void bat.getBoundingClientRect(); bat.classList.add('swing'); }
+  clearTimeout(batHideTimer); batHideTimer=setTimeout(hideBat, BAT_HIDE_MS); // the bat is gone 2s after the hit
   dealerSay('legs');
+  clearTimeout(legsHealTimer); legsHealTimer=setTimeout(healLegs, LEG_REGEN_MS); // and the legs grow back after a few minutes
   const zone=$('dealerZone');
   if(zone){
     const fl=document.createElement('div');
@@ -991,7 +1085,7 @@ function breakLegs(){
     zone.appendChild(fl);
     setTimeout(()=>{ if(fl.parentNode) fl.parentNode.removeChild(fl); }, 1000);
   }
-  toast('🦵⚾ CRACK! Bonyas\' legs: broken '+legBreaks+' time'+(legBreaks===1?'':'s')+'. He\'s still dealing. (Local fun only — the table doesn\'t care.)');
+  toast('🦵⚾ CRACK! Nyau\'s legs: broken '+legBreaks+' time'+(legBreaks===1?'':'s')+'. He\'s still dealing. (Local fun only — the table doesn\'t care.)');
 }
 
 /* ---- round-table layout: landscape / desktop = the round table from the
@@ -1066,8 +1160,8 @@ function bannerFor(p){
   if(settled && view.results && view.results[p.id]){
     const r=view.results[p.id];
     if(r.outcome==='win'){
-      if(r.battleWinner) return '<div class="banner battle">⚔️ BATTLE BONYAS!</div><div class="banner win" style="top:64%">WIN!</div>';
-      return '<div class="banner win">WIN!</div>';
+      if(r.battleWinner) return '<div class="banner battle">⚔️ BATTLE NYAU!</div><div class="banner win" style="top:64%">WIN! +'+r.payout+'</div>';
+      return '<div class="banner win">WIN! +'+r.payout+'</div>';
     }
     if(r.outcome==='push') return '<div class="banner push">PUSH</div>';
     return '';
@@ -1115,7 +1209,7 @@ function render(){
   else if(settled){
     const wins=view.results?Object.keys(view.results).filter(id=>view.results[id].outcome==='win').map(id=>{ const p=view.players.find(x=>x.id===id); return p?p.name:id; }):[];
     const bw=view.round&&view.round.battleWinnerId?view.players.find(x=>x.id===view.round.battleWinnerId):null;
-    status=wins.length?('🏆 Round '+view.roundNumber+' over — '+wins.join(' & ')+' beat the dealer'+(bw?' — ⚔️ '+bw.name+' takes the Battle Bonyas bonus!':'')):'😤 Round '+view.roundNumber+' over — the dealer takes it. Bonyas is insufferable about it.';
+    status=wins.length?('🏆 Round '+view.roundNumber+' over — '+wins.join(' & ')+' beat the dealer'+(bw?' — ⚔️ '+bw.name+' takes the Battle Nyau bonus!':'')):'😤 Round '+view.roundNumber+' over — the dealer takes it. Nyau is insufferable about it.';
   }
   else if(view.phase==='betting'){
     status=isSpec?'👀 Spectating — you\'re up for the next round. Stay on this screen: you\'ll be offered entry at the next betting round, no leaving and rejoining needed.':'🎲 Round '+view.roundNumber+' — place your bet (5 / 10 / 20 / 40 / 50) or spectate.';
@@ -1125,7 +1219,7 @@ function render(){
   }
   else if(view.phase==='dealerTurn'){ status='🎩 Dealer is playing…'; }
   else { status='Waiting…'; }
-  const sub='Round '+view.roundNumber+' • Special total '+(view.round?view.round.specialTotal:0)+' • Deck '+view.deckCount+' cards'+(view.round&&view.round.battle?' • ⚔️ BATTLE BONYAS':'')+(me?' • Your stack: '+me.stack+' coins':'');
+  const sub='Round '+view.roundNumber+' • Special total '+(view.round?view.round.specialTotal:0)+' • Deck '+view.deckCount+' cards'+(view.round&&view.round.battle?' • ⚔️ BATTLE NYAU':'')+(me?' • Your stack: '+me.stack+' coins':'');
   $('statusBox').innerHTML=esc(status)+'<small>'+esc(sub)+'</small>';
 
   /* bet list (top-left, like the screenshots) */
@@ -1223,6 +1317,7 @@ function render(){
 
   if(settled) showWinDialog();
   else show('winModal', false);
+  updateDealerFace();
   ensureMusic();
   positionRoundSeats();
 }
@@ -1235,6 +1330,7 @@ function showWinDialog(){
   if(winDialogShownFor===view.roundNumber) return;
   winDialogShownFor=view.roundNumber;
   const r=view.results[myId]; if(!r) return;
+  if(r.outcome==='win') coinBurstFor(r.payout); // coin rain, scaled to the win
   const bd=r.breakdown||{};
   const rows=[];
   if(r.outcome==='win'){
@@ -1242,7 +1338,7 @@ function showWinDialog(){
     if(bd.blacknyack) rows.push(['Blacknyack', bd.blacknyack]);
     if(bd.fiveCard) rows.push(['5 Card', bd.fiveCard]);
     if(bd.special) rows.push(['Special ×'+(r.specials||0), bd.special]);
-    if(bd.battle) rows.push(['Battle Bonyas', bd.battle]);
+    if(bd.battle) rows.push(['Battle Nyau', bd.battle]);
   } else if(r.outcome==='push'){
     rows.push(['Stake back', r.payout]);
   } else {
@@ -1255,14 +1351,14 @@ function showWinDialog(){
   $('winTitle').textContent=r.outcome==='win'?'🏆 WIN!':(r.outcome==='push'?'🤝 PUSH':'😤 Dealer takes it');
   $('winBody').innerHTML='<table class="win-rows">'+rows.map(x=>'<tr><td>'+esc(x[0])+'</td><td>🪙 '+x[1]+'</td></tr>').join('')+
     '<tr class="total"><td>🪙 Acquired</td><td>🪙 '+r.payout+'</td></tr></table>'+
-    (bw&&bw.id!==myId?'<p style="color:var(--mut);font-size:13.5px">⚔️ Battle Bonyas winner: <b style="color:var(--txt)">'+esc(bw.name)+'</b> — the single best winning hand takes the bonus.</p>':'')+
+    (bw&&bw.id!==myId?'<p style="color:var(--mut);font-size:13.5px">⚔️ Battle Nyau winner: <b style="color:var(--txt)">'+esc(bw.name)+'</b> — the single best winning hand takes the bonus.</p>':'')+
     (r.capped?'<p style="color:var(--mut);font-size:13.5px">Payout capped at the 1200-coin table maximum.</p>':'');
   show('winModal', true);
 }
 
 /* ---- rules ---- */
 function rulesHtml(){
-  return '<p><b>Goal:</b> beat the dealer at 21 — together. Everyone at the table plays against Bonyas, not against each other.</p>'+
+  return '<p><b>Goal:</b> beat the dealer at 21 — together. Everyone at the table plays against Nyau, not against each other.</p>'+
   '<table class="points"><tr><th>Outcome</th><th>Payout (B = your bet at risk)</th></tr>'+
   '<tr><td>Lose (bust, or dealer beats you)</td><td>0 — your bet is lost</td></tr>'+
   '<tr><td>Push (exact tie)</td><td>B — your stake back, no bonuses</td></tr>'+
@@ -1270,8 +1366,8 @@ function rulesHtml(){
   '<tr><td>Win with exactly 21</td><td>+ 3 × B Blacknyack bonus</td></tr>'+
   '<tr><td>Win with 5 cards</td><td>+ 5 × B 5-card bonus</td></tr>'+
   '<tr><td>Win with special cards</td><td>+ 2 × B per special card</td></tr>'+
-  '<tr><td>Battle Bonyas winner</td><td>+ 5 × B battle bonus</td></tr></table>'+
-  '<p>Total payout for one player in one round is capped at <b>1200 coins</b>. Worked examples: bet 50, 5-card 21 → 100 + 150 + 250 = <b>500</b>. Bet 50, double down (B = 100), 3-card 21 with 1 special, Battle Bonyas winner → 200 + 300 + 200 + 500 = <b>1200</b>.</p>'+
+  '<tr><td>Battle Nyau winner</td><td>+ 5 × B battle bonus</td></tr></table>'+
+  '<p>Total payout for one player in one round is capped at <b>1200 coins</b>. Worked examples: bet 50, 5-card 21 → 100 + 150 + 250 = <b>500</b>. Bet 50, double down (B = 100), 3-card 21 with 1 special, Battle Nyau winner → 200 + 300 + 200 + 500 = <b>1200</b>.</p>'+
   '<ul style="margin:8px 0 8px 18px">'+
   '<li><b>Bets:</b> every round, each player picks <b>5 / 10 / 20 / 40 / 50</b> coins or <b>spectates</b> that round. Spectators are automatically offered entry again next round. If nobody bets, the round is dead and everyone picks again. Everyone starts with <b>1000</b> coins; at 0 you may <b>rebuy 1000 free coins</b> between rounds. Anyone can <b>leave the match at any time</b>.</li>'+
   '<li><b>Deal:</b> one 58-card deck (52 standard + 6 special), shuffled fresh every round. You get 2 cards: the first <b>face-up</b>, the second <b>face-down</b> (your hole card — only you see it; tap it to peek). The dealer gets 2 the same way. <b>Special cards are always face-up for everyone</b>, even as a second card.</li>'+
@@ -1280,9 +1376,9 @@ function rulesHtml(){
   '<li><b>The 5-card rule:</b> 5 cards without busting beats <b>even a dealer 21</b>. 5 cards totalling exactly 21 is the strongest hand there is — it only ties against another 5-card 21.</li>'+
   '<li><b>The dealer</b> reveals the hole card, then hits while under 17 and stands on 17 or more, including soft 17. If every player busts, the dealer doesn\'t draw.</li>'+
   '<li><b>The special die:</b> whenever a special card is dealt to anyone, a 6-sided die (faces 0, 0, 1, 1, 2, 2) is rolled and the result is <b>added to the shared special total</b>. Every special card on the table is worth that total. Example: you roll 1, the dealer rolls 2 — every special is worth 3 this round.</li>'+
-  '<li><b>Battle Bonyas (secret random event):</b> at the start of each round there is a <b>12% chance</b> the round is a Battle Bonyas round — it lasts one round only. The <b>single best winning hand</b> among the players who beat the dealer takes the battle bonus; everyone else who beat the dealer gets their normal payout. If nobody beats the dealer, there is no battle winner.</li>'+
-  '<li>🎵 <b>Music:</b> the main song loops from the start of every match; the battle song plays only during a Battle Bonyas round, then it goes back to the main loop. Use the 🔊 button to mute.</li>'+
-  '<li>🦵⚾ <b>Break his legs:</b> purely for fun — a baseball bat, Bonyas, unlimited uses, any time, local only. It never touches the game.</li>'+
+  '<li><b>Battle Nyau (secret random event):</b> at the start of each round there is a <b>12% chance</b> the round is a Battle Nyau round — it lasts one round only. The <b>single best winning hand</b> among the players who beat the dealer takes the battle bonus; everyone else who beat the dealer gets their normal payout. If nobody beats the dealer, there is no battle winner.</li>'+
+  '<li>🎵 <b>Music:</b> the main song loops from the start of every match; the battle song plays only during a Battle Nyau round, then it goes back to the main loop. Use the 🔊 button to mute.</li>'+
+  '<li>🦵⚾ <b>Break his legs:</b> purely for fun — a baseball bat, Nyau, unlimited uses, any time, local only. His legs grow back after a few minutes, and the bat disappears 2 seconds after the hit. It never touches the game.</li>'+
   '<li><b>Joining late?</b> If you join a game already in progress you <b>spectate</b> — seats are fixed when the game starts, so you watch this match and join the next one from the lobby. If your connection drops mid-game, your seat is held for <b>10 seconds</b>; after that you\'re withdrawn and come back as a spectator.</li></ul>';
 }
 function openRules(){ $('rulesBody').innerHTML=rulesHtml(); show('rulesModal',true); }
@@ -1362,7 +1458,7 @@ function scheduleBots(delay){
   if(fullState.phase==='settled'){
     if(playMode==='local'){
       const gid=gameId;
-      botTimer=setTimeout(()=>{ if(gid===gameId&&fullState&&fullState.phase==='settled') doLocalAction({type:'nextRound'}); }, 3000);
+      botTimer=setTimeout(()=>{ if(gid===gameId&&fullState&&fullState.phase==='settled') doLocalAction({type:'nextRound'}); }, WIN_HOLD_MS);
     }
     return;
   }

@@ -77,7 +77,7 @@ function check(name, cond, extra) {
   /* ---- rules modal ---- */
   $('btnRules').click();
   check('rules modal opens', !$('rulesModal').classList.contains('hidden'));
-  check('rules mention Battle Bonyas', /Battle Bonyas/.test($('rulesBody').textContent));
+  check('rules mention Battle Nyau', /Battle Nyau/.test($('rulesBody').textContent));
   check('rules show the 1200 cap', /1200/.test($('rulesBody').textContent));
   check('rules mention the special die', /special die/i.test($('rulesBody').textContent));
   check('rules mention breaking his legs', /Break his legs/.test($('rulesBody').textContent));
@@ -176,15 +176,27 @@ function check(name, cond, extra) {
   $('btnNextRound').click();
   check('spectator is offered entry again next round', ev(`view.phase`) === 'betting' && !$('betBox').classList.contains('hidden'));
 
-  /* ---- scenario 3: break his legs — anytime, infinitely ---- */
+  /* ---- scenario 3: break his legs — anytime, infinitely; bat hides after
+     2s, legs grow back after a few minutes (both driven by named functions
+     the test can call directly instead of waiting on real timers) ---- */
   check('legs start unbroken', $('legsCount').textContent === '0');
+  ev(`tauntChance=1`); // the bubble only speaks sometimes — force it for this check
   $('breakLegsBtn').click();
   $('breakLegsBtn').click();
   $('breakLegsBtn').click();
   check('three bat swings counted', $('legsCount').textContent === '3');
   check('dealer legs show broken', $('dealerLegs').classList.contains('broken'));
   check('bat swung', $('bat').classList.contains('swing'));
+  check('dealer face shows pain while legs are broken', $('dealerSvg').classList.contains('pain'));
   check('dealer complains in the taunt bubble', /legs/i.test($('tauntBubble').textContent));
+  ev(`hideBat()`);
+  check('bat disappears after the hit (hideBat)', !$('bat').classList.contains('swing'));
+  check('legs counter is a lifetime total even after healing', (() => {
+    ev(`healLegs()`);
+    return $('legsCount').textContent === '3' && !$('dealerLegs').classList.contains('broken');
+  })());
+  check('dealer face leaves pain once legs heal', !$('dealerSvg').classList.contains('pain'));
+  ev(`tauntChance=0.5`); // back to the game's sometimes-only default
 
   /* ---- scenario 4: solo game (0 bots) works ---- */
   window.eval(`startLocalGame([{name:'Solo',isBot:false}], 7, {})`);
@@ -193,12 +205,65 @@ function check(name, cond, extra) {
   [...window.document.querySelectorAll('#betChips .chip')].find(b => b.textContent.trim() === '5').click();
   check('solo player is dealt in alone', ev(`view.phase`) === 'playerTurns' && ev(`view.turnPlayerId`) === ev(`myId`));
 
-  /* ---- scenario 5: forced Battle Bonyas round ---- */
+  /* ---- scenario 5: forced Battle Nyau round ---- */
   window.eval(`startLocalGame([{name:'Test',isBot:false},{name:'Bot',isBot:true}], 99, {forceBattle:true})`);
   check('battle round is flagged', ev(`view.round.battle`) === true);
   check('battle banner shows', !$('battleBanner').classList.contains('hidden'));
+  check('battle banner says BATTLE NYAU', /BATTLE NYAU/.test($('battleBanner').textContent));
   check('battle song is the selected track', ev(`musicTrackFor(view.round.battle)`) === 'battle.mp3');
   check('battle track is active after match start', ev(`currentTrack`) === 'battle.mp3');
+
+  /* ---- scenario 6: v1.1 — Nyau, sometimes-only taunts, faces, coin rain ---- */
+  check('footer credits SEGA', /SEGA/.test(window.document.body.textContent));
+  check('footer says fan-made, no rights held', /fan-made/i.test(window.document.body.textContent) && /no rights/i.test(window.document.body.textContent));
+  check('dealer art is labelled Nyau', /Nyau/.test($('dealerSvg').getAttribute('aria-label') || ''));
+  check('legs line names Nyau', /Nyau/.test(window.document.querySelector('.legs-line').textContent));
+  check('coin layer exists', !!$('coinLayer'));
+  // Taunts: sometimes, not every time — gated by tauntChance.
+  check('taunt chance defaults to 0.5', ev(`TAUNT_CHANCE`) === 0.5);
+  check('dealer stays quiet when tauntChance is 0', (() => {
+    const before = $('tauntBubble').textContent;
+    ev(`tauntChance=0`); ev(`dealerSay('idle')`);
+    return $('tauntBubble').textContent === before;
+  })());
+  check('dealer speaks when tauntChance is 1', (() => {
+    ev(`tauntChance=1`); ev(`dealerSay('idle')`);
+    return ev(`TAUNTS.idle.includes($('tauntBubble').textContent)`);
+  })());
+  ev(`tauntChance=0.5`);
+  // Banners: red BUST, shining golden DOUBLE DOWN, WIN! with the amount.
+  check('bust banner is red BUST', (() => {
+    const h = ev(`bannerFor({busted:true,cards:[],total:25})`);
+    return /BUST/.test(h) && /bust/.test(h);
+  })());
+  check('double-down banner is golden DOUBLE DOWN', (() => {
+    const h = ev(`bannerFor({busted:false,cards:[{},{}],total:11,doubled:true})`);
+    return /DOUBLE DOWN/.test(h) && /gold/.test(h);
+  })());
+  check('win banner shows the amount, short and clear', (() => {
+    ev(`view={phase:'settled',results:{me:{outcome:'win',payout:500,battleWinner:false}},round:{specialTotal:0,battle:false}}`);
+    const h = ev(`bannerFor({id:'me',busted:false,cards:[{},{},{}],total:20,doubled:false})`);
+    return /WIN!/.test(h) && /\+500/.test(h);
+  })());
+  // Coin rain scales with the win.
+  check('coin rain: small win rains coins', (() => {
+    ev(`$('coinLayer').innerHTML=''`);
+    const n = ev(`coinBurstFor(100)`);
+    return n >= 8 && window.document.querySelectorAll('#coinLayer .coin-fall').length === n;
+  })());
+  check('coin rain: bigger win rains more coins', (() => {
+    ev(`$('coinLayer').innerHTML=''`);
+    const small = ev(`coinBurstCount(100)`);
+    const big = ev(`coinBurstCount(1200)`);
+    return big > small && big <= 48;
+  })());
+  // Faces: sad when he loses, pain when his legs are broken.
+  check('dealer face can be sad', (() => { ev(`setDealerFace('sad')`); return $('dealerSvg').classList.contains('sad'); })());
+  check('dealer face can be in pain', (() => { ev(`setDealerFace('pain')`); return $('dealerSvg').classList.contains('pain') && !$('dealerSvg').classList.contains('sad'); })());
+  check('dealer face can be happy again', (() => { ev(`setDealerFace('happy')`); return !$('dealerSvg').classList.contains('sad') && !$('dealerSvg').classList.contains('pain'); })());
+  check('win screen holds 8s before auto-advance', ev(`WIN_HOLD_MS`) === 8000);
+  check('legs regrow after 3 minutes', ev(`LEG_REGEN_MS`) === 3 * 60 * 1000);
+  check('bat vanishes 2s after the hit', ev(`BAT_HIDE_MS`) === 2000);
 
   console.log('\n' + pass + ' passed, ' + fail + ' failed');
   process.exit(fail ? 1 : 0);
