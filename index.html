@@ -166,6 +166,7 @@ body.round-table .taunt::before{left:-8px;top:18px;transform:none;border:8px sol
 .chip.c5{background:#16a34a}.chip.c10{background:#2563eb}.chip.c20{background:#7c3aed}.chip.c40{background:#ea580c}.chip.c50{background:#dc2626}
 .chip:disabled{opacity:.35;cursor:not-allowed}
 .log{max-height:180px;overflow:auto;font-size:13.5px;line-height:1.7;color:var(--mut);border-radius:10px;padding:10px 12px}
+.log-label{font-size:12px;font-weight:800;letter-spacing:1px;color:var(--mut);margin:14px 0 4px}
 .log b{color:var(--txt)}
 .modal{position:fixed;inset:0;background:rgba(0,0,0,.7);display:flex;align-items:center;justify-content:center;z-index:50;padding:16px}
 .modal .box{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:22px;max-width:520px;width:100%;max-height:88vh;overflow:auto;position:relative}
@@ -236,7 +237,7 @@ footer{color:var(--mut);font-size:12.5px;text-align:center;margin-top:26px;line-
         <li>🎵 The main song loops every match; the battle song plays only during a Battle Bonyas round.</li>
       </ul>
     </div>
-    <footer>Black Nyack v1.3.1 — a fan-made game, just for fun.<br>
+    <footer>Black Nyack v1.4 — a fan-made game, just for fun.<br>
     Nyau and all SEGA characters are © SEGA. All credit to SEGA — the creator of this site holds no rights to Nyau or any SEGA property, and this game is not affiliated with or endorsed by SEGA.<br>
     Free play coins only — no real money. Hosted on Cloudflare Pages. Code on GitHub.</footer>
   </div>
@@ -366,6 +367,7 @@ footer{color:var(--mut);font-size:12.5px;text-align:center;margin-top:26px;line-
       <button id="btnRules2" type="button" class="ghost small">📖 Rules</button>
     </div>
     <div id="connBox" style="font-size:13px;color:var(--mut);margin-top:10px">Local game</div>
+    <div class="log-label" id="logLabel">💬 GAME LOG</div>
     <div class="log" id="logBox">Game started.</div>
   </div>
 
@@ -761,6 +763,7 @@ function applyAction(st, playerId, action){
     if(me.spectating || me.bet<=0) return {ok:false, error:'you are not in this round'};
     if(me.stood || me.busted) return {ok:false, error:'your turn is over'};
     if(type==='hit'){
+      if(bestValue(me.hand, st.round.specialTotal).total===21) return {ok:false, error:'you already have 21 — stay and take it'};
       if(me.hand.length>=MAX_CARDS) return {ok:false, error:'you already have 5 cards — the most you can hold'};
       if(!dealOne(st, me.hand, true, me.name)) return {ok:false, error:'the deck is empty'};
       const v=bestValue(me.hand, st.round.specialTotal);
@@ -777,6 +780,7 @@ function applyAction(st, playerId, action){
       return {ok:true};
     }
     if(type==='double'){
+      if(bestValue(me.hand, st.round.specialTotal).total===21) return {ok:false, error:'you already have 21 — stay and take it'};
       if(me.hand.length!==2) return {ok:false, error:'double down is only possible with exactly 2 cards'};
       if(me.stack<me.bet) return {ok:false, error:'not enough chips to double down'};
       me.stack-=me.bet; me.bet*=2; me.doubled=true;
@@ -809,9 +813,13 @@ function legalActions(st, playerId){
     return out;
   }
   if(st.phase==='playerTurns' && st.turnPlayerId===playerId && !me.stood && !me.busted){
-    if(me.hand.length<MAX_CARDS) out.push({type:'hit'});
+    // At 21 there is nothing to gain by hitting or doubling — only stay.
+    const at21=bestValue(me.hand, st.round.specialTotal).total===21;
+    if(!at21){
+      if(me.hand.length<MAX_CARDS) out.push({type:'hit'});
+      if(me.hand.length===2 && me.stack>=me.bet) out.push({type:'double'});
+    }
     out.push({type:'stay'});
-    if(me.hand.length===2 && me.stack>=me.bet) out.push({type:'double'});
     return out;
   }
   if(st.phase==='settled'){
@@ -1040,18 +1048,16 @@ let legBreaks=0, legsBroken=false, lastTauntAt=0, tauntTimer=null, legsHealTimer
 let dealerMood='happy'; // happy | sad | pain
 let faceKey='happy', faceTimer=null, bubbleHideTimer=null;
 let dieQueue=[], dieRolling=false, dieTimer=null, dieTick=null, seenRolls=0, lastDieRound=0;
+/* Nyau's lines are GENERAL trash-talk, never about a specific event. The
+   bubble is not synced to the game state, so a line about a bust, a 21 or
+   "you're still losing" would show up on the wrong screen at the wrong time.
+   So the KIND of moment only decides WHEN he speaks, never WHAT he says:
+   every line is a smug boast that is true (or funny) no matter what just
+   happened. Funny, mildly infuriating. */
 const TAUNTS={
-  idle:["Welcome to MY table. The coins are basically already mine.","I have never lost. Not once. Ask anyone. (Don't ask anyone.)","You play like my grandmother. And she is a chair.","Nice cards. Shame about the player holding them.","I deal the cards, I take the coins, I look fabulous. That's the job.","Hurry up. My ears are getting tired just watching you think."],
-  bust:["HA! Busted! Did you even LOOK at your cards?","Beautiful. Just beautiful. Another one bites the felt.","Over 21! I saw that coming from the next table.","Busted. The house thanks you for your donation."],
-  dealerWin:["The dealer wins again. Shocking. Truly shocking.","I win. You lose. The natural order is restored.","All your coins are belong to me. ...What? I said what I said."],
-  playerWin:["Twenty-one. How... original. Enjoy it. It won't happen again.","You won. Don't get used to it.","Hmph. Beginner's luck. Obviously."],
-  fiveCard:["Five cards?! ...That shouldn't be allowed. I'm checking the deck.","FIVE cards? Who taught you to play like that?"],
-  battle:["Battle Bonyas?! Ugh. FINE. One of you gets lucky. Exactly ONE.","Battle Bonyas! Don't get excited — the bonus is still basically mine."],
-  legs:["OW! MY LEGS! ...You know what? I'm still dealing. Sit down.","MY LEGS! That hurt! A lot! ...You're still losing, though.","Again?! My legs! Fine. FINE. The game goes on."],
-  healed:["My legs grew back! ...I hate this table.","Legs: back. Dignity: still missing. Carry on."],
-  battleWin:["Battle Bonyas winner! ...I hope you're happy. I'm not."]
+  general:["I'm gonna win. I always win. It's basically my job.","The coins were always mine. You're just holding them for me.","Go on, take your time. I've got all day. You don't.","I could do this in my sleep. I probably am.","You know the house always wins, right? I'm the house.","Keep the coins warm for me, will you?","I never lose. I just let you think you have a chance. For a bit.","My ears are lucky. My paws are luckier.","You're playing against ME. Let that sink in.","I deal the cards, I take the coins, I look fabulous. That's the job.","One day you'll beat me. Not today. Probably not ever.","I'm not even trying and I'm still winning.","Nice cards. Shame about the dealer.","The table loves me. The table is mine, actually.","Welcome to MY table. The coins are basically already mine.","I have never lost. Not once. Ask anyone. (Don't ask anyone.)","You play like my grandmother. And she is a chair.","Hurry up. My ears are getting tired just watching you think."]
 };
-function pickTaunt(kind){ const arr=TAUNTS[kind]||TAUNTS.idle; return arr[Math.floor(Math.random()*arr.length)]; }
+function pickTaunt(){ const arr=TAUNTS.general; return arr[Math.floor(Math.random()*arr.length)]; }
 /* The bubble only appears when he actually speaks, and goes away a few
    seconds later — most of the time there is no bubble at all. */
 function hideBubble(){ const el=$('tauntBubble'); if(el) el.classList.add('hidden'); }
@@ -1064,7 +1070,7 @@ function showBubble(){
 function dealerSay(kindOrText, chance){
   if(Math.random()>=(chance===undefined?tauntChance:chance)) return; // most of the time he just stays quiet
   const el=$('tauntBubble'); if(!el) return;
-  el.textContent=(TAUNTS[kindOrText]?pickTaunt(kindOrText):kindOrText);
+  el.textContent=pickTaunt(); // the moment only decides WHEN he speaks; the line is always general
   lastTauntAt=Date.now();
   showBubble();
 }
@@ -1104,7 +1110,9 @@ function runNextDieRoll(){
   dieRolling=true;
   showDie();
   el.classList.add('rolling');
-  dieTick=setInterval(()=>setDieFace(Math.floor(Math.random()*3)), DIE_TICK_MS);
+  // the tumble flickers through the die's real six faces: two blank sides
+  // worth 0, two 1s, two 2s — so a blank face comes up as often as a 1 or a 2
+  dieTick=setInterval(()=>setDieFace(SPECIAL_DIE_FACES[Math.floor(Math.random()*SPECIAL_DIE_FACES.length)]), DIE_TICK_MS);
   clearTimeout(dieTimer);
   dieTimer=setTimeout(()=>landDie(face), DIE_ROLL_MS);
 }
@@ -1253,10 +1261,82 @@ function myCardHtml(c, idx, p){
   }
   return cardHtml(c, true);
 }
+/* ---- the settle reveal: the round is NOT instant. When the round settles,
+   the dealer draws his cards one by one (one flip per DEALER_REVEAL_MS),
+   then everyone gets SETTLE_LOOK_MS to look at the finished hands, then
+   the big win text appears, and only then — WIN_DIALOG_DELAY_MS later —
+   does the pop-up open. Until the results show, the dealer total, the
+   banners, the log's settle lines and the Next round button all stay
+   hidden, so nothing spoils the reveal. ---- */
+const DEALER_REVEAL_MS=800;    // the dealer reveals one card at a time, this long apart
+const SETTLE_LOOK_MS=1000;     // a second to look at the cards before the result shows
+const WIN_DIALOG_DELAY_MS=900; // the big win text shows first, then the pop-up opens
+let settleRevealFor=0, dealerRevealCount=0, resultsShown=false, dialogReady=false;
+let advanceScheduledFor=0; // the round the auto-advance hold was scheduled for
+let revealTimer=null, lookTimer=null, dialogTimer=null, advanceTimer=null;
+function clearRevealTimers(){
+  clearTimeout(revealTimer); clearTimeout(lookTimer); clearTimeout(dialogTimer); clearTimeout(advanceTimer);
+  revealTimer=null; lookTimer=null; dialogTimer=null; advanceTimer=null;
+}
+function resetRevealState(){
+  settleRevealFor=0; dealerRevealCount=0; resultsShown=false; dialogReady=false;
+  advanceScheduledFor=0;
+  clearRevealTimers();
+}
+/* one step of the reveal: flip the next dealer card, or — when they are all
+   showing — hand off to the look pause. Timers call this; tests call it
+   directly to drive the sequence without waiting. */
+function advanceDealerReveal(){
+  if(!view||view.phase!=='settled'||settleRevealFor!==view.roundNumber) return;
+  if(dealerRevealCount<view.dealer.cardCount){
+    dealerRevealCount++;
+    render();
+    scheduleRevealStep();
+  } else {
+    clearTimeout(lookTimer);
+    lookTimer=setTimeout(showSettleResults, SETTLE_LOOK_MS);
+  }
+}
+function scheduleRevealStep(){
+  clearTimeout(revealTimer);
+  revealTimer=setTimeout(advanceDealerReveal, DEALER_REVEAL_MS);
+}
+/* the look pause is over: show the results (totals, banners, status). */
+function showSettleResults(){
+  if(!view||view.phase!=='settled'||settleRevealFor!==view.roundNumber) return;
+  resultsShown=true;
+  render();
+  clearTimeout(dialogTimer);
+  dialogTimer=setTimeout(openSettleDialog, WIN_DIALOG_DELAY_MS);
+}
+/* the big win text has been up a beat: now the pop-up may open. */
+function openSettleDialog(){
+  if(!view||view.phase!=='settled'||settleRevealFor!==view.roundNumber) return;
+  dialogReady=true;
+  // local games auto-advance WIN_HOLD_MS after the results are fully shown —
+  // the hold starts here, not at the settle, so the reveal does not eat it.
+  // (Scheduled even when the local player sat the round out: then no pop-up
+  // opens for them, but the round still has to move on.)
+  if(playMode==='local' && advanceScheduledFor!==view.roundNumber){
+    advanceScheduledFor=view.roundNumber;
+    clearTimeout(advanceTimer);
+    const gid=gameId;
+    advanceTimer=setTimeout(()=>{ if(gid===gameId&&fullState&&fullState.phase==='settled') doLocalAction({type:'nextRound'}); }, WIN_HOLD_MS);
+  }
+  render();
+}
+function startDealerReveal(){
+  settleRevealFor=view.roundNumber;
+  dealerRevealCount=1; // the up-card is already showing; the hole card flips first
+  resultsShown=false; dialogReady=false;
+  clearRevealTimers();
+  scheduleRevealStep();
+}
+
 function bannerFor(p){
   const settled=view&&view.phase==='settled';
   if(p.busted) return '<div class="banner bust">BUST</div>';
-  if(settled && view.results && view.results[p.id]){
+  if(settled && resultsShown && view.results && view.results[p.id]){
     const r=view.results[p.id];
     if(r.outcome==='win'){
       if(r.battleWinner) return '<div class="banner battle">⚔️ BATTLE BONYAS!</div><div class="banner win" style="top:64%">WIN! +'+r.payout+'</div>';
@@ -1274,6 +1354,16 @@ function bannerFor(p){
   return '';
 }
 function seatColor(seat){ return SEAT_COLORS[(seat||0)%SEAT_COLORS.length]; }
+
+/* ---- what the local player may press on their turn (mirrors the engine's
+   legalActions, so the buttons can never offer a move the host would refuse).
+   At 21 there is nothing to gain: Hit and Double Down are disabled, Stay is
+   the only move. ---- */
+function actionsFor(me){
+  if(!me) return {hit:false, dbl:false};
+  const at21=(me.total===21);
+  return {hit: me.cards.length<MAX_CARDS && !at21, dbl: me.cards.length===2 && me.stack>=me.bet && !at21};
+}
 
 /* ---- render: everything on the table comes from the filtered view ---- */
 let prevPhase='', prevBusted=false, prevFive=false;
@@ -1300,19 +1390,25 @@ function render(){
   prevBusted=!!(me&&me.busted);
   prevFive=!!(me&&me.cards&&me.cards.length>=5);
 
+  // a fresh settle starts the reveal: the dealer flips his cards one by one
+  if(settled && settleRevealFor!==view.roundNumber) startDealerReveal();
+
   /* status */
   let status='';
   if(view.phase==='over'){ status='🏆 Game over — everyone left.'; }
   else if(settled){
-    const wins=view.results?Object.keys(view.results).filter(id=>view.results[id].outcome==='win').map(id=>{ const p=view.players.find(x=>x.id===id); return p?p.name:id; }):[];
-    const bw=view.round&&view.round.battleWinnerId?view.players.find(x=>x.id===view.round.battleWinnerId):null;
-    status=wins.length?('🏆 Round '+view.roundNumber+' over — '+wins.join(' & ')+' beat the dealer'+(bw?' — ⚔️ '+bw.name+' takes the Battle Bonyas bonus!':'')):'😤 Round '+view.roundNumber+' over — the dealer takes it. Nyau is insufferable about it.';
+    if(!resultsShown){ status='🎩 Dealer is revealing his cards…'; }
+    else {
+      const wins=view.results?Object.keys(view.results).filter(id=>view.results[id].outcome==='win').map(id=>{ const p=view.players.find(x=>x.id===id); return p?p.name:id; }):[];
+      const bw=view.round&&view.round.battleWinnerId?view.players.find(x=>x.id===view.round.battleWinnerId):null;
+      status=wins.length?('🏆 Round '+view.roundNumber+' over — '+wins.join(' & ')+' beat the dealer'+(bw?' — ⚔️ '+bw.name+' takes the Battle Bonyas bonus!':'')):'😤 Round '+view.roundNumber+' over — the dealer takes it. Nyau is insufferable about it.';
+    }
   }
   else if(view.phase==='betting'){
     status=isSpec?'👀 Spectating — you\'re up for the next round. Stay on this screen: you\'ll be offered entry at the next betting round, no leaving and rejoining needed.':'🎲 Round '+view.roundNumber+' — place your bet (5 / 10 / 20 / 40 / 50) or spectate.';
   }
   else if(view.phase==='playerTurns'){
-    status=isMyTurn?'🃏 Your turn — Hit, Stay, or Double Down (2 cards only).':(turnP?turnP.name+' is playing…':'');
+    status=isMyTurn?(me&&me.total===21?'🃏 Your turn — 21 in hand! Stay and lock it in.':'🃏 Your turn — Hit, Stay, or Double Down (2 cards only).'):(turnP?turnP.name+' is playing…':'');
   }
   else if(view.phase==='dealerTurn'){ status='🎩 Dealer is playing…'; }
   else { status='Waiting…'; }
@@ -1333,12 +1429,13 @@ function render(){
   if(view.roundNumber!==lastDieRound){ lastDieRound=view.roundNumber; hideDie(); dieQueue.length=0; clearTimeout(dieTimer); clearInterval(dieTick); dieRolling=false; }
   detectSpecialRolls();
 
-  /* dealer hand (center) */
+  /* dealer hand (center) — during the reveal only the first
+     dealerRevealCount cards are face-up; the rest stay face-down */
   const d=view.dealer;
-  const dCards=d.cards.map(c=>cardHtml(c,true)).join('');
+  const dCards=d.cards.map((c,i)=>(settled&&!resultsShown&&i>=dealerRevealCount)?{hidden:true}:c).map(c=>cardHtml(c,true)).join('');
   let dLabel='DEALER';
   let dBanner='';
-  if(settled){
+  if(settled&&resultsShown){
     if(d.total!==null&&d.total!==undefined){
       dLabel='DEALER — '+d.total+(d.total>21?' BUST':'');
       if(d.total>21) dBanner='<div class="banner bust">BUST</div>';
@@ -1357,7 +1454,7 @@ function render(){
     const dEl=document.createElement('div');
     dEl.className='seat'+(active?' active':'');
     dEl.setAttribute('data-pid', p.id);
-    const totalLine=settled?(p.total!==null&&p.total!==undefined?(' • <b>'+p.total+'</b>'):''):(p.busted?' • <b>BUST</b>':'');
+    const totalLine=(settled&&resultsShown)?(p.total!==null&&p.total!==undefined?(' • <b>'+p.total+'</b>'):''):(p.busted?' • <b>BUST</b>':'');
     dEl.innerHTML='<div class="sname"><span class="dot" style="background:'+seatColor(p.seat)+'"></span>'+esc(p.name)+(p.isBot?' 🤖':'')+' <span class="tag2">• '+p.stack+' coins'+(p.bet>0?' • bet '+p.bet:'')+(p.doubled?' • doubled':'')+(active?' • to move':'')+'</span></div>'+
       '<div class="hand-wrap"><div class="scards" data-pid="'+p.id+'">'+p.cards.map(c=>miniCardHtml(c)).join('')+'</div>'+bannerFor(p)+'</div>'+
       (totalLine?'<div class="hand-total">Hand'+totalLine+'</div>':'');
@@ -1400,22 +1497,33 @@ function render(){
   /* action panel */
   show('actionBox', !!isMyTurn);
   if(isMyTurn){
-    $('actionPrompt').textContent='Your turn — '+me.total+' in hand. Hit, Stay, or Double Down?';
-    $('btnHit').disabled=!(me.cards.length<5);
-    $('btnDouble').disabled=!(me.cards.length===2&&me.stack>=me.bet);
-    $('btnDouble').title=(me.cards.length===2&&me.stack>=me.bet)?'Double your bet ('+me.bet+' more) for exactly one more card.':'Double down needs exactly 2 cards and enough chips to match your bet.';
+    const acts=actionsFor(me);
+    $('actionPrompt').textContent=me.total===21
+      ?'Your turn — 21 in hand! Stay and lock it in.'
+      :'Your turn — '+me.total+' in hand. Hit, Stay, or Double Down?';
+    $('btnHit').disabled=!acts.hit;
+    $('btnDouble').disabled=!acts.dbl;
+    $('btnDouble').title=acts.dbl?'Double your bet ('+me.bet+' more) for exactly one more card.'
+      :(me.total===21?'You already have 21 — stay and take it.':'Double down needs exactly 2 cards and enough chips to match your bet.');
   }
 
-  /* next round / rebuy */
-  show('btnNextRound', settled&&(playMode==='local'||isHost));
-  show('btnRebuy', settled&&me&&me.stack===0&&!isSpec);
-  show('winNextRound', settled&&(playMode==='local'||isHost));
+  /* next round / rebuy — only once the results are showing, so nobody can
+     skip the reveal */
+  show('btnNextRound', settled&&resultsShown&&(playMode==='local'||isHost));
+  show('btnRebuy', settled&&resultsShown&&me&&me.stack===0&&!isSpec);
+  show('winNextRound', settled&&resultsShown&&(playMode==='local'||isHost));
 
-  /* log */
-  $('logBox').innerHTML=(view.log||[]).map(l=>'<div>'+esc(l)+'</div>').join('');
+  /* log — during the reveal the settle lines stay hidden, or they would give
+     the result away before the cards do. The settle adds exactly one dealer
+     line plus one line per player who played (they are the ones holding
+     cards now). */
+  const settleLines=(settled&&!resultsShown)?1+view.players.filter(p=>!p.left&&p.cardCount>0).length:0;
+  const logLines=(view.log||[]);
+  const shownLog=settleLines>0?logLines.slice(0, Math.max(0, logLines.length-settleLines)):logLines;
+  $('logBox').innerHTML=shownLog.map(l=>'<div>'+esc(l)+'</div>').join('');
   const logEl=$('logBox'); logEl.scrollTop=logEl.scrollHeight;
 
-  if(settled) showWinDialog();
+  if(settled&&dialogReady) showWinDialog();
   else show('winModal', false);
   updateDealerFace();
   ensureMusic();
@@ -1544,7 +1652,7 @@ function startLocalGame(names, seed, opts){
   myId=fullState.players[0].id;
   playMode='local'; isHost=true; isSpectator=false; leaving=false;
   gameId++;
-  winDialogShownFor=0; lastRoundSeen=0; prevPhase=''; prevBusted=false; prevFive=false;
+  winDialogShownFor=0; lastRoundSeen=0; prevPhase=''; prevBusted=false; prevFive=false; resetRevealState();
   show('menuScreen',false); show('lobbyScreen',false); show('gameScreen',true);
   $('connBox').textContent='Local game vs bots — no network needed. The dealer is already being rude.';
   startMatchMusic();
@@ -1554,13 +1662,7 @@ function scheduleBots(delay){
   clearTimeout(botTimer);
   if(!fullState) return;
   if(playMode==='online'&&!isHost) return;
-  if(fullState.phase==='settled'){
-    if(playMode==='local'){
-      const gid=gameId;
-      botTimer=setTimeout(()=>{ if(gid===gameId&&fullState&&fullState.phase==='settled') doLocalAction({type:'nextRound'}); }, WIN_HOLD_MS);
-    }
-    return;
-  }
+  if(fullState.phase==='settled') return; // the pop-up opens the auto-advance hold (openSettleDialog), not the settle
   if(fullState.phase==='over') return;
   const gid=gameId;
   const wait=(delay===undefined)?pace(BOT_PACE.thinkMin,BOT_PACE.thinkMax):delay;
@@ -1621,6 +1723,7 @@ function leaveMatch(){
 }
 function backToMenu(){
   stopHeartbeat(); stopHelloLoop(); stopTauntTimer(); clearTimeout(botTimer); botTimer=null;
+  resetRevealState(); // no reveal timers may outlive the match
   leaving=false;
   try{ if(peer) peer.destroy(); }catch(e){}
   peer=null; conn=null; conns={}; clients={}; spectators={}; disconnectedByClient={}; seatByClient={};
@@ -1824,7 +1927,7 @@ function startHostedGame(){
   myId=seatIds[0];
   isHost=true; playMode='online'; isSpectator=false; leaving=false;
   gameId++;
-  winDialogShownFor=0; lastRoundSeen=0; prevPhase=''; prevBusted=false; prevFive=false;
+  winDialogShownFor=0; lastRoundSeen=0; prevPhase=''; prevBusted=false; prevFive=false; resetRevealState();
   show('lobbyScreen',false); show('menuScreen',false); show('gameScreen',true);
   $('connBox').innerHTML='Lobby <b>'+roomCode+'</b> — you are the host. Bets are per-player (5 / 10 / 20 / 40 / 50) or spectate. Bots run on your device.';
   startMatchMusic();

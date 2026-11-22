@@ -45,6 +45,7 @@ function check(name, cond, extra) {
     const kids=[...$('gameScreen').children];
     return kids.indexOf($('logBox')) > kids.indexOf($('actionBox')) && kids.indexOf($('logBox')) > kids.indexOf($('betBox'));
   })());
+  check('log has a visible GAME LOG label right above it', !!$('logLabel') && $('logLabel').textContent.includes('GAME LOG') && [...$('gameScreen').children].indexOf($('logLabel')) === [...$('gameScreen').children].indexOf($('logBox')) - 1);
   check('special box has a die, hidden until a ★ is dealt', !!$('specialDie') && $('specialDieWrap').classList.contains('hidden'));
   check('break-legs button sits next to Nyau inside the table', $('dealerZone').contains($('breakLegsBtn')) && $('breakLegsBtn').classList.contains('break-mini'));
   check('break-legs button exists', !!$('breakLegsBtn'));
@@ -153,9 +154,27 @@ function check(name, cond, extra) {
   }
   check('round settles', ev(`view.phase`) === 'settled');
   check('results exist for me', !!ev(`view.results`) && !!ev(`view.results[myId]`));
-  check('WIN dialog shows at settle', !$('winModal').classList.contains('hidden'));
+  // v1.4: the settle is a reveal, not an instant — the dealer flips one card
+  // at a time, then a second to look, then the win text, then the pop-up.
+  check('dealer shows only his up-card at first', (() => {
+    const cards = window.document.querySelectorAll('#dealerHand .card-big');
+    const backs = window.document.querySelectorAll('#dealerHand .card-big.back');
+    return cards.length === ev(`view.dealer.cardCount`) && backs.length === cards.length - 1;
+  })());
+  check('WIN dialog does NOT open at settle', $('winModal').classList.contains('hidden'));
+  check('Next round does NOT show during the reveal', $('btnNextRound').classList.contains('hidden'));
+  check('log hides the settle lines during the reveal', !$('logBox').textContent.includes('wins') && !$('logBox').textContent.includes('loses'));
+  // Drive the reveal without waiting on real timers: flip the dealer cards
+  // one by one, then the look pause, then the win text, then the pop-up.
+  ev(`while(dealerRevealCount<view.dealer.cardCount) advanceDealerReveal();`);
+  check('all dealer cards are showing after the reveal', window.document.querySelectorAll('#dealerHand .card-big.back').length === 0);
+  ev(`showSettleResults()`);
+  check('dealer total is revealed after the look', /DEALER — \d+/.test($('dealerHand').textContent));
+  check('WIN dialog does NOT open before the win text has had its beat', $('winModal').classList.contains('hidden'));
+  ev(`openSettleDialog()`);
+  check('WIN dialog shows after the reveal', !$('winModal').classList.contains('hidden'));
   check('WIN dialog shows the acquired total', /Acquired/.test($('winBody').textContent));
-  check('dealer total is revealed at settle', /DEALER/.test($('dealerHand').textContent));
+  ev(`clearRevealTimers()`); // no stray reveal timers may fire into later scenarios
   $('winClose').click();
   check('WIN dialog closes', $('winModal').classList.contains('hidden'));
   // Next round via the real button.
@@ -182,6 +201,10 @@ function check(name, cond, extra) {
   }
   check('spectated round settles', ev(`view.phase`) === 'settled');
   check('no WIN dialog for a spectator', $('winModal').classList.contains('hidden'));
+  // the round still has to be revealed before it can move on
+  ev(`while(dealerRevealCount<view.dealer.cardCount) advanceDealerReveal();`);
+  ev(`showSettleResults(); openSettleDialog(); clearRevealTimers();`);
+  check('Next round shows once the results are out', !$('btnNextRound').classList.contains('hidden'));
   $('btnNextRound').click();
   check('spectator is offered entry again next round', ev(`view.phase`) === 'betting' && !$('betBox').classList.contains('hidden'));
 
@@ -197,7 +220,10 @@ function check(name, cond, extra) {
   check('dealer legs show broken', $('dealerLegs').classList.contains('broken'));
   check('bat swung', $('bat').classList.contains('swing'));
   check('dealer face shows pain while legs are broken', $('dealerSvg').classList.contains('pain'));
-  check('dealer complains in the taunt bubble', /legs/i.test($('tauntBubble').textContent));
+  check('dealer still talks smack when his legs are broken — a general line, never a legs line', (() => {
+    const t = $('tauntBubble').textContent;
+    return ev(`TAUNTS.general.includes(${JSON.stringify(t)})`) && !/legs/i.test(t);
+  })());
   ev(`hideBat()`);
   check('bat disappears after the hit (hideBat)', !$('bat').classList.contains('swing'));
   check('legs counter is a lifetime total even after healing', (() => {
@@ -243,7 +269,7 @@ function check(name, cond, extra) {
   })());
   check('dealer speaks when tauntChance is 1', (() => {
     ev(`tauntChance=1`); ev(`dealerSay('idle')`);
-    return ev(`TAUNTS.idle.includes($('tauntBubble').textContent)`);
+    return ev(`TAUNTS.general.includes($('tauntBubble').textContent)`);
   })());
   check('bubble appears when he speaks', !$('tauntBubble').classList.contains('hidden'));
   check('bubble goes away (hideBubble)', (() => {
@@ -262,9 +288,16 @@ function check(name, cond, extra) {
   })());
   check('win banner shows the amount, short and clear', (() => {
     ev(`view={phase:'settled',results:{me:{outcome:'win',payout:500,battleWinner:false}},round:{specialTotal:0,battle:false}}`);
+    ev(`resultsShown=true`); // the banner only shows once the reveal is done
     const h = ev(`bannerFor({id:'me',busted:false,cards:[{},{},{}],total:20,doubled:false})`);
     return /WIN!/.test(h) && /\+500/.test(h);
   })());
+  check('win banner stays hidden during the reveal', (() => {
+    ev(`resultsShown=false`);
+    const h = ev(`bannerFor({id:'me',busted:false,cards:[{},{},{}],total:20,doubled:false})`);
+    return !/WIN!/.test(h);
+  })());
+  ev(`resultsShown=true`);
   // Coin rain scales with the win.
   check('coin rain: small win rains coins', (() => {
     ev(`$('coinLayer').innerHTML=''`);
@@ -310,6 +343,73 @@ function check(name, cond, extra) {
     return $('specialDieWrap').classList.contains('hidden');
   })());
   check('die tumbles about 0.75s before landing', ev(`DIE_ROLL_MS`) === 750);
+
+  /* ---- scenario 8: v1.4 — general taunts, no Hit/Double at 21, the
+     dealer reveal, the six-sided die ---- */
+  // Taunts: one general pool, no line about any specific event — the bubble
+  // is not synced to the game state, so an event line would show up on the
+  // wrong screen at the wrong time.
+  check('taunts are one general pool', JSON.stringify(ev(`Object.keys(TAUNTS)`)) === '["general"]');
+  check('taunt pool has plenty of lines', ev(`TAUNTS.general.length`) >= 10);
+  check('no taunt line mentions a game event', !/bust|21|five card|double down|special|battle|legs|losing|you lost|you won|winner|blackjack/i.test(ev(`TAUNTS.general.join(' ')`)));
+  check('a bust moment still speaks a general line', (() => {
+    ev(`tauntChance=1`); ev(`dealerSay('bust')`);
+    return ev(`TAUNTS.general.includes($('tauntBubble').textContent)`);
+  })());
+  check('a legs moment still speaks a general line', (() => {
+    ev(`dealerSay('legs')`);
+    return ev(`TAUNTS.general.includes($('tauntBubble').textContent)`);
+  })());
+  ev(`tauntChance=0.35`);
+  // No Hit / Double Down at 21 (UI helper).
+  check('actionsFor: at 21 neither Hit nor Double is offered', (() => {
+    const a = ev(`actionsFor({cards:[{},{}],total:21,stack:1000,bet:10})`);
+    return a.hit === false && a.dbl === false;
+  })());
+  check('actionsFor: at 20 both are offered', (() => {
+    const a = ev(`actionsFor({cards:[{},{}],total:20,stack:1000,bet:10})`);
+    return a.hit === true && a.dbl === true;
+  })());
+  check('Hit and Double Down are disabled on 21 in the real panel', (() => {
+    window.eval(`startLocalGame([{name:'Test',isBot:false},{name:'Bot',isBot:true}], 99, {forceBattle:false})`);
+    ev(`myId='me'`);
+    ev(`view={phase:'playerTurns',turnPlayerId:'me',roundNumber:1,round:{specialTotal:0,battle:false},version:1,deckCount:40,results:null,log:['Black Nyack — round 1.'],dealer:{cardCount:2,total:null,cards:[{rank:'9',suit:'♣',special:false,faceUp:true},{hidden:true}]},players:[{id:'me',name:'Test',isBot:false,seat:0,stack:1000,bet:10,doubled:false,stood:false,busted:false,spectating:false,left:false,cardCount:2,total:21,cards:[{rank:'A',suit:'♠',special:false,faceUp:true},{rank:'K',suit:'♥',special:false,faceUp:true}]},{id:'bot',name:'Ada',isBot:true,seat:1,stack:1000,bet:10,doubled:false,stood:false,busted:false,spectating:false,left:false,cardCount:2,total:null,cards:[{hidden:true},{hidden:true}]}]}`);
+    ev(`render()`);
+    return $('btnHit').disabled && $('btnDouble').disabled && /Stay/.test($('actionPrompt').textContent) && /21 in hand/.test($('statusBox').textContent);
+  })());
+  // The dealer reveal, driven end to end on a crafted settled round.
+  check('reveal: dealer flips one card at a time', (() => {
+    ev(`view={phase:'settled',turnPlayerId:null,roundNumber:1,round:{specialTotal:0,battle:false,battleWinnerId:null},version:1,deckCount:40,results:{me:{outcome:'win',payout:500,breakdown:{win:200,blacknyack:300,fiveCard:0,special:0,battle:0},total:21,handClass:'blacknyack',specials:0,bet:100,battleWinner:false}},log:['Black Nyack — round 1.','Test bets 100.','Dealer stands on 19.','Test wins 500 (21)'],dealer:{cardCount:3,total:19,cards:[{rank:'9',suit:'♣',special:false,faceUp:true},{rank:'K',suit:'♥',special:false,faceUp:true},{rank:'5',suit:'♦',special:false,faceUp:true}]},players:[{id:'me',name:'Test',isBot:false,seat:0,stack:1500,bet:0,doubled:false,stood:true,busted:false,spectating:false,left:false,cardCount:2,total:21,cards:[{rank:'A',suit:'♠',special:false,faceUp:true},{rank:'K',suit:'♥',special:false,faceUp:true}]},{id:'bot',name:'Ada',isBot:true,seat:1,stack:900,bet:0,doubled:false,stood:true,busted:false,spectating:false,left:false,cardCount:2,total:19,cards:[{rank:'9',suit:'♠',special:false,faceUp:true},{rank:'K',suit:'♦',special:false,faceUp:true}]}]}`);
+    ev(`render()`);
+    const cards = window.document.querySelectorAll('#dealerHand .card-big');
+    const backs = window.document.querySelectorAll('#dealerHand .card-big.back');
+    return cards.length === 3 && backs.length === 2
+      && !$('logBox').textContent.includes('wins 500')
+      && !/WIN!/.test($('mySeat').textContent)
+      && $('winModal').classList.contains('hidden')
+      && /revealing his cards/.test($('statusBox').textContent);
+  })());
+  check('reveal: the dealer cards flip one by one', (() => {
+    ev(`advanceDealerReveal()`); // hole card flips
+    const after1 = window.document.querySelectorAll('#dealerHand .card-big.back').length;
+    ev(`advanceDealerReveal()`); // drawn card flips
+    const after2 = window.document.querySelectorAll('#dealerHand .card-big.back').length;
+    return after1 === 1 && after2 === 0;
+  })());
+  check('reveal: the look pause shows the results but not the pop-up', (() => {
+    ev(`showSettleResults()`);
+    return /DEALER — 19/.test($('dealerHand').textContent) && /WIN!/.test($('mySeat').textContent)
+      && /Round 1 over/.test($('statusBox').textContent) && $('winModal').classList.contains('hidden');
+  })());
+  check('reveal: the pop-up opens after the win text', (() => {
+    ev(`openSettleDialog()`);
+    return !$('winModal').classList.contains('hidden') && /Acquired/.test($('winBody').textContent);
+  })());
+  check('reveal: the log shows the settle lines once the results are out', $('logBox').textContent.includes('wins 500'));
+  ev(`clearRevealTimers()`);
+  // The die is a real six-sided die: two blank sides worth 0, two 1s, two 2s.
+  check('die is a real six-sided die', JSON.stringify(ev(`SPECIAL_DIE_FACES`)) === '[0,0,1,1,2,2]');
+  check('die has two blank sides worth 0', ev(`SPECIAL_DIE_FACES.filter(f=>f===0).length`) === 2);
 
   console.log('\n' + pass + ' passed, ' + fail + ' failed');
   process.exit(fail ? 1 : 0);

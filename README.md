@@ -4,14 +4,38 @@
 in the same format as Wellington and Five-Card Poker: a single `index.html`, no sign-up,
 no cost, multiplayer peer-to-peer via PeerJS, hosted free on Cloudflare Pages.
 
-> **v1.3.1:** the secret round is **Battle Bonyas** again — Bonyas is a pun on
-> bonus, not the dealer's name. Nyau is just the dealer. All tests green:
+> **v1.4:** Nyau talks general smack only, the dealer reveals his cards one
+> by one, and you can't Hit or Double Down on 21. All tests green:
 > `npm test` (see [Tests](#tests)).
 
 - **Repo:** https://github.com/HMJ-ONES/black_nyack
 - **Live:** https://black-nyack.pages.dev *(connected + verified Nov 22 — home page and both songs serve 200)*
 - **Players:** 1–5 at a round table, dealer in the middle (mobile sideways = same round table as PC)
 - **Currency:** casino coins — free play coins only, no real money
+
+## v1.4 — The reveal, general smack, no Hit on 21 (Nov 22)
+
+- **The settle is a reveal, not an instant** — when a round ends, the dealer
+  flips his cards one by one (0.8s apart), then everyone gets a second to
+  look at the finished hands, then the big win text appears, and only then
+  does the pop-up open. Until the results show, the dealer total, the
+  banners, the settle lines in the log and the Next round button all stay
+  hidden, so nothing spoils the reveal. The 8s auto-advance hold now starts
+  when the results are fully shown, not at the settle.
+- **Nyau talks general smack only** — his bubble lines never mention a
+  specific event (no bust, no 21, no "you're still losing", no legs, no
+  battle). The bubble isn't synced to the game state, so an event line would
+  show up on the wrong screen at the wrong time. One pool of 18 lines —
+  "I'm gonna win", "The coins were always mine" — funny, mildly
+  infuriating, true no matter what just happened.
+- **No Hit or Double Down on 21** — at 21 the only move is Stay. Enforced in
+  the engine (Hit/Double are refused, and bots never do it either) and in the
+  UI (both buttons disabled, prompt says "Stay and lock it in").
+- **The die is a real six-sided die** — its faces are 0, 0, 1, 1, 2, 2, so
+  two blank sides are worth 0. The tumble now flickers through the six real
+  faces instead of three values.
+- **GAME LOG label** — the log panel has a visible "💬 GAME LOG" heading that
+  stays put above the scrolling lines.
 
 ## v1.3 — The die really rolls (Nov 22)
 

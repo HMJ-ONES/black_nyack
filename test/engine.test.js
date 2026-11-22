@@ -75,6 +75,33 @@ console.log('Constants:');
   check('BATTLE_ODDS is 0.12', E.BATTLE_ODDS === 0.12);
   check('DEALER_STAND is 17', E.DEALER_STAND === 17);
   check('special die faces are 0,0,1,1,2,2', JSON.stringify(E.SPECIAL_DIE_FACES) === '[0,0,1,1,2,2]');
+  check('die has 6 faces', E.SPECIAL_DIE_FACES.length === 6);
+  check('die has exactly two blank sides worth 0', E.SPECIAL_DIE_FACES.filter(f => f === 0).length === 2);
+  check('die has exactly two 1s and two 2s', E.SPECIAL_DIE_FACES.filter(f => f === 1).length === 2 && E.SPECIAL_DIE_FACES.filter(f => f === 2).length === 2);
+}
+
+console.log('No Hit / Double Down at 21:');
+{
+  function at21Game() {
+    const st = mkGame(2, 42, { forceBattle: false });
+    betAll(st, { p0: 10, p1: 10 });
+    setHand(st, 'p0', [C('A', '♠'), C('K', '♥')]); // 21
+    st.phase = 'playerTurns'; st.turnPlayerId = 'p0';
+    return st;
+  }
+  const st = at21Game();
+  const acts = E.legalActions(st, 'p0').map(a => a.type);
+  check('at 21, legal actions are only stay (+leave)', JSON.stringify(acts) === '["leave","stay"]', acts.join(','));
+  check('at 21, Hit is refused', E.applyAction(at21Game(), 'p0', { type: 'hit' }).ok === false);
+  check('at 21, Double Down is refused', E.applyAction(at21Game(), 'p0', { type: 'double' }).ok === false);
+  check('at 21, Stay still works', E.applyAction(at21Game(), 'p0', { type: 'stay' }).ok === true);
+  const st20 = mkGame(2, 42, { forceBattle: false });
+  betAll(st20, { p0: 10, p1: 10 });
+  setHand(st20, 'p0', [C('K', '♠'), C('Q', '♥')]); // 20
+  st20.phase = 'playerTurns'; st20.turnPlayerId = 'p0';
+  const acts20 = E.legalActions(st20, 'p0').map(a => a.type);
+  check('at 20, Hit and Double Down are still legal', acts20.includes('hit') && acts20.includes('double'), acts20.join(','));
+  check('at 20, Hit is accepted', E.applyAction(st20, 'p0', { type: 'hit' }).ok === true);
 }
 
 console.log('Deck:');
