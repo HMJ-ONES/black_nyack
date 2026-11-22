@@ -464,6 +464,32 @@ function check(name, cond, extra) {
     return !$('specialDieWrap').classList.contains('hidden') && ev(`dieRolling`) === true && $('specialSub').textContent === 'Every ★ is worth 0';
   })());
 
+  /* ---- scenario 11: v1.6 — hit / double-down cards come folded, the
+     dealer play opens them automatically for everyone ---- */
+  check('a bot hit card comes folded (a back in its seat)', (() => {
+    window.eval(`startLocalGame([{name:'Test',isBot:false},{name:'Bot',isBot:true}], 42, {})`);
+    [...window.document.querySelectorAll('#betChips .chip')].find(b => b.textContent.trim() === '20').click();
+    ev(`applyAction(fullState, 'p1', botChooseAction(fullState, 'p1'))`);
+    ev(`refreshView(); render();`);
+    // rig the bot to 12 so it hits, and rig the deck top so the hit is a 2 (no bust)
+    ev(`fullState.players[1].hand=[{id:'b1',rank:'7',suit:'♠',special:false,faceUp:true},{id:'b2',rank:'5',suit:'♥',special:false,faceUp:false}]; fullState.deck.push({id:'2♣-rig',rank:'2',suit:'♣'}); refreshView(); render();`);
+    $('btnStay').click(); // my turn ends; the bot acts next
+    ev(`applyAction(fullState, 'p1', botChooseAction(fullState, 'p1'))`);
+    ev(`refreshView(); render();`);
+    const seat = window.document.querySelector('.seat[data-pid="p1"]');
+    return seat && seat.querySelectorAll('.mini-card').length === 3 && seat.querySelectorAll('.mini-card.back').length === 2;
+  })());
+  check('the dealer play opens every folded card automatically', (() => {
+    // rig the bot to 21 with two folded cards, then let it stay — the dealer plays next
+    ev(`fullState.players[1].hand=[{id:'b1',rank:'5',suit:'♠',special:false,faceUp:true},{id:'b2',rank:'6',suit:'♥',special:false,faceUp:false},{id:'b3',rank:'K',suit:'♦',special:false,faceUp:false}]; refreshView(); render();`);
+    ev(`applyAction(fullState, 'p1', botChooseAction(fullState, 'p1'))`);
+    ev(`refreshView(); render();`);
+    const seat = window.document.querySelector('.seat[data-pid="p1"]');
+    const ok = ev(`view.phase`) === 'settled' && seat && seat.querySelectorAll('.mini-card').length === 3 && seat.querySelectorAll('.mini-card.back').length === 0;
+    ev(`clearRevealTimers()`);
+    return ok;
+  })());
+
   console.log('\n' + pass + ' passed, ' + fail + ' failed');
   process.exit(fail ? 1 : 0);
 })().catch(e => { console.error('UI TEST CRASHED:', e); process.exit(1); });

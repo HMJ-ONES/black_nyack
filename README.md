@@ -4,13 +4,27 @@
 in the same format as Wellington and Five-Card Poker: a single `index.html`, no sign-up,
 no cost, multiplayer peer-to-peer via PeerJS, hosted free on Cloudflare Pages.
 
-> **v1.5.1:** the die can never miss a roll again, and Battle Bonyas is a
-> little rarer (8%). All tests green: `npm test` (see [Tests](#tests)).
+> **v1.6:** hit and double-down cards come folded, and the dealer play
+> opens everyone's cards automatically. All tests green: `npm test` (see
+> [Tests](#tests)).
 
 - **Repo:** https://github.com/HMJ-ONES/black_nyack
 - **Live:** https://black-nyack.pages.dev *(connected + verified Nov 22 — home page and both songs serve 200)*
 - **Players:** 1–5 at a round table, dealer in the middle (mobile sideways = same round table as PC)
 - **Currency:** casino coins — free play coins only, no real money
+
+## v1.6 — Folded hit cards, opened at the dealer play (Nov 22)
+
+- **Hit and double-down cards come folded** — when another player hits or
+  doubles down, the new card is dealt face-down: you see a red back in
+  their seat, not the card. The player who drew it always sees their own
+  cards (and their total), so nothing changes for the player themselves.
+  Special cards are still always face-up, as before.
+- **The dealer play opens them automatically** — the moment the dealer
+  starts playing, the software flips every player's cards face-up for
+  everyone: the folded hit/double-down cards and the hole cards too. No
+  tapping, no waiting for the settle — the whole table is open by the time
+  the dealer finishes.
 
 ## v1.5.1 — The die never misses a roll; Battle Bonyas rarer (Nov 22)
 
@@ -163,14 +177,16 @@ On your turn you have three options:
 
 - **Hit** — take one more card. You may hit **up to 3 times** (5 cards total).
   If you reach 5 cards your turn ends automatically. Hit over 21 and you **bust**
-  and lose your bet, even if the dealer busts too.
+  and lose your bet, even if the dealer busts too. A hit card comes **folded**:
+  only its owner sees it — everyone else sees a red back until the dealer
+  plays, when the software opens every player's cards automatically.
 - **Stay** — keep the hand you have.
 - **Double down** — only with exactly **2 cards**. You put in an extra amount equal
   to your original bet (so the total at risk doubles), receive **exactly one more
-  card**, and your turn ends.
+  card** (folded, like a hit card), and your turn ends.
 
-Turns pass clockwise around the table. There is no auto-stand on 21 — a player
-holding 21 may still hit (at their own risk) or stay.
+Turns pass clockwise around the table. At 21 the only move is Stay — Hit and
+Double Down are refused, in the engine and in the buttons.
 
 ### The 5-card rule
 

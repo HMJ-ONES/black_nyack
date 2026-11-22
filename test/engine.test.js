@@ -22,8 +22,10 @@ function check(name, cond, extra) {
 }
 const C = (rank, suit) => ({ id: rank + suit, rank, suit });
 const SP = (i) => ({ id: 'SP' + i, rank: 'SP', suit: 'special', special: true });
-/* Rig a hand the way a real deal would set it: card[0] face-up, card[1]
-   face-down unless it is special; later cards face-up. */
+/* Rig a hand: card[0] face-up, card[1] face-down unless it is special.
+   Later cards are set face-up for convenience — a REAL hit/double-down card
+   comes folded (face-down until the dealer plays); tests that need a real
+   folded card deal one for real instead of rigging it here. */
 function setHand(st, pid, cards) {
   E.playerById(st, pid).hand = cards.map((c, i) => ({
     ...c, faceUp: c.special ? true : (i === 0 ? true : i >= 2)
@@ -106,6 +108,76 @@ console.log('Constants:');
     const st = mkGame(2, 42, { forceBattle: false });
     E.rollSpecialDie(st, 'A');
     return JSON.stringify(E.viewFor(st, 'p0').round.rolls) === JSON.stringify(st.round.rolls);
+  })());
+}
+
+console.log('Folded hit / double-down cards:');
+{
+  // Rig the deck top so the next card dealt is a known non-special card.
+  function rigTop(st, rank, suit) { st.deck.push({ id: rank + suit + '-rig', rank, suit }); }
+  check('hit cards come folded (face-down for everyone else)', (() => {
+    const st = mkGame(2, 42, { forceBattle: false });
+    betAll(st, { p0: 10, p1: 10 });
+    setHand(st, 'p0', [C('5', '♠'), C('6', '♥')]); // 11 — a hit is legal
+    st.phase = 'playerTurns'; st.turnPlayerId = 'p0';
+    rigTop(st, '2', '♣');
+    const r = E.applyAction(st, 'p0', { type: 'hit' });
+    const c = E.playerById(st, 'p0').hand[2];
+    return r.ok && c && c.rank === '2' && c.faceUp === false;
+  })());
+  check('double-down cards come folded too', (() => {
+    const st = mkGame(2, 42, { forceBattle: false });
+    betAll(st, { p0: 10, p1: 10 });
+    setHand(st, 'p0', [C('5', '♠'), C('6', '♥')]); // 11 — doubling is legal
+    st.phase = 'playerTurns'; st.turnPlayerId = 'p0';
+    rigTop(st, '3', '♦');
+    const r = E.applyAction(st, 'p0', { type: 'double' });
+    const c = E.playerById(st, 'p0').hand[2];
+    return r.ok && c && c.rank === '3' && c.faceUp === false;
+  })());
+  check('a folded special is still face-up (specials are always face-up)', (() => {
+    const st = mkGame(2, 42, { forceBattle: false });
+    betAll(st, { p0: 10, p1: 10 });
+    setHand(st, 'p0', [C('5', '♠'), C('6', '♥')]);
+    st.phase = 'playerTurns'; st.turnPlayerId = 'p0';
+    st.deck.push({ id: 'SP-rig', rank: 'SP', suit: 'special', special: true });
+    const r = E.applyAction(st, 'p0', { type: 'hit' });
+    const c = E.playerById(st, 'p0').hand[2];
+    return r.ok && c && c.special === true && c.faceUp === true;
+  })());
+  check('another player cannot see my folded hit card, but I can', (() => {
+    const st = mkGame(2, 42, { forceBattle: false });
+    betAll(st, { p0: 10, p1: 10 });
+    setHand(st, 'p0', [C('5', '♠'), C('6', '♥')]);
+    st.phase = 'playerTurns'; st.turnPlayerId = 'p0';
+    rigTop(st, '2', '♣');
+    E.applyAction(st, 'p0', { type: 'hit' });
+    const mine = E.viewFor(st, 'p0').players.find(p => p.id === 'p0').cards[2];
+    const theirs = E.viewFor(st, 'p1').players.find(p => p.id === 'p0').cards[2];
+    return mine && mine.rank === '2' && theirs && theirs.hidden === true;
+  })());
+  check('dealer play opens every folded card automatically', (() => {
+    const st = mkGame(2, 42, { forceBattle: false });
+    betAll(st, { p0: 10, p1: 10 });
+    setHand(st, 'p0', [C('5', '♠'), C('6', '♥')]); // p0 hits (folded card), then stays
+    setHand(st, 'p1', [C('9', '♣'), C('8', '♦')]); // p1 stays on 17
+    st.phase = 'playerTurns'; st.turnPlayerId = 'p0';
+    rigTop(st, '2', '♣');
+    E.applyAction(st, 'p0', { type: 'hit' });
+    const foldedBefore = E.playerById(st, 'p0').hand[2].faceUp === false;
+    E.applyAction(st, 'p0', { type: 'stay' });
+    E.applyAction(st, 'p1', { type: 'stay' }); // dealer plays, then settles
+    return foldedBefore && st.phase === 'settled' &&
+      st.players.every(p => p.hand.every(c => c.faceUp === true));
+  })());
+  check('hole cards open at dealer play too', (() => {
+    const st = mkGame(2, 42, { forceBattle: false });
+    betAll(st, { p0: 10, p1: 10 });
+    const holeBefore = st.players.every(p => p.hand[1].faceUp === false || p.hand[1].special);
+    E.applyAction(st, 'p0', { type: 'stay' });
+    E.applyAction(st, 'p1', { type: 'stay' });
+    return holeBefore && st.phase === 'settled' &&
+      st.players.every(p => p.hand.every(c => c.faceUp === true));
   })());
 }
 
