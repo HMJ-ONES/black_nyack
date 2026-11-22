@@ -4,10 +4,9 @@
 in the same format as Wellington and Five-Card Poker: a single `index.html`, no sign-up,
 no cost, multiplayer peer-to-peer via PeerJS, hosted free on Cloudflare Pages.
 
-> **v1.3.0:** when a ★ special is dealt you see it — a die tumbles and lands on
-> the roll (0, 1 or 2) in the SPECIAL box, and the game log moved below the chips
-> and buttons so it never pushes them down the page. All tests green: `npm test`
-> (see [Tests](#tests)).
+> **v1.3.1:** the secret round is **Battle Bonyas** again — Bonyas is a pun on
+> bonus, not the dealer's name. Nyau is just the dealer. All tests green:
+> `npm test` (see [Tests](#tests)).
 
 - **Repo:** https://github.com/HMJ-ONES/black_nyack
 - **Live:** https://black-nyack.pages.dev *(connected + verified Nov 22 — home page and both songs serve 200)*
@@ -24,6 +23,10 @@ no cost, multiplayer peer-to-peer via PeerJS, hosted free on Cloudflare Pages.
 - **Log below the chips** — the recent-activity log now sits at the very bottom of
   the game screen, under the bet chips and the Hit/Stay/Double Down buttons, so
   the log growing as lines are added never pushes the chips down the page.
+- **v1.3.1:** the secret round is **Battle Bonyas** again — my v1.1 rename to
+  Battle Nyau was wrong. Bonyas is a pun on bonus and has nothing to do with the
+  dealer; Nyau is just the dealer's name. Every visible "Battle Nyau" is back to
+  "Battle Bonyas" (banner, log, rules, payout table, taunts).
 
 ## v1.2 — Room to breathe (Nov 22)
 
@@ -41,13 +44,13 @@ no cost, multiplayer peer-to-peer via PeerJS, hosted free on Cloudflare Pages.
   it again.
 - **Break his legs, moved up** — the button is a small one **inside the table,
   next to Nyau**, so mobile players can tap it and watch the hit at the same time.
-- **v1.2.1:** a Battle Nyau round no longer makes him speak when the round starts —
+- **v1.2.1:** a Battle Bonyas round no longer makes him speak when the round starts —
   the banner already announces it, so the bubble stays hidden until he actually
   has something to say mid-round.
 
 ## v1.1 — Nyau (Nov 22)
 
-- **The dealer is Nyau now** (was Bonyas) — the secret round is **Battle Nyau**.
+- **The dealer is Nyau now** (was Bonyas) — the secret round is **Battle Bonyas**.
 - **He only talks sometimes** — about half of the moments that used to trigger a
   taunt now stay silent. His face does the talking instead: **sad** when he loses
   a round, **in pain** while his legs are broken.
@@ -156,7 +159,7 @@ Payouts are credited to your stack at the end of the round.
 | Win with a total of exactly 21 | **+ 3 × B** Blacknyack bonus |
 | Win with 5 cards | **+ 5 × B** 5-card bonus |
 | Win with special cards in your hand | **+ 2 × B per special card** |
-| Battle Nyau winner | **+ 5 × B** battle bonus |
+| Battle Bonyas winner | **+ 5 × B** battle bonus |
 
 The **total payout for one player in one round is capped at 1200 coins**.
 
@@ -165,16 +168,16 @@ Worked examples (both verified by regression tests in `test/payout.test.js`):
 - **500 coins:** bet 50, 5-card 21, no battle, no specials.
   2×50 (win) + 3×50 (Blacknyack) + 5×50 (5-card) = **500**.
 - **1200 coins:** bet 50, double down (B = 100), 3-card 21 with 1 special card,
-  Battle Nyau winner.
+  Battle Bonyas winner.
   2×100 (win) + 3×100 (Blacknyack) + 2×100 (special) + 5×100 (battle) = **1200**.
 - Same hand **without** the battle bonus: 200 + 300 + 200 = **700**.
 - Doubled 3-card 21 with **two** specials as battle winner would be
   200 + 300 + 400 + 500 = 1400 uncapped — the cap holds it at **1200**.
 
-### Battle Nyau (secret random event)
+### Battle Bonyas (secret random event)
 
 - At the start of **each round** (when betting opens) there is a **12% chance**
-  the round is a **Battle Nyau** round. It lasts **one round only** and can
+  the round is a **Battle Bonyas** round. It lasts **one round only** and can
   trigger again on later rounds.
 - The **Battle winner** is the **single best winning hand** among the players who
   beat the dealer that round, ranked by **hand class, then total, then number of
@@ -196,7 +199,7 @@ Worked examples (both verified by regression tests in `test/payout.test.js`):
 ### Music
 
 - `music.mp3` — the main loop. Plays in a loop, starting every time a match starts.
-- `battle.mp3` — plays **only** during a Battle Nyau round; when the round ends
+- `battle.mp3` — plays **only** during a Battle Bonyas round; when the round ends
   the music goes back to the main loop.
 - Switching is automatic (the UI watches the round's battle flag); a 🔊 button
   mutes/unmutes, and a "🎵 Tap for music" chip appears if the browser blocks
@@ -224,7 +227,7 @@ touches game state and is never sent to other players.
   BET), dealer hand in the middle, player seats on the bottom arc, chip stacks,
   system log bottom-right, and the big banners — **BLACK NYACK**, **5 CARD**,
   **DOUBLE DOWN**, **BUST**, **WIN!** — over the hands. The WIN dialog lists
-  the payout breakdown (Win / Blacknyack / 5 Card / Special / Battle Nyau /
+  the payout breakdown (Win / Blacknyack / 5 Card / Special / Battle Bonyas /
   Acquired), like screenshot 4.
 - **Layout:** landscape (PC, or phone turned sideways) = the full round table;
   portrait = the same table stacked, with a "turn your phone sideways" hint.
@@ -285,7 +288,7 @@ the owner can challenge any of them:
 9. **No auto-stand on 21.** A player holding 21 may still hit (and bust) or
    stay. Reaching 5 cards **does** end the turn automatically (no legal hit
    remains).
-10. **A dead round does not re-roll Battle Nyau.** The battle flag belongs to
+10. **A dead round does not re-roll Battle Bonyas.** The battle flag belongs to
     the round; a dead round is the same round's betting re-opening.
 11. **Hit and double-down cards are face-up to everyone.** Only the initial
     second card is a hole card; everything dealt after that is on the felt,
@@ -321,7 +324,7 @@ The engine is a pure-JS block inside `index.html` with `module.exports`, so the
 Node tests extract and run it (same pattern as Five-Card Poker). Key pieces:
 
 - `newGame(playerNames, seed, opts)` — `opts.forceBattle` (true/false) overrides
-  the Battle Nyau roll; used by tests.
+  the Battle Bonyas roll; used by tests.
 - Constants: `BETS`, `START_STACK`, `MAX_PLAYERS`, `MAX_PAYOUT`, `BATTLE_ODDS`,
   `DEALER_STAND`, `SPECIAL_DIE_FACES` — one place to tune.
 - `applyAction(st, playerId, action)` — `placeBet`, `spectate`, `hit`, `stay`,
@@ -343,7 +346,7 @@ Node tests extract and run it (same pattern as Five-Card Poker). Key pieces:
 - Phases: `betting` → `playerTurns` → `dealerTurn` → `settled` → `betting`.
   (`dealerTurn` is transient — the dealer plays synchronously when the last
   player turn ends.)
-- All randomness (deck shuffle, special die, Battle Nyau roll) flows through
+- All randomness (deck shuffle, special die, Battle Bonyas roll) flows through
   the seeded rng carried in `state.rngState`, so a game is reproducible from
   its seed.
 
@@ -365,7 +368,7 @@ Current (v1.3, Nov 22): engine **131**, payout **37**, battle **29**, UI **141**
 | `test/engine.test.js` | Constants, 58-card deck, deal + face-up/hole flags, hand values + classes, betting (invalid/insufficient/double-decide, dead rounds, dead-round bot retry, spectators, rebuy), hit/stay/double rules (3-hit max, double only on 2 cards, forced stand), special-die rolls, dealer (stands on 17 incl. soft 17, hits on 16, busts, no draw when all bust), filtered views (hole cards never leak, special 2nd card visible, log clean), leave/remove, bots, plus a **500-round bot soak** (no throws, no negative stacks, no payout over 1200, every round terminates) |
 | `test/payout.test.js` | The payout table (plain win, dealer bust, 21 bonus, 5-card bonus, special bonus, push, lose, bust-vs-bust) and all four regression cases: (a) 50 / 5-card 21 → **500**; (b) 50 doubled / 3-card 21 / 1 special / battle winner → **1200**; (c) same without battle → **700**; (d) doubled 3-card 21 / 2 specials / battle winner → 1400 uncapped, **capped to 1200** |
 | `test/battle.test.js` | 12% odds (constant + statistical check over 500 seeded rounds), single winner, ranking (class → total → specials → earliest seat), no winner when the dealer wins all / pushes / everyone busts, re-trigger across rounds, battle lasts exactly one round, battle bonus never leaks to other winners |
-| `test/ui.test.js` | jsdom DOM smoke test: every screen/panel/button exists, music elements + track selection (`music.mp3` / `battle.mp3`), layout helpers (round vs stacked, arc seat positions), rules modal, menu flow through the real buttons (bot picker → game → back to menu), a full round through the DOM (bet chip → deal → hole-card peek → Stay → settle → WIN dialog → next round), spectate + auto-offered entry next round (incl. dead-round retry), break-the-legs button ×3 (bat hides, legs regrow, pain face), solo game (0 bots), forced Battle Nyau round, the v1.1 checks: SEGA footer credit, sometimes-only taunts, red BUST / shining DOUBLE DOWN / WIN! +amount banners, coin rain scaling with the win, sad/pain/happy faces, 8s win hold; the v1.2 checks: bet list / special box above the table, log below it, bubble starts hidden and goes away after 6s, taunts at 35% with idle chatter once a minute, face resets after 7s, break-legs button next to Nyau; and the v1.3 checks: special die faces 0/1/2, tumble + land, a fresh "rolled N" log line makes it roll, die hides on a new round, log below the chips and buttons |
+| `test/ui.test.js` | jsdom DOM smoke test: every screen/panel/button exists, music elements + track selection (`music.mp3` / `battle.mp3`), layout helpers (round vs stacked, arc seat positions), rules modal, menu flow through the real buttons (bot picker → game → back to menu), a full round through the DOM (bet chip → deal → hole-card peek → Stay → settle → WIN dialog → next round), spectate + auto-offered entry next round (incl. dead-round retry), break-the-legs button ×3 (bat hides, legs regrow, pain face), solo game (0 bots), forced Battle Bonyas round, the v1.1 checks: SEGA footer credit, sometimes-only taunts, red BUST / shining DOUBLE DOWN / WIN! +amount banners, coin rain scaling with the win, sad/pain/happy faces, 8s win hold; the v1.2 checks: bet list / special box above the table, log below it, bubble starts hidden and goes away after 6s, taunts at 35% with idle chatter once a minute, face resets after 7s, break-legs button next to Nyau; and the v1.3 checks: special die faces 0/1/2, tumble + land, a fresh "rolled N" log line makes it roll, die hides on a new round, log below the chips and buttons |
 
 ## Deploy to Cloudflare Pages ($0)
 
@@ -394,10 +397,10 @@ Same $0 pattern as Wellington, RNG Chess and Five-Card Poker.
 ```
 index.html            the whole game (engine + UI + multiplayer), single file
 music.mp3             main-loop song
-battle.mp3            Battle Nyau song
+battle.mp3            Battle Bonyas song
 test/engine.test.js   engine unit tests + 500-round bot soak (node)
 test/payout.test.js   payout table + the four regression cases (node)
-test/battle.test.js   Battle Nyau tests (node)
+test/battle.test.js   Battle Bonyas tests (node)
 test/ui.test.js       DOM smoke test: menu flow, full round, spectate, legs, music (jsdom)
 wrangler.toml         Cloudflare Pages config (Pages needs no config; no Worker)
 README.md             this file

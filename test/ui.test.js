@@ -86,7 +86,7 @@ function check(name, cond, extra) {
   /* ---- rules modal ---- */
   $('btnRules').click();
   check('rules modal opens', !$('rulesModal').classList.contains('hidden'));
-  check('rules mention Battle Nyau', /Battle Nyau/.test($('rulesBody').textContent));
+  check('rules mention Battle Bonyas', /Battle Bonyas/.test($('rulesBody').textContent));
   check('rules show the 1200 cap', /1200/.test($('rulesBody').textContent));
   check('rules mention the special die', /special die/i.test($('rulesBody').textContent));
   check('rules mention breaking his legs', /Break his legs/.test($('rulesBody').textContent));
@@ -214,11 +214,11 @@ function check(name, cond, extra) {
   [...window.document.querySelectorAll('#betChips .chip')].find(b => b.textContent.trim() === '5').click();
   check('solo player is dealt in alone', ev(`view.phase`) === 'playerTurns' && ev(`view.turnPlayerId`) === ev(`myId`));
 
-  /* ---- scenario 5: forced Battle Nyau round ---- */
+  /* ---- scenario 5: forced Battle Bonyas round ---- */
   window.eval(`startLocalGame([{name:'Test',isBot:false},{name:'Bot',isBot:true}], 99, {forceBattle:true})`);
   check('battle round is flagged', ev(`view.round.battle`) === true);
   check('battle banner shows', !$('battleBanner').classList.contains('hidden'));
-  check('battle banner says BATTLE NYAU', /BATTLE NYAU/.test($('battleBanner').textContent));
+  check('battle banner says BATTLE BONYAS', /BATTLE BONYAS/.test($('battleBanner').textContent));
   check('battle song is the selected track', ev(`musicTrackFor(view.round.battle)`) === 'battle.mp3');
   check('battle track is active after match start', ev(`currentTrack`) === 'battle.mp3');
   check('battle round does not make him speak — the banner announces it', (() => {

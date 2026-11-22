@@ -37,7 +37,7 @@ function setDealerHand(st, cards) {
    - dealerHand: rigged dealer hand (must be 17+ or bust, so settle() is
      reached without the dealer drawing — settle() itself never draws);
    - specialTotal: the round's shared special value;
-   - battle: whether this is a Battle Nyau round;
+   - battle: whether this is a Battle Bonyas round;
    - doubled: {pid: true} — marks the bet as doubled (bet already doubled
      and the extra deducted by hand, as applyAction('double') would do).
    Returns {st, results}. */

@@ -70,8 +70,8 @@ console.log('Battle odds:');
   check('BATTLE_ODDS is 0.12', E.BATTLE_ODDS === 0.12);
   check('forceBattle:true forces a battle round', E.newGame(['A', 'B'], 1, { forceBattle: true }).round.battle === true);
   check('forceBattle:false forces a normal round', E.newGame(['A', 'B'], 1, { forceBattle: false }).round.battle === false);
-  check('a battle round is logged', E.newGame(['A', 'B'], 1, { forceBattle: true }).round.log.join(' ').includes('BATTLE NYAU'));
-  check('a normal round does not log a battle', !E.newGame(['A', 'B'], 1, { forceBattle: false }).round.log.join(' ').includes('BATTLE NYAU'));
+  check('a battle round is logged', E.newGame(['A', 'B'], 1, { forceBattle: true }).round.log.join(' ').includes('BATTLE BONYAS'));
+  check('a normal round does not log a battle', !E.newGame(['A', 'B'], 1, { forceBattle: false }).round.log.join(' ').includes('BATTLE BONYAS'));
   // Statistical check: 500 seeded rounds should land well inside 12% ± noise.
   let battles = 0;
   for (let s = 0; s < 500; s++) if (E.newGame(['A', 'B'], s).round.battle) battles++;
