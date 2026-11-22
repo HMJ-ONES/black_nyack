@@ -1,0 +1,1888 @@
+<!DOCTYPE html>
+<!-- Black Nyack — free browser blackjack (21), 2-5 players vs the dealer — PASS 1: engine only.
+     The UI, multiplayer, music and dealer art come in pass 2. This file ships the full
+     tested engine in the script block below (extractable by node tests via module.exports),
+     plus a placeholder page. -->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Black Nyack — free browser blackjack</title>
+<meta name="description" content="Black Nyack: a free browser blackjack game for 1-5 players vs the dealer. Bets of 5-50 casino coins, special cards, 5-card hands, and the secret Battle Bonyas round. No sign-up, no cost.">
+<style>
+:root{--bg:#0d1a12;--felt:#14532d;--felt2:#0e5c34;--panel:#12261a;--panel2:#1a3323;--line:#2c4a35;--txt:#f5eeda;--mut:#b9cbb4;--gold:#f2c14e;--green:#58b368;--red:#e5484d;--blue:#4c9aff;--purple:#b388ff}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--bg);color:var(--txt);font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;min-height:100%}
+body{padding:0 0 40px}
+a{color:var(--gold)}
+.wrap{max-width:1060px;margin:0 auto;padding:16px}
+header{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:8px 0 4px}
+.logo{font-size:30px;font-weight:900;letter-spacing:.5px}
+.logo span{color:var(--gold)}
+.tag{color:var(--mut);font-size:13px;margin-top:2px}
+.badge{font-size:11px;border:1px solid var(--line);border-radius:999px;padding:4px 10px;color:var(--mut);white-space:nowrap}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px}
+.card h2{font-size:19px;margin-bottom:6px}
+p{color:var(--mut);font-size:14px;line-height:1.5}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:12px}
+input[type=text],input[type=number]{background:#0c0e12;border:1px solid var(--line);color:var(--txt);border-radius:10px;padding:11px 12px;font-size:16px;min-width:0}
+input[type=text]:focus{outline:2px solid var(--gold);outline-offset:1px}
+button{font-family:inherit;font-size:15px;font-weight:700;border:0;border-radius:10px;padding:12px 16px;cursor:pointer;color:#111;background:var(--gold)}
+button:hover{filter:brightness(1.07)}
+button:disabled{opacity:.45;cursor:not-allowed}
+button.ghost{background:var(--panel2);color:var(--txt);border:1px solid var(--line)}
+button.danger{background:#3a1d1f;color:#ffb3b5;border:1px solid #5b2a2d}
+button.small{padding:8px 11px;font-size:13px}
+button.big{padding:16px 22px;font-size:18px}
+.btn-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin-top:14px}
+.btn-grid button{width:100%}
+.hidden{display:none!important}
+.rules{margin-top:14px;font-size:13.5px}
+.rules li{margin:6px 0 6px 18px;color:var(--mut);line-height:1.5}
+.rules li b{color:var(--txt)}
+table.points{border-collapse:collapse;margin:8px 0;font-size:14px}
+table.points td,table.points th{border:1px solid var(--line);padding:6px 10px;text-align:left}
+table.points th{color:var(--gold)}
+.status{font-size:16px;font-weight:800;padding:12px 14px;border-radius:10px;background:var(--panel2);border:1px solid var(--line);margin-bottom:12px;line-height:1.4}
+.status small{display:block;font-weight:500;color:var(--mut);font-size:13px;margin-top:3px}
+.rotate-hint{display:none;background:#3a2f10;border:1px solid var(--gold);color:#ffe9a8;border-radius:10px;padding:10px 14px;font-size:14px;font-weight:700;margin-bottom:12px;text-align:center}
+@media (orientation: portrait) and (max-width: 699px){ .rotate-hint{display:block} }
+/* ---- the round table (from the screenshots) ---- */
+.table-wrap{position:relative;background:radial-gradient(ellipse at center,var(--felt2) 0%,var(--felt) 55%,#0a3319 100%);border:8px solid #6b4423;outline:3px solid #d9a441;border-radius:28px;padding:14px;box-shadow:0 10px 40px rgba(0,0,0,.5), inset 0 0 60px rgba(0,0,0,.35);overflow:hidden}
+.table-wrap::before{content:"";position:absolute;inset:0;background-image:repeating-linear-gradient(45deg,rgba(255,255,255,.045) 0 14px,transparent 14px 28px),repeating-linear-gradient(-45deg,rgba(255,255,255,.045) 0 14px,transparent 14px 28px);pointer-events:none}
+.table-wrap::after{content:"";position:absolute;left:6%;right:6%;top:16%;bottom:8%;border:3px solid rgba(242,193,78,.45);border-radius:50%;pointer-events:none}
+body.round-table .table-wrap{height:clamp(430px,78vh,700px);border-radius:50%/46%}
+body.round-table #opponentsBox,body.round-table #mySeat{display:contents}
+body.round-table .table-wrap .seat{position:absolute;z-index:3;width:210px}
+body.round-table .dealer-hand{position:absolute;left:50%;top:46%;transform:translateX(-50%);z-index:2;text-align:center}
+body.round-table .bet-list{position:absolute;left:14px;top:12px;z-index:3}
+body.round-table .special-box{position:absolute;right:16px;top:10px;z-index:3}
+body.round-table .log{position:absolute;right:12px;bottom:12px;width:300px;max-height:120px;z-index:4;background:rgba(6,20,12,.82)}
+body.round-table .dealer-zone{position:absolute;left:50%;top:0;transform:translateX(-50%);z-index:2}
+.seats{display:grid;grid-template-columns:1fr;gap:10px;position:relative;z-index:2}
+.seat{background:rgba(0,0,0,.28);border:2px solid transparent;border-radius:12px;padding:8px 10px;position:relative}
+.seat.active{border-color:var(--gold);box-shadow:0 0 0 2px rgba(242,193,78,.3)}
+.seat.me{background:rgba(0,0,0,.42)}
+.seat .sname{font-weight:800;font-size:14px}
+.seat .sname .tag2{font-weight:500;color:var(--mut);font-size:12px}
+.seat .scards{display:flex;gap:5px;flex-wrap:wrap;margin-top:6px}
+.seat .dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:5px;vertical-align:baseline}
+.hand-wrap{position:relative}
+.hand-total{font-size:15px;font-weight:900;color:#d1fae5;margin-top:5px}
+.hand-total b{color:var(--gold)}
+.mini-card{width:34px;height:48px;border-radius:6px;background:#fff;color:#111;display:flex;flex-direction:column;align-items:center;justify-content:center;font-weight:800;font-size:13px;line-height:1.1;border:1px solid #999}
+.mini-card.red{color:#c81e1e}
+.mini-card.back{background:repeating-linear-gradient(45deg,#7f1d1d,#7f1d1d 6px,#991b1b 6px,#991b1b 12px);color:#fff;border-color:#450a0a}
+.mini-card.special{background:linear-gradient(160deg,#ffe27a,#f2c14e 60%,#c98a1b);border-color:#8a5c10;color:#4a2c00}
+.card-big{width:64px;height:92px;border-radius:10px;background:#fff;color:#111;display:flex;flex-direction:column;align-items:center;justify-content:center;font-weight:900;font-size:22px;line-height:1.1;border:2px solid #999;cursor:default;user-select:none;position:relative}
+.card-big.red{color:#c81e1e}
+.card-big.back{background:repeating-linear-gradient(45deg,#7f1d1d,#7f1d1d 8px,#991b1b 8px,#991b1b 16px);color:#fff;border-color:#450a0a;cursor:pointer}
+.card-big .suit{font-size:20px}
+.card-big.special{background:linear-gradient(160deg,#ffe27a,#f2c14e 60%,#c98a1b);border-color:#8a5c10;color:#4a2c00}
+.card-big.special .pts,.mini-card.special .pts{font-size:10px;font-weight:800;color:#4a2c00}
+.card-big.back .pts{color:#fecaca;font-size:11px}
+.peek-hint{font-size:11px;color:var(--gold);font-weight:700}
+/* banners over hands, like the original: BLACK NYACK / 5 CARD / DOUBLE DOWN / BUST / WIN! */
+.banner{position:absolute;left:50%;top:38%;transform:translate(-50%,-50%) rotate(-4deg);font-weight:900;letter-spacing:.5px;white-space:nowrap;pointer-events:none;z-index:5;animation:bannerPop .35s ease-out}
+.banner.gold{font-size:26px;color:#ffe27a;text-shadow:0 2px 0 #8a5c10,0 0 18px rgba(242,193,78,.8),0 4px 10px rgba(0,0,0,.6)}
+.banner.win{font-size:34px;color:#cfe6ff;text-shadow:0 2px 0 #1d4ed8,0 0 22px rgba(76,154,255,.9),0 4px 10px rgba(0,0,0,.6)}
+.banner.bust{font-size:30px;color:#ff5a5a;text-shadow:0 2px 0 #7f1d1d,0 0 18px rgba(229,72,77,.8),0 4px 10px rgba(0,0,0,.6)}
+.banner.battle{font-size:20px;color:#e9d5ff;text-shadow:0 2px 0 #6b21a8,0 0 18px rgba(179,136,255,.9)}
+.banner.push{font-size:24px;color:#e5e7eb;text-shadow:0 2px 0 #374151,0 0 14px rgba(255,255,255,.5)}
+@keyframes bannerPop{0%{transform:translate(-50%,-50%) rotate(-4deg) scale(.4);opacity:0}70%{transform:translate(-50%,-50%) rotate(-4deg) scale(1.15);opacity:1}100%{transform:translate(-50%,-50%) rotate(-4deg) scale(1);opacity:1}}
+/* dealer alcove + fox */
+.dealer-zone{text-align:center;position:relative;z-index:2;margin-bottom:4px}
+.dealer-ring{position:relative;display:inline-block}
+.dealer-ring svg{width:170px;height:155px;display:block;filter:drop-shadow(0 6px 12px rgba(0,0,0,.5))}
+.dealer-ring::before{content:"";position:absolute;left:50%;top:6px;transform:translateX(-50%);width:196px;height:150px;border:5px solid #7a5230;border-radius:50%;background:radial-gradient(circle at 50% 30%,#1e3a6e 0%,#0d1a3a 70%);z-index:-1;box-shadow:0 0 30px rgba(255,220,120,.35)}
+.dealer-arc{position:absolute;left:50%;top:-14px;transform:translateX(-50%);width:230px;pointer-events:none}
+.dealer-arc text{fill:#f2c14e;font-weight:900;font-size:15px;letter-spacing:3px}
+.taunt{max-width:330px;margin:2px auto 0;background:#fff;color:#222;border-radius:12px;padding:8px 12px;font-size:13.5px;font-weight:600;line-height:1.35;position:relative;box-shadow:0 4px 14px rgba(0,0,0,.4)}
+.taunt::before{content:"";position:absolute;left:50%;top:-8px;transform:translateX(-50%);border:8px solid transparent;border-bottom-color:#fff;border-top:0}
+.legs-line{font-size:12px;color:var(--mut);margin-top:4px}
+.legs-line b{color:var(--gold)}
+#dealerSvg.bonked{animation:bonkShake .5s ease}
+@keyframes bonkShake{0%,100%{transform:translate(0,0) rotate(0)}20%{transform:translate(-8px,2px) rotate(-6deg)}40%{transform:translate(7px,-2px) rotate(5deg)}60%{transform:translate(-5px,1px) rotate(-3deg)}80%{transform:translate(3px,0) rotate(2deg)}}
+#dealerLegs.broken{transform-origin:110px 150px}
+#dealerLegs.broken .leg-l{transform:rotate(38deg);transform-origin:98px 152px}
+#dealerLegs.broken .leg-r{transform:rotate(-38deg);transform-origin:122px 152px}
+#dealerLegs .bandage{display:none;fill:#fff;font-weight:900;font-size:13px}
+#dealerLegs.broken .bandage{display:block}
+.bat{position:absolute;right:-6px;bottom:8px;width:16px;height:96px;border-radius:8px 8px 4px 4px;background:linear-gradient(90deg,#8a5a2b,#d9a441 45%,#8a5a2b);border:2px solid #5b3a1e;transform:rotate(-58deg);transform-origin:50% 92%;opacity:0;pointer-events:none;z-index:6}
+.bat.swing{opacity:1;animation:batSwing .5s ease-in-out}
+@keyframes batSwing{0%{transform:rotate(-115deg)}55%{transform:rotate(38deg)}100%{transform:rotate(-58deg);opacity:0}}
+.bat-hit-float{position:absolute;right:8px;top:30%;color:#ffe27a;font-weight:900;font-size:20px;text-shadow:0 2px 4px #000;animation:floatUp 1s ease-out forwards;pointer-events:none;z-index:7}
+@keyframes floatUp{0%{opacity:1;transform:translateY(0)}100%{opacity:0;transform:translateY(-34px)}}
+/* special card box + bet list (screenshots) */
+.special-box{text-align:center;position:relative;z-index:2}
+.special-star{width:58px;height:58px;margin:0 auto;background:linear-gradient(160deg,#ffe27a,#f2c14e);transform:rotate(45deg);border:3px solid #8a5c10;border-radius:12px;display:flex;align-items:center;justify-content:center;box-shadow:0 0 18px rgba(242,193,78,.7)}
+.special-star span{transform:rotate(-45deg);font-size:26px;font-weight:900;color:#1d4ed8}
+.special-label{font-weight:900;color:#ffe27a;text-shadow:0 2px 4px #000;margin-top:10px;font-size:14px;letter-spacing:.5px;line-height:1.15}
+.special-sub{font-size:11.5px;color:#d1fae5;margin-top:2px}
+.bet-list{background:rgba(0,0,0,.45);border:1px solid rgba(242,193,78,.4);border-radius:10px;padding:8px 10px;min-width:190px;position:relative;z-index:2}
+.bet-list .bl-row{display:flex;justify-content:space-between;gap:14px;font-size:13.5px;font-weight:700;padding:2px 0}
+.bet-list .bl-row .tag2{color:var(--mut);font-weight:500}
+.dealer-hand .dh-label{font-size:12px;font-weight:900;letter-spacing:2px;color:#ffe9a8;text-shadow:0 2px 4px #000}
+.dealer-hand .scards{display:flex;gap:6px;justify-content:center;margin-top:4px}
+.coin{width:34px;height:34px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff3b0,#f2c14e 55%,#a87b12);border:2px dashed rgba(255,255,255,.75);display:inline-flex;align-items:center;justify-content:center;font-weight:900;font-size:12px;color:#4a2c00;box-shadow:0 3px 8px rgba(0,0,0,.5)}
+.chip-rack{display:flex;gap:10px;justify-content:center;align-items:center;flex-wrap:wrap;margin:12px 0}
+.chip{width:56px;height:56px;border-radius:50%;border:4px dashed rgba(255,255,255,.7);display:flex;align-items:center;justify-content:center;font-weight:900;font-size:14px;color:#fff;cursor:pointer;user-select:none;box-shadow:0 4px 10px rgba(0,0,0,.5)}
+.chip.c5{background:#16a34a}.chip.c10{background:#2563eb}.chip.c20{background:#7c3aed}.chip.c40{background:#ea580c}.chip.c50{background:#dc2626}
+.chip:disabled{opacity:.35;cursor:not-allowed}
+.log{max-height:180px;overflow:auto;font-size:13.5px;line-height:1.7;color:var(--mut);border-radius:10px;padding:10px 12px}
+.log b{color:var(--txt)}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.7);display:flex;align-items:center;justify-content:center;z-index:50;padding:16px}
+.modal .box{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:22px;max-width:520px;width:100%;max-height:88vh;overflow:auto;position:relative}
+.modal .box h2{font-size:22px}
+.modal-x{position:absolute;top:10px;right:10px;background:transparent;color:var(--mut);border:0;font-size:20px;padding:6px 10px}
+.bot-pick{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.bot-pick button{flex:1;min-width:52px}
+.roomcode{font-size:22px;font-weight:900;letter-spacing:.2em;color:var(--gold)}
+.lobby-player{display:flex;justify-content:space-between;align-items:center;gap:10px;background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-top:8px;font-size:15px}
+.battle-banner{text-align:center;font-size:22px;font-weight:900;color:#e9d5ff;text-shadow:0 0 18px rgba(179,136,255,.9);margin-bottom:10px;animation:bannerPop .4s ease-out}
+.win-rows{width:100%;border-collapse:collapse;margin:10px 0;font-size:15px}
+.win-rows td{padding:7px 4px;border-bottom:1px solid var(--line)}
+.win-rows td:last-child{text-align:right;font-weight:900;color:var(--gold)}
+.win-rows tr.total td{font-size:17px;border-top:2px solid var(--gold)}
+footer{color:var(--mut);font-size:12.5px;text-align:center;margin-top:26px;line-height:1.6}
+.music-hint{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);background:var(--gold);color:#111;font-weight:800;border-radius:999px;padding:10px 18px;z-index:60;box-shadow:0 6px 20px rgba(0,0,0,.5);cursor:pointer;border:0}
+</style>
+<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <div class="logo">🃏 BLACK <span>NYACK</span></div>
+      <div class="tag">Free browser blackjack (21) — 1–5 players vs the dealer. No sign-up, no cost, free coins only.</div>
+    </div>
+    <div class="row" style="margin-top:0">
+      <button id="musicToggle" type="button" class="ghost small" title="Music on/off">🔊 Music on</button>
+      <button id="btnRules" type="button" class="ghost small">📖 Rules</button>
+    </div>
+  </header>
+
+  <div id="menuScreen">
+    <div class="card">
+      <h2>Beat the dealer. Take his coins.</h2>
+      <p>Bet <b style="color:var(--txt)">5 / 10 / 20 / 40 / 50</b> casino coins to enter a round — or spectate until the next one. <b style="color:var(--txt)">Hit</b>, <b style="color:var(--txt)">stay</b>, or <b style="color:var(--txt)">double down</b>. Get <b style="color:var(--txt)">5 cards without busting</b> and you beat even a dealer 21. Watch for the <b style="color:var(--txt)">special cards</b> and the secret <b style="color:var(--txt)">Battle Bonyas</b> round — one winner takes up to <b style="color:var(--txt)">1200 coins</b>.</p>
+      <div class="row">
+        <span style="font-size:14px;color:var(--mut)">Your name</span>
+        <input type="text" id="nameInput" placeholder="e.g. Henrique" maxlength="20" style="flex:1;min-width:140px">
+      </div>
+      <div class="btn-grid">
+        <button id="btnCreate" type="button">➕ Create lobby<br><small style="font-weight:500;font-size:12px">get a code, invite up to 4 friends / bots</small></button>
+        <button id="btnBots" type="button" class="ghost">🤖 Play vs bots<br><small style="font-weight:500;font-size:12px">solo or with bots, right now</small></button>
+      </div>
+      <div class="row">
+        <input type="text" id="joinCode" placeholder="Lobby code — e.g. KQ7B" maxlength="8" style="flex:1;text-transform:uppercase">
+        <button id="btnJoin" type="button" class="ghost">Join lobby →</button>
+      </div>
+      <p id="menuMsg" style="margin-top:10px;min-height:20px"></p>
+    </div>
+    <div class="card" style="margin-top:14px">
+      <h2>🌍 Public rooms</h2>
+      <div class="row">
+        <button id="btnBrowseRooms" type="button" class="ghost">Browse public rooms</button>
+        <button id="btnRefreshRooms" type="button" class="ghost small">↻ Refresh</button>
+      </div>
+      <p id="roomsMsg" style="margin-top:10px;min-height:20px;color:var(--mut);font-size:14px">Press “Browse public rooms” to see open lobbies — or join a private lobby with its code above.</p>
+      <div id="roomsList" style="margin-top:8px"></div>
+    </div>
+    <div class="card rules" style="margin-top:14px">
+      <h2>How it plays (short version)</h2>
+      <ul>
+        <li><b>Bet 5, 10, 20, 40 or 50</b> casino coins to enter a round, or spectate until the next one. Everyone starts with <b>1000</b> coins; broke players rebuy 1000 free coins between rounds.</li>
+        <li><b>Hit, stay, or double down</b> (2 cards only). Get <b>5 cards without busting</b> and you beat even a dealer 21 — 5 cards totalling exactly 21 is the strongest hand there is.</li>
+        <li><b>Special cards:</b> 6 in the deck. Every time one is dealt, a die (0, 0, 1, 1, 2, 2) is rolled and the result is <b>added to a shared total</b> — every special card on the table is worth that total. Specials are always face-up.</li>
+        <li><b>Battle Bonyas:</b> a rare secret round (12%) where the single best winning hand takes a huge bonus — up to <b>1200 coins</b> on a 50-coin doubled-down bet.</li>
+        <li>The dealer stands on 17 (including soft 17). The full rules are under <b>📖 Rules</b>.</li>
+        <li>🎵 The main song loops every match; the battle song plays only during a Battle Bonyas round.</li>
+      </ul>
+    </div>
+    <footer>Black Nyack v1.0 — free, no accounts, no ads. Hosted on Cloudflare Pages. Code on GitHub.<br>
+    Free play coins only — no real money.</footer>
+  </div>
+
+  <div id="lobbyScreen" class="hidden">
+    <div class="card">
+      <h2>Lobby <span id="lobbyCode" class="roomcode"></span></h2>
+      <p id="lobbyMsg">Share the code with your friends — they type it in Join lobby.</p>
+      <div class="row"><button id="btnCopyLobby" type="button" class="ghost small">Copy code / link</button>
+      <button id="btnLeaveLobby" type="button" class="danger small">Leave lobby</button></div>
+      <div id="lobbyList" style="margin-top:12px"></div>
+      <div class="row"><button id="btnStartGame" type="button">▶ Start game</button>
+      <span id="lobbyWait" style="color:var(--mut);font-size:14px">You are the host — press Start when everyone is in.</span></div>
+    </div>
+  </div>
+
+  <div id="gameScreen" class="hidden">
+    <div class="rotate-hint">🔄 Turn your phone sideways for the full round table — the dealer sits in the middle, just like on PC.</div>
+    <div id="battleBanner" class="battle-banner hidden">⚔️ BATTLE BONYAS! ⚔️<br><span style="font-size:14px">The single best winning hand this round takes a huge bonus — up to 1200 coins!</span></div>
+    <div class="status" id="statusBox">Waiting…<small id="statusSub"></small></div>
+    <div class="table-wrap" id="tableWrap">
+      <div class="bet-list" id="betList"></div>
+      <div class="special-box" id="specialBox">
+        <div class="special-star"><span id="specialTotal">0</span></div>
+        <div class="special-label">SPECIAL<br>CARD</div>
+        <div class="special-sub" id="specialSub">Every ★ is worth 0</div>
+      </div>
+      <div class="dealer-zone" id="dealerZone">
+        <svg class="dealer-arc" viewBox="0 0 230 40" aria-hidden="true"><defs><path id="arcPath" d="M15,36 A100,100 0 0,1 215,36" fill="none"/></defs><text><textPath href="#arcPath" startOffset="50%" text-anchor="middle">BLACK NYACK</textPath></text></svg>
+        <div class="dealer-ring">
+          <svg id="dealerSvg" viewBox="0 0 220 200" role="img" aria-label="Bonyas the dealer, an obnoxious little fox in a vest">
+            <ellipse cx="110" cy="186" rx="88" ry="13" fill="#ffe27a" opacity="0.45"/>
+            <ellipse cx="110" cy="184" rx="70" ry="10" fill="#fff3b0" opacity="0.65"/>
+            <g id="dealerLegs">
+              <g class="leg-l"><rect x="92" y="148" width="12" height="32" rx="5" fill="#2b2b3a"/><ellipse cx="98" cy="182" rx="11" ry="5" fill="#2b2b3a"/></g>
+              <g class="leg-r"><rect x="116" y="148" width="12" height="32" rx="5" fill="#2b2b3a"/><ellipse cx="122" cy="182" rx="11" ry="5" fill="#2b2b3a"/></g>
+              <text class="bandage" x="98" y="166" text-anchor="middle">✕</text>
+              <text class="bandage" x="122" y="166" text-anchor="middle">✕</text>
+            </g>
+            <path d="M78 98 Q110 86 142 98 L146 152 Q110 162 74 152 Z" fill="#262637"/>
+            <path d="M96 94 L110 106 L124 94 L124 150 L96 150 Z" fill="#f5f5f5"/>
+            <path d="M102 98 L110 103 L118 98 L118 106 L110 111 L102 106 Z" fill="#d21f3c"/>
+            <path d="M80 102 Q62 120 70 138" stroke="#f5f5f5" stroke-width="9" fill="none" stroke-linecap="round"/>
+            <path d="M140 102 Q158 120 150 138" stroke="#f5f5f5" stroke-width="9" fill="none" stroke-linecap="round"/>
+            <path d="M72 46 L60 6 L100 30 Z" fill="#f6a93b"/>
+            <path d="M76 42 L68 14 L92 32 Z" fill="#ffd9a0"/>
+            <path d="M148 46 L160 6 L120 30 Z" fill="#f6a93b"/>
+            <path d="M144 42 L152 14 L128 32 Z" fill="#ffd9a0"/>
+            <ellipse cx="110" cy="66" rx="46" ry="42" fill="#f7cf8a"/>
+            <path d="M66 78 L52 84 L66 90 Z" fill="#f6a93b"/>
+            <path d="M154 78 L168 84 L154 90 Z" fill="#f6a93b"/>
+            <ellipse cx="92" cy="62" rx="8" ry="10" fill="#fff"/>
+            <ellipse cx="128" cy="62" rx="8" ry="10" fill="#fff"/>
+            <ellipse cx="93" cy="64" rx="4" ry="6" fill="#1f7a3a"/>
+            <ellipse cx="127" cy="64" rx="4" ry="6" fill="#1f7a3a"/>
+            <circle cx="93" cy="64" r="2" fill="#111"/>
+            <circle cx="127" cy="64" r="2" fill="#111"/>
+            <path d="M106 78 L114 78 L110 83 Z" fill="#c25e3a"/>
+            <path d="M102 88 Q112 94 122 86" stroke="#7a4a22" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+          </svg>
+          <div id="bat" class="bat"></div>
+        </div>
+        <div class="taunt" id="tauntBubble">Welcome to MY table. The coins are basically already mine.</div>
+        <div class="legs-line">🦵 Legs broken: <b id="legsCount">0</b> — Bonyas the dealer</div>
+      </div>
+      <div class="dealer-hand" id="dealerHand"></div>
+      <div class="seats" id="opponentsBox"></div>
+      <div id="mySeat"></div>
+      <div class="log" id="logBox">Game started.</div>
+    </div>
+    <div id="betBox" class="hidden" style="text-align:center;margin-top:12px">
+      <div style="font-weight:800;margin-bottom:6px" id="betPrompt">Place your bet — or spectate this round</div>
+      <div class="chip-rack" id="betChips"></div>
+      <div class="row" style="justify-content:center">
+        <button id="btnSpectate" type="button" class="ghost">👀 Spectate this round</button>
+        <button id="btnRebuyBet" type="button" class="ghost hidden">💰 Rebuy 1000 free coins</button>
+      </div>
+      <div id="betWaiting" style="color:var(--mut);font-size:13px;margin-top:8px"></div>
+    </div>
+    <div id="actionBox" class="hidden" style="text-align:center;margin-top:12px">
+      <div style="font-weight:800;margin-bottom:8px" id="actionPrompt">Your turn</div>
+      <div class="row" style="justify-content:center">
+        <button id="btnHit" type="button" class="big">🃏 Hit</button>
+        <button id="btnStay" type="button" class="big ghost">✋ Stay</button>
+        <button id="btnDouble" type="button" class="big">💰 Double down</button>
+      </div>
+    </div>
+    <p id="effectPrompt" style="margin-top:10px;font-weight:700;min-height:20px"></p>
+    <div class="row" style="justify-content:center">
+      <button id="btnNextRound" type="button" class="hidden">▶ Next round</button>
+      <button id="btnRebuy" type="button" class="ghost small hidden">💰 Rebuy 1000 free coins</button>
+      <button id="breakLegsBtn" type="button" class="danger">🦵⚾ Break his legs</button>
+      <button id="btnLeaveMatch" type="button" class="danger small">🚪 Leave match</button>
+      <button id="btnMenu2" type="button" class="ghost small">← Menu</button>
+      <button id="btnRules2" type="button" class="ghost small">📖 Rules</button>
+    </div>
+    <div id="connBox" style="font-size:13px;color:var(--mut);margin-top:10px">Local game</div>
+  </div>
+
+  <div id="bannedModal" class="modal hidden"><div class="box">
+    <h2>🚫 Banned from this room</h2>
+    <p style="color:var(--mut);font-size:14px;line-height:1.6;margin-top:8px">You left and rejoined too many times in a row. This room is closed to you for now — join a different lobby.</p>
+    <div class="row" style="justify-content:center;margin-top:16px"><button id="btnBannedMenu" type="button">Back to menu</button></div>
+  </div></div>
+  <div id="botModal" class="modal hidden"><div class="box">
+    <h2 id="botModalTitle">How many bots?</h2><p id="botModalSub">Bots fill the remaining seats (max 5 players total).</p>
+    <div class="bot-pick" id="botPick"></div>
+    <div class="row" style="justify-content:center"><button id="botCancel" type="button" class="ghost">Cancel</button></div>
+  </div></div>
+  <div id="roomOptModal" class="modal hidden"><div class="box">
+    <h2>Create lobby</h2>
+    <p style="color:var(--mut);font-size:14px;margin-top:6px">Who can find this room?</p>
+    <div class="bot-pick" id="visPick">
+      <button type="button" data-vis="private">🔒 Private</button>
+      <button type="button" data-vis="public">🌍 Public</button>
+    </div>
+    <p style="color:var(--mut);font-size:14px;margin-top:14px">Max players (you + friends + bots):</p>
+    <div class="bot-pick" id="maxPick"></div>
+    <p id="roomOptMsg" style="min-height:20px;color:var(--mut);font-size:14px"></p>
+    <div class="row" style="justify-content:center">
+      <button id="roomOptCreate" type="button">Create lobby</button>
+      <button id="roomOptCancel" type="button" class="ghost">Cancel</button>
+    </div>
+  </div></div>
+  <div id="rulesModal" class="modal hidden"><div class="box">
+    <button id="rulesCloseX" type="button" class="modal-x" aria-label="Close rules">✕</button>
+    <h2>📖 Black Nyack — rules</h2>
+    <div id="rulesBody" style="font-size:14px;line-height:1.6;color:var(--mut)"></div>
+    <div class="row" style="justify-content:center;margin-top:14px"><button id="rulesClose" type="button">Got it</button></div>
+  </div></div>
+  <div id="winModal" class="modal hidden"><div class="box">
+    <h2 id="winTitle">🏆 WIN!</h2>
+    <div id="winBody"></div>
+    <div class="row" style="justify-content:center;margin-top:14px">
+      <button id="winNextRound" type="button" class="hidden">▶ Next round</button>
+      <button id="winClose" type="button">Close</button>
+    </div>
+  </div></div>
+  <audio id="musicMain" src="music.mp3" loop preload="auto"></audio>
+  <audio id="musicBattle" src="battle.mp3" loop preload="auto"></audio>
+  <button id="musicHint" type="button" class="music-hint hidden">🎵 Tap for music</button>
+</div>
+<script>
+"use strict";
+/* =====================================================================
+   BLACK NYACK — engine (pure JS, no DOM).
+   Tested in Node: `node test/engine.test.js` extracts this script block.
+   Single source of truth for every tunable number lives in the constants
+   below. All randomness flows through the seeded rng carried in
+   state.rngState, so a game is fully reproducible from (seed).
+   ===================================================================== */
+const BETS = [5, 10, 20, 40, 50];   // allowed bets (casino coins)
+const START_STACK = 1000;           // free coins every player starts with (and rebuys)
+const MAX_PLAYERS = 5;              // seats at the table
+const MAX_PAYOUT = 1200;            // hard cap on one player's payout in one round
+const BATTLE_ODDS = 0.12;           // chance a round is a Battle Bonyas round
+const DEALER_STAND = 17;            // dealer stands on 17, including soft 17
+const SPECIAL_DIE_FACES = [0, 0, 1, 1, 2, 2]; // the special-card die
+const RANKS = ['2','3','4','5','6','7','8','9','10','J','Q','K','A'];
+const SUITS = ['\u2660','\u2665','\u2666','\u2663'];
+const MAX_CARDS = 5;                // most cards a hand can hold (3 hits max)
+const MAX_HITS = 3;
+function mulberry32(a){ return function(){ a|=0; a=a+0x6D2B79F5|0; let t=Math.imul(a^a>>>15,1|a); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; }; }
+function randomSeed(){ if (typeof crypto!=='undefined' && crypto.getRandomValues){ const a=new Uint32Array(1); crypto.getRandomValues(a); return a[0]>>>0; } return (Math.random()*4294967296)>>>0; }
+/* Seeded rng carried in the state (serializable — just an integer).
+   Every deck shuffle, special-die roll and Battle Bonyas roll advances it. */
+function rngNext(st){
+  let a=(st.rngState|0)+0x6D2B79F5|0; st.rngState=a;
+  let t=Math.imul(a^a>>>15,1|a); t=t+Math.imul(t^t>>>7,61|t)^t;
+  return ((t^t>>>14)>>>0)/4294967296;
+}
+function shuffle(arr, next){ for(let i=arr.length-1;i>0;i--){ const j=Math.floor(next()*(i+1)); const t=arr[i]; arr[i]=arr[j]; arr[j]=t; } return arr; }
+function clone(o){ return JSON.parse(JSON.stringify(o)); }
+function buildDeck(){
+  const deck=[];
+  for(const s of SUITS) for(const r of RANKS) deck.push({id:r+s, rank:r, suit:s});
+  for(let i=1;i<=6;i++) deck.push({id:'SP'+i, rank:'SP', suit:'special', special:true});
+  return deck; // 52 standard + 6 special = 58
+}
+function isSpecial(c){ return !!c && !!c.special; }
+
+/* ---- hand value: numbered = face, J/Q/K = 10, Ace = 1 or 11 (best total
+   <= 21), special = the round's shared specialTotal. ---- */
+function bestValue(hand, specialTotal){
+  specialTotal=specialTotal||0;
+  let total=0, aces=0;
+  for(const c of hand){
+    if(c.special) total+=specialTotal;
+    else if(c.rank==='A'){ aces++; total+=1; }
+    else if(c.rank==='J'||c.rank==='Q'||c.rank==='K') total+=10;
+    else total+=parseInt(c.rank,10);
+  }
+  let soft=false;
+  while(aces>0 && total+10<=21){ total+=10; aces--; soft=true; }
+  return {total:total, soft:soft, bust:total>21};
+}
+
+/* ---- hand classes for comparing vs the dealer (higher class wins
+   regardless of total): bust 0, normal 1, twentyone 2 (21, <5 cards),
+   five 3 (5 cards, <=21), five21 4 (5 cards, exactly 21). Same class ->
+   higher total wins; equal total -> push. ---- */
+function handClass(hand, specialTotal){
+  const v=bestValue(hand, specialTotal||0);
+  if(v.bust) return {cls:0, name:'bust', total:v.total};
+  if(hand.length>=MAX_CARDS && v.total===21) return {cls:4, name:'five21', total:v.total};
+  if(hand.length>=MAX_CARDS) return {cls:3, name:'five', total:v.total};
+  if(v.total===21) return {cls:2, name:'twentyone', total:v.total};
+  return {cls:1, name:'normal', total:v.total};
+}
+function currentPlayer(st){ return playerById(st, st.turnPlayerId); }
+function playerById(st,id){ return st.players.find(p=>p.id===id)||null; }
+function playerIndex(st,id){ return st.players.findIndex(p=>p.id===id); }
+function entrants(st){ return st.players.filter(p=>!p.left && !p.spectating && p.bet>0); }
+function activeEntrants(st){ return entrants(st).filter(p=>!p.stood && !p.busted); }
+
+/* ---- game state ---- */
+function newGame(playerNames, seed, opts){
+  opts=opts||{};
+  const names=(playerNames||[]).map(n=>{
+    if(typeof n==='string') return {name:n, isBot:false};
+    return {name:n.name||'Player', isBot:!!n.isBot};
+  });
+  if(names.length<1||names.length>MAX_PLAYERS) throw new Error('Black Nyack needs 1-5 players, got '+names.length);
+  const s=(seed===undefined?randomSeed():seed)>>>0;
+  const st={ seed:s, rngState:s, roundNumber:1, phase:'betting',
+    players: names.map((n,i)=>({id:'p'+i, name:n.name, isBot:n.isBot, seat:i,
+      stack:START_STACK, bet:0, doubled:false, hand:[], stood:false, busted:false,
+      spectating:false, decided:false, left:false})),
+    dealer:{hand:[]}, deck:[],
+    round:{specialTotal:0, battle:false, battleWinnerId:null, deadCount:0, log:[]},
+    turnPlayerId:null, results:null, version:1 };
+  st.log=st.round.log; // alias: the log lives on the round, st.log is a shortcut
+  rollBattle(st, opts.forceBattle);
+  st.round.log.push('Black Nyack — round 1. Place your bet (5 / 10 / 20 / 40 / 50) or spectate.');
+  return st;
+}
+
+/* Battle Bonyas roll: at the START of each round, when betting opens.
+   opts.forceBattle (true/false) overrides the roll — used by tests. */
+function rollBattle(st, force){
+  let on;
+  if(force===true) on=true;
+  else if(force===false) on=false;
+  else on=rngNext(st)<BATTLE_ODDS;
+  st.round.battle=on; st.round.battleWinnerId=null;
+  if(on) st.round.log.push('BATTLE BONYAS is live this round! The single best winning hand takes a huge bonus.');
+  return on;
+}
+
+/* ---- dealing ---- */
+function rollSpecialDie(st, whoName){
+  const roll=SPECIAL_DIE_FACES[Math.floor(rngNext(st)*6)];
+  st.round.specialTotal+=roll;
+  st.round.log.push((whoName||'Someone')+' rolled '+roll+' — special cards now worth '+st.round.specialTotal+'.');
+  return roll;
+}
+function dealOne(st, toHand, faceUp, whoName){
+  const c=st.deck.pop();
+  if(!c) return null;
+  c.faceUp = c.special ? true : !!faceUp; // specials are ALWAYS face-up, even as a 2nd card
+  toHand.push(c);
+  if(c.special) rollSpecialDie(st, whoName);
+  return c;
+}
+function dealRound(st){
+  st.deck=shuffle(buildDeck(), function(){ return rngNext(st); });
+  st.round.specialTotal=0;
+  const ent=entrants(st);
+  for(const p of ent) dealOne(st, p.hand, true, p.name);   // 1st card: face up
+  dealOne(st, st.dealer.hand, true, 'Dealer');
+  for(const p of ent) dealOne(st, p.hand, false, p.name);  // 2nd card: hole (unless special)
+  dealOne(st, st.dealer.hand, false, 'Dealer');
+  st.phase='playerTurns';
+  st.turnPlayerId=ent.length? ent[0].id : null;
+  st.round.log.push('Round '+st.roundNumber+' — cards dealt to '+ent.map(p=>p.name).join(', ')+'. Dealer shows one card.');
+  return {ok:true};
+}
+function checkBettingComplete(st){
+  const seated=st.players.filter(p=>!p.left);
+  if(!seated.every(p=>p.decided)) return {ok:true, waiting:true};
+  const ent=seated.filter(p=>p.bet>0);
+  if(!ent.length){
+    // DEAD ROUND: nobody bet. No cards are dealt, bets reset (none were
+    // placed), the same round's Battle Bonyas flag stands, betting re-opens.
+    // The dead-round count is kept so a bot's seeded coin-flip changes on
+    // the retry — without it a bot that spectated once would spectate
+    // forever (same seed, same round, same decision) and the table could
+    // never start when everyone spectates.
+    st.round.deadCount=(st.round.deadCount||0)+1;
+    st.round.log.push('Dead round — nobody bet. Place your bets and try again.');
+    for(const p of seated){ p.decided=false; p.spectating=false; }
+    return {ok:true, dead:true};
+  }
+  return dealRound(st);
+}
+function advanceTurn(st){
+  const next=activeEntrants(st)[0]; // seats act in order; first not yet done is next
+  if(next){ st.turnPlayerId=next.id; return; }
+  st.turnPlayerId=null;
+  st.phase='dealerTurn';
+  dealerPlay(st);
+}
+
+/* ---- dealer: reveal the hole card, hit while < 17, stand on 17+
+   INCLUDING soft 17. If every entrant busted, the dealer does not draw. ---- */
+function dealerPlay(st){
+  for(const c of st.dealer.hand) c.faceUp=true;
+  const ent=entrants(st);
+  if(!ent.length){
+    st.round.log.push('No players left — the round ends.');
+    return settle(st);
+  }
+  if(ent.every(p=>p.busted)){
+    st.round.log.push('Dealer reveals — every player busted, so the dealer does not draw.');
+    return settle(st);
+  }
+  while(bestValue(st.dealer.hand, st.round.specialTotal).total < DEALER_STAND){
+    if(!dealOne(st, st.dealer.hand, true, 'Dealer')) break;
+  }
+  const dv=bestValue(st.dealer.hand, st.round.specialTotal);
+  if(dv.bust) st.round.log.push('Dealer busts with '+dv.total+'.');
+  else st.round.log.push('Dealer stands on '+dv.total+'.');
+  return settle(st);
+}
+
+/* ---- settlement ----
+   B = total bet at risk (original bet, doubled if doubled).
+   Lose -> 0. Push -> B (stake back). Win -> 2*B, +3*B if the player's
+   total is exactly 21 (Blacknyack bonus), +5*B if the player holds 5
+   cards, +2*B per special card in the player's hand, +5*B if the player
+   is the Battle Bonyas winner. Total payout is capped at MAX_PAYOUT. */
+function settle(st){
+  const dc=handClass(st.dealer.hand, st.round.specialTotal);
+  const results={};
+  let bestWinner=null; // best winning hand: (class, total, specials, earliest seat)
+  function better(a,b){
+    if(a.cls!==b.cls) return a.cls>b.cls;
+    if(a.total!==b.total) return a.total>b.total;
+    if(a.specials!==b.specials) return a.specials>b.specials;
+    return false; // full tie: the earlier seat (first seen) keeps it
+  }
+  for(const p of entrants(st)){
+    const pc=handClass(p.hand, st.round.specialTotal);
+    const B=p.bet;
+    const specials=p.hand.filter(isSpecial).length;
+    const bd={win:0, blacknyack:0, fiveCard:0, special:0, battle:0};
+    let outcome, payout=0;
+    if(pc.cls===0) outcome='lose';                       // player busts: loses even if the dealer busts
+    else if(dc.cls===0) outcome='win';                   // dealer busts
+    else if(pc.cls>dc.cls || (pc.cls===dc.cls && pc.total>dc.total)) outcome='win';
+    else if(pc.cls===dc.cls && pc.total===dc.total) outcome='push';
+    else outcome='lose';
+    if(outcome==='win'){
+      bd.win=2*B;
+      if(pc.total===21) bd.blacknyack=3*B;
+      if(p.hand.length>=MAX_CARDS) bd.fiveCard=5*B;
+      bd.special=2*B*specials;
+      payout=bd.win+bd.blacknyack+bd.fiveCard+bd.special;
+    } else if(outcome==='push'){
+      bd.win=B; payout=B; // stake back, no bonuses on a push
+    }
+    results[p.id]={outcome:outcome, payout:payout, breakdown:bd, total:pc.total,
+      handClass:pc.name, specials:specials, bet:B, battleWinner:false};
+    if(outcome==='win'){
+      const cand={pid:p.id, cls:pc.cls, total:pc.total, specials:specials, seat:p.seat};
+      if(!bestWinner || better(cand, bestWinner)) bestWinner=cand;
+    }
+  }
+  if(st.round.battle && bestWinner){
+    st.round.battleWinnerId=bestWinner.pid;
+    const r=results[bestWinner.pid];
+    r.breakdown.battle=5*r.bet;
+    r.payout+=r.breakdown.battle;
+    r.battleWinner=true;
+  }
+  for(const p of entrants(st)){
+    const r=results[p.id];
+    const uncapped=r.breakdown.win+r.breakdown.blacknyack+r.breakdown.fiveCard+r.breakdown.special+r.breakdown.battle;
+    r.capped = r.payout>MAX_PAYOUT;
+    if(r.capped) r.payout=MAX_PAYOUT;
+    r.uncapped=uncapped;
+    p.stack+=r.payout;
+    p.bet=0; p.doubled=false;
+    st.round.log.push(p.name+' '+(r.outcome==='win' ? 'wins '+r.payout+' ('+r.total+')'
+      : r.outcome==='push' ? 'pushes — stake back '+r.payout+' ('+r.total+')'
+      : 'loses ('+r.total+')')+(r.battleWinner?' — BATTLE BONYAS WINNER!':''));
+  }
+  st.results=results;
+  st.phase='settled';
+  st.turnPlayerId=null;
+  return {ok:true, results:results};
+}
+
+/* ---- next round: back to betting, fresh Battle Bonyas roll ---- */
+function nextRound(st, opts){
+  opts=opts||{};
+  st.roundNumber++;
+  const oldLog=st.round.log;
+  st.round={specialTotal:0, battle:false, battleWinnerId:null, deadCount:0, log:oldLog};
+  st.log=st.round.log;
+  for(const p of st.players){
+    p.hand=[]; p.bet=0; p.doubled=false; p.stood=false; p.busted=false;
+    p.spectating=false; p.decided=false;
+  }
+  st.dealer={hand:[]}; st.deck=[]; st.results=null;
+  st.phase='betting'; st.turnPlayerId=null;
+  rollBattle(st, opts.forceBattle);
+  st.round.log.push('Round '+st.roundNumber+' — place your bets (5 / 10 / 20 / 40 / 50) or spectate.');
+  return {ok:true, round:st.roundNumber, battle:st.round.battle};
+}
+
+/* ---- leave / remove: any player may leave at any time. ----
+   Betting phase: the bet is refunded (the round has not started).
+   Mid-round: the cards return to the deck (reshuffled) and the bet stays
+   lost in the pot. The turn advances if it was theirs; the round ends
+   (settles) if no entrants remain. */
+function leavePlayer(st, playerId){
+  const idx=playerIndex(st,playerId);
+  if(idx<0) return {ok:false, error:'unknown player'};
+  const me=st.players[idx];
+  if(me.left) return {ok:false, error:'you already left'};
+  const wasTurn = st.phase==='playerTurns' && st.turnPlayerId===playerId;
+  if(st.phase==='betting' && me.bet>0){
+    me.stack+=me.bet; me.bet=0;
+    st.round.log.push(me.name+' left before the deal — bet refunded.');
+  } else if(me.hand.length){
+    st.deck.push.apply(st.deck, me.hand);
+    shuffle(st.deck, function(){ return rngNext(st); });
+    st.round.log.push(me.name+' left — their cards return to the deck.');
+  } else {
+    st.round.log.push(me.name+' left the game.');
+  }
+  me.hand=[]; me.bet=0; me.doubled=false; me.stood=true; me.busted=false;
+  me.decided=true; me.spectating=true; me.left=true;
+  if(!st.players.some(p=>!p.left)){ st.phase='over'; st.turnPlayerId=null; return {ok:true, gameOver:true}; }
+  if(st.phase==='betting') return checkBettingComplete(st);
+  if(st.phase==='playerTurns'){
+    if(wasTurn) advanceTurn(st);
+    else if(!activeEntrants(st).length){ st.turnPlayerId=null; st.phase='dealerTurn'; dealerPlay(st); }
+  }
+  return {ok:true};
+}
+function removePlayer(st, playerId){ return leavePlayer(st, playerId); }
+
+/* ---- actions ---- */
+function applyAction(st, playerId, action){
+  if(!st || !action || typeof action.type!=='string') return {ok:false, error:'bad action'};
+  const me=playerById(st,playerId);
+  if(!me) return {ok:false, error:'unknown player'};
+  const type=action.type;
+  if(type==='leave') return leavePlayer(st, playerId);
+  if(st.phase==='over') return {ok:false, error:'game is over'};
+  if(me.left) return {ok:false, error:'you have left the game'};
+
+  if(type==='rebuy'){
+    if(st.phase!=='betting' && st.phase!=='settled') return {ok:false, error:'you can only rebuy between rounds'};
+    if(st.phase==='betting' && me.decided) return {ok:false, error:'you already decided this round — rebuy next round'};
+    if(me.stack>0) return {ok:false, error:'you still have chips — no rebuy needed'};
+    me.stack=START_STACK;
+    st.round.log.push(me.name+' rebought '+START_STACK+' free chips.');
+    return {ok:true, stack:me.stack};
+  }
+  if(type==='nextRound'){
+    if(st.phase!=='settled') return {ok:false, error:'the round is not over yet'};
+    return nextRound(st, action);
+  }
+
+  if(st.phase==='betting'){
+    if(type==='placeBet'){
+      if(me.decided) return {ok:false, error:'you already decided this round'};
+      const amount=action.amount;
+      if(BETS.indexOf(amount)<0) return {ok:false, error:'bet must be one of '+BETS.join(', ')};
+      if(me.stack<amount) return {ok:false, error:'not enough chips for a '+amount+' bet'};
+      me.stack-=amount; me.bet=amount; me.decided=true; me.spectating=false;
+      st.round.log.push(me.name+' bets '+amount+'.');
+      return checkBettingComplete(st);
+    }
+    if(type==='spectate'){
+      if(me.decided) return {ok:false, error:'you already decided this round'};
+      me.decided=true; me.spectating=true;
+      st.round.log.push(me.name+' spectates this round.');
+      return checkBettingComplete(st);
+    }
+    return {ok:false, error:'betting phase — place a bet or spectate'};
+  }
+
+  if(st.phase==='playerTurns'){
+    if(playerId!==st.turnPlayerId) return {ok:false, error:'not your turn'};
+    if(me.spectating || me.bet<=0) return {ok:false, error:'you are not in this round'};
+    if(me.stood || me.busted) return {ok:false, error:'your turn is over'};
+    if(type==='hit'){
+      if(me.hand.length>=MAX_CARDS) return {ok:false, error:'you already have 5 cards — the most you can hold'};
+      if(!dealOne(st, me.hand, true, me.name)) return {ok:false, error:'the deck is empty'};
+      const v=bestValue(me.hand, st.round.specialTotal);
+      if(v.bust){ me.busted=true; me.stood=true; st.round.log.push(me.name+' hits and busts.'); }
+      else if(me.hand.length>=MAX_CARDS){ me.stood=true; st.round.log.push(me.name+' hits and holds 5 cards.'); }
+      else st.round.log.push(me.name+' hits.');
+      advanceTurn(st);
+      return {ok:true};
+    }
+    if(type==='stay'){
+      me.stood=true;
+      st.round.log.push(me.name+' stays.');
+      advanceTurn(st);
+      return {ok:true};
+    }
+    if(type==='double'){
+      if(me.hand.length!==2) return {ok:false, error:'double down is only possible with exactly 2 cards'};
+      if(me.stack<me.bet) return {ok:false, error:'not enough chips to double down'};
+      me.stack-=me.bet; me.bet*=2; me.doubled=true;
+      if(!dealOne(st, me.hand, true, me.name)) return {ok:false, error:'the deck is empty'};
+      const v=bestValue(me.hand, st.round.specialTotal);
+      if(v.bust){ me.busted=true; st.round.log.push(me.name+' doubles down and busts.'); }
+      else st.round.log.push(me.name+' doubles down.');
+      me.stood=true;
+      advanceTurn(st);
+      return {ok:true};
+    }
+    return {ok:false, error:'your turn — hit, stay, or double down'};
+  }
+  if(st.phase==='dealerTurn') return {ok:false, error:'the dealer is playing'};
+  if(st.phase==='settled') return {ok:false, error:'round is over — start the next round'};
+  return {ok:false, error:'not a valid action right now'};
+}
+
+/* ---- legalActions: what a player may do right now (UI + tests) ---- */
+function legalActions(st, playerId){
+  const out=[];
+  const me=playerById(st,playerId); if(!me || me.left) return out;
+  out.push({type:'leave'});
+  if(st.phase==='betting'){
+    if(!me.decided){
+      for(const b of BETS) if(b<=me.stack) out.push({type:'placeBet', amount:b});
+      out.push({type:'spectate'});
+    }
+    if(me.stack===0 && !me.decided) out.push({type:'rebuy'});
+    return out;
+  }
+  if(st.phase==='playerTurns' && st.turnPlayerId===playerId && !me.stood && !me.busted){
+    if(me.hand.length<MAX_CARDS) out.push({type:'hit'});
+    out.push({type:'stay'});
+    if(me.hand.length===2 && me.stack>=me.bet) out.push({type:'double'});
+    return out;
+  }
+  if(st.phase==='settled'){
+    out.push({type:'nextRound'});
+    if(me.stack===0) out.push({type:'rebuy'});
+  }
+  return out;
+}
+
+/* ---- filtered views: NEVER leak hidden card values. ----
+   A viewer sees their own full hand. Everyone else's hand shows ONLY
+   face-up cards; a hole card is {hidden:true} (its real id IS its rank
+   + suit, so it must never appear). The dealer's hand shows only face-up
+   cards until the round is settled, then the full hand. Special cards are
+   never hidden (they are always face-up). The log never contains card
+   ranks — it only ever names counts and totals. */
+function viewFor(st, viewerId){
+  const viewer=playerById(st,viewerId);
+  const settled=st.phase==='settled';
+  const players=st.players.map(p=>{
+    const isViewer=viewer&&viewer.id===p.id;
+    return {
+      id:p.id, name:p.name, isBot:!!p.isBot, seat:p.seat,
+      stack:p.stack, bet:p.bet, doubled:!!p.doubled,
+      stood:!!p.stood, busted:!!p.busted, spectating:!!p.spectating, left:!!p.left,
+      cardCount:p.hand.length,
+      total:(isViewer||settled) ? bestValue(p.hand, st.round.specialTotal).total : null,
+      cards:p.hand.map(c=>{
+        if(isViewer || c.faceUp) return {id:c.id, rank:c.rank, suit:c.suit, special:!!c.special, faceUp:true};
+        return {hidden:true};
+      })
+    };
+  });
+  return {
+    seed:st.seed, roundNumber:st.roundNumber, phase:st.phase,
+    turnPlayerId:st.turnPlayerId,
+    round:{specialTotal:st.round.specialTotal, battle:st.round.battle, battleWinnerId:st.round.battleWinnerId},
+    players:players,
+    dealer:{ cardCount:st.dealer.hand.length,
+      total: settled ? bestValue(st.dealer.hand, st.round.specialTotal).total : null,
+      cards:st.dealer.hand.map(c=>{
+        if(settled || c.faceUp) return {id:c.id, rank:c.rank, suit:c.suit, special:!!c.special, faceUp:true};
+        return {hidden:true};
+      }) },
+    deckCount:st.deck.length,
+    results: settled ? st.results : null,
+    log:st.round.log.slice(-40), version:st.version
+  };
+}
+function filteredView(st, viewerId){ return viewFor(st, viewerId); }
+function stateFingerprint(st){
+  const s=JSON.stringify([st.phase, st.roundNumber, st.turnPlayerId, st.deck.length,
+    st.round.specialTotal, st.round.battle,
+    st.players.map(p=>[p.id,p.stack,p.bet,p.hand.map(c=>c.id),p.stood,p.busted,p.left]),
+    st.dealer.hand.map(c=>c.id), st.results]);
+  let h=5381; for(let i=0;i<s.length;i++) h=((h<<5)+h+s.charCodeAt(i))>>>0; return h;
+}
+function serializeState(st){ return clone(st); }
+function deserializeState(s){ return clone(s); }
+
+/* ---- bots ----
+   Betting: usually bets a random affordable amount, sometimes spectates
+   (30%); never bets more than the stack; broke bots spectate.
+   In turn: hit while the best total is <= 16 (never with 5 cards);
+   double on a 2-card 10 or 11 if affordable — always on 11, 50% on 10;
+   otherwise stay. A bot only ever reads its OWN hand. The default
+   coin-flip is derived from the seeded state (no Math.random), so bot
+   play is reproducible from the seed; pass an explicit rnd to override. */
+function botChooseAction(st, playerId, rnd){
+  const me=playerById(st,playerId); if(!me || me.left) return null;
+  if(st.phase==='betting'){
+    if(me.decided) return null;
+    if(me.stack<=0) return {type:'spectate'};
+    const r=rnd||mulberry32(((st.seed>>>0)^(st.roundNumber*2654435761)^(me.seat*97)^0xB07^((st.round.deadCount||0)*7919))>>>0);
+    if(r()<0.3) return {type:'spectate'};
+    const affordable=BETS.filter(b=>b<=me.stack);
+    if(!affordable.length) return {type:'spectate'};
+    return {type:'placeBet', amount:affordable[Math.floor(r()*affordable.length)]};
+  }
+  if(st.phase!=='playerTurns' || st.turnPlayerId!==playerId) return null;
+  if(me.stood || me.busted) return null;
+  const v=bestValue(me.hand, st.round.specialTotal);
+  const r=rnd||mulberry32(((st.seed>>>0)^(st.roundNumber*2654435761)^(me.seat*97)^(me.hand.length*13)^(v.total*7))>>>0);
+  if(me.hand.length===2 && (v.total===10||v.total===11) && me.stack>=me.bet){
+    if(v.total===11) return {type:'double'};
+    if(r()<0.5) return {type:'double'};
+  }
+  if(v.total<=16 && me.hand.length<MAX_CARDS) return {type:'hit'};
+  return {type:'stay'};
+}
+
+if(typeof module!=='undefined'&&module.exports){ module.exports={BETS,START_STACK,MAX_PLAYERS,MAX_PAYOUT,BATTLE_ODDS,DEALER_STAND,SPECIAL_DIE_FACES,RANKS,SUITS,MAX_CARDS,MAX_HITS,mulberry32,randomSeed,shuffle,buildDeck,isSpecial,bestValue,handClass,newGame,currentPlayer,playerById,playerIndex,entrants,applyAction,dealRound,dealerPlay,settle,nextRound,rollBattle,rollSpecialDie,viewFor,filteredView,leavePlayer,removePlayer,legalActions,botChooseAction,stateFingerprint,serializeState,deserializeState}; }
+</script>
+<script>
+"use strict";
+/* =====================================================================
+   BLACK NYACK — UI + multiplayer (pass 2).
+   The engine lives in the script block above (pure JS, no DOM). This
+   block renders it: the round table from the screenshots, the dealer
+   Bonyas with his taunts and breakable legs, the two songs, and the
+   PeerJS multiplayer (host-authoritative, filtered views) copied from
+   the Five-Card Poker / Wellington pattern. Local cosmetic fun (leg
+   breaking, taunts) never touches game state and is never synced.
+   ===================================================================== */
+const $=id=>document.getElementById(id);
+function show(id,on){ const el=$(id); if(el) el.classList.toggle('hidden',!on); }
+function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+function toast(msg){ const el=$('effectPrompt'); if(el) el.textContent=msg||''; }
+function pace(a,b){ return a+Math.random()*(b-a); }
+
+/* ---------- state (UI-side) ---------- */
+let view=null;            // filtered view of the game (what THIS player may see)
+let fullState=null;       // host / local only: the true state
+let myId=null;
+let playMode='local';     // local | online
+let isHost=false, roomCode=null;
+let peer=null, conns={}, clients={};
+let conn=null;
+let lobbyPlayers=[];      // {id,name,isBot} in lobby (host view)
+let spectators={};        // cid -> {name, clientId} pure spectators (late joiners)
+let disconnectedByClient={}; // clientId -> {cid, seatId, name, timer}
+let isSpectator=false;    // I joined mid-game and only watch
+let myClientId=null;
+function getClientId(){
+  if(myClientId) return myClientId;
+  try{ myClientId=localStorage.getItem('blacknyack-client-id'); }catch(e){}
+  if(!myClientId){ myClientId='c'+Math.random().toString(36).slice(2,10); try{ localStorage.setItem('blacknyack-client-id', myClientId); }catch(e){} }
+  return myClientId;
+}
+let lobbyBots=0;
+let roomVisibility='private';
+let roomMaxPlayers=5;
+let pendingLobbyBots=0;
+let dirPeer=null, dirSlot=0;
+let roomBanned=[];
+let lastAckedN=-1, resendTimer=null, heartbeatTimer=null, helloTimer=null, stateReceived=false;
+let botTimer=null, gameId=0;
+let lastDealtRound=0, seenLogCount=0;
+let winDialogShownFor=0;
+let myHoleRevealed={};   // card id -> true (my own hole card, peeked at this round)
+let lastRoundSeen=0;
+let leaving=false;
+const BOT_PACE={thinkMin:1100, thinkMax:1800};
+const DISCONNECT_GRACE_MS=10000;
+const SEAT_COLORS=['#4c9aff','#58b368','#f2c14e','#e5484d','#b388ff'];
+const DIRECTORY_SLOTS=10;
+function directoryPeerId(n){ return 'black-nyack-directory-v1-'+n; }
+function peerIdFor(code){ return 'black-nyack-v1-'+code.toUpperCase(); }
+function makeCode(){ const chars='ABCDEFGHJKMNPQRSTUVWXYZ23456789'; let s=''; for(let i=0;i<4;i++) s+=chars[Math.floor(Math.random()*chars.length)]; return s; }
+function myPlayerName(){ return ($('nameInput').value||'').trim()||'Player'; }
+function botNames(n){ const pool=['Ada','Boris','Cleo','Dante','Esme']; return pool.slice(0,n).map(x=>x+' (bot)'); }
+
+/* ---------- music: main loop every match, battle song only in Battle Bonyas ---------- */
+let musicOn=true, musicStarted=false, currentTrack=null;
+function musicTrackFor(battle){ return battle ? 'battle.mp3' : 'music.mp3'; }
+function audioFor(track){ return track==='battle.mp3' ? $('musicBattle') : $('musicMain'); }
+function pauseBoth(){ try{ $('musicMain').pause(); }catch(e){} try{ $('musicBattle').pause(); }catch(e){} }
+function playTrack(track){
+  if(!musicOn) return;
+  const want=audioFor(track), other=track==='battle.mp3'?$('musicMain'):$('musicBattle');
+  try{ other.pause(); }catch(e){}
+  if(currentTrack===track && !want.paused) return;
+  currentTrack=track;
+  try{ want.volume=0.45; }catch(e){}
+  const pr=null; let p=null;
+  try{ p=want.play(); }catch(e){ p=null; }
+  if(p&&p.catch) p.catch(()=>{ show('musicHint', true); });
+}
+function ensureMusic(){
+  if(!musicStarted||!view) return;
+  if(!musicOn){ pauseBoth(); currentTrack=null; return; }
+  playTrack(musicTrackFor(!!(view.round&&view.round.battle)));
+}
+function startMatchMusic(){
+  musicStarted=true;
+  try{ $('musicMain').currentTime=0; $('musicBattle').currentTime=0; }catch(e){}
+  currentTrack=null;
+  ensureMusic();
+}
+function stopMusic(){ musicStarted=false; currentTrack=null; pauseBoth(); show('musicHint', false); }
+function toggleMusic(){
+  musicOn=!musicOn;
+  $('musicToggle').textContent=musicOn?'🔊 Music on':'🔇 Music off';
+  if(!musicOn){ pauseBoth(); currentTrack=null; }
+  else if(musicStarted){ currentTrack=null; ensureMusic(); }
+}
+
+/* ---------- thwack (synthesized WebAudio — no audio file) ---------- */
+let audioCtx=null;
+function playThwack(){
+  try{
+    if(!audioCtx) audioCtx=new (window.AudioContext||window.webkitAudioContext)();
+    if(audioCtx.state==='suspended') audioCtx.resume();
+    const t=audioCtx.currentTime;
+    const dur=0.2, buf=audioCtx.createBuffer(1, audioCtx.sampleRate*dur, audioCtx.sampleRate);
+    const d=buf.getChannelData(0);
+    for(let i=0;i<d.length;i++) d[i]=(Math.random()*2-1)*Math.pow(1-i/d.length, 2.5);
+    const src=audioCtx.createBufferSource(); src.buffer=buf;
+    const f=audioCtx.createBiquadFilter(); f.type='lowpass'; f.frequency.value=420;
+    const g=audioCtx.createGain(); g.gain.setValueAtTime(0.9, t); g.gain.exponentialRampToValueAtTime(0.001, t+dur);
+    src.connect(f); f.connect(g); g.connect(audioCtx.destination); src.start(t);
+    const o=audioCtx.createOscillator(); o.type='sine'; o.frequency.setValueAtTime(120, t); o.frequency.exponentialRampToValueAtTime(48, t+0.18);
+    const og=audioCtx.createGain(); og.gain.setValueAtTime(0.7, t); og.gain.exponentialRampToValueAtTime(0.001, t+0.2);
+    o.connect(og); og.connect(audioCtx.destination); o.start(t); o.stop(t+0.22);
+  }catch(e){ /* sound is cosmetic — never break the game */ }
+}
+
+/* ---------- Bonyas the dealer: taunts + breakable legs (LOCAL cosmetic only) ---------- */
+let legBreaks=0, lastTauntAt=0, tauntTimer=null;
+const TAUNTS={
+  idle:["Welcome to MY table. The coins are basically already mine.","I have never lost. Not once. Ask anyone. (Don't ask anyone.)","You play like my grandmother. And she is a chair.","Nice cards. Shame about the player holding them.","I deal the cards, I take the coins, I look fabulous. That's the job.","Hurry up. My legs are getting tired just watching you think."],
+  bust:["HA! Busted! Did you even LOOK at your cards?","Beautiful. Just beautiful. Another one bites the felt.","Over 21! I saw that coming from the next table.","Busted. The house thanks you for your donation."],
+  dealerWin:["The dealer wins again. Shocking. Truly shocking.","I win. You lose. The natural order is restored.","All your coins are belong to me. ...What? I said what I said."],
+  playerWin:["Twenty-one. How... original. Enjoy it. It won't happen again.","You won. Don't get used to it.","Hmph. Beginner's luck. Obviously."],
+  fiveCard:["Five cards?! ...That shouldn't be allowed. I'm checking the deck.","FIVE cards? Who taught you to play like that?"],
+  battle:["Battle Bonyas?! Ugh. FINE. One of you gets lucky. Exactly ONE.","Battle Bonyas! Don't get excited — the bonus is still basically mine."],
+  legs:["OW! MY LEGS! ...You know what? I'm still dealing. Sit down.","MY LEGS! That hurt! A lot! ...You're still losing, though.","Again?! My legs! Fine. FINE. The game goes on."],
+  battleWin:["Battle Bonyas winner! ...I hope you're happy. I'm not."]
+};
+function pickTaunt(kind){ const arr=TAUNTS[kind]||TAUNTS.idle; return arr[Math.floor(Math.random()*arr.length)]; }
+function dealerSay(kindOrText){
+  const el=$('tauntBubble'); if(!el) return;
+  el.textContent=(TAUNTS[kindOrText]?pickTaunt(kindOrText):kindOrText);
+  lastTauntAt=Date.now();
+}
+function startTauntTimer(){
+  stopTauntTimer();
+  tauntTimer=setInterval(()=>{
+    if($('gameScreen').classList.contains('hidden')) return;
+    if(Date.now()-lastTauntAt>25000) dealerSay('idle');
+  }, 5000);
+}
+function stopTauntTimer(){ clearInterval(tauntTimer); tauntTimer=null; }
+function breakLegs(){
+  legBreaks++;
+  const n=$('legsCount'); if(n) n.textContent=legBreaks;
+  playThwack();
+  const svg=$('dealerSvg'), legs=$('dealerLegs'), bat=$('bat');
+  if(svg){ svg.classList.remove('bonked'); void svg.getBoundingClientRect(); svg.classList.add('bonked'); }
+  if(legs) legs.classList.add('broken');
+  if(bat){ bat.classList.remove('swing'); void bat.getBoundingClientRect(); bat.classList.add('swing'); }
+  dealerSay('legs');
+  const zone=$('dealerZone');
+  if(zone){
+    const fl=document.createElement('div');
+    fl.className='bat-hit-float'; fl.textContent='CRACK! +1';
+    zone.appendChild(fl);
+    setTimeout(()=>{ if(fl.parentNode) fl.parentNode.removeChild(fl); }, 1000);
+  }
+  toast('🦵⚾ CRACK! Bonyas\' legs: broken '+legBreaks+' time'+(legBreaks===1?'':'s')+'. He\'s still dealing. (Local fun only — the table doesn\'t care.)');
+}
+
+/* ---- round-table layout: landscape / desktop = the round table from the
+   screenshots (dealer top-center, seats on the bottom arc); portrait =
+   stacked seats with a "turn your phone sideways" hint. ---- */
+function layoutModeFor(width, height){ return (width>=700 && width>height) ? 'round' : 'stacked'; }
+function seatPositionsFor(n){
+  const out=[];
+  if(n===1) return [{x:50, y:80}];
+  for(let i=0;i<n;i++){
+    const a=(25 + i*(130/(n-1))) * Math.PI/180; // 25°..155° along the bottom arc, 90° = bottom center
+    out.push({x:50+38*Math.cos(a), y:48+34*Math.sin(a)});
+  }
+  return out;
+}
+function applyLayoutMode(){
+  const round=(typeof window!=='undefined'&&window.matchMedia)
+    ? matchMedia('(orientation: landscape) and (min-width: 700px)').matches : false;
+  document.body.classList.toggle('round-table', !!round);
+  return round ? 'round' : 'stacked';
+}
+function positionRoundSeats(){
+  if(!view) return;
+  const round=document.body.classList.contains('round-table');
+  const seats=document.querySelectorAll('.table-wrap .seat[data-pid]');
+  if(!round){ seats.forEach(el=>{ el.style.left=''; el.style.top=''; el.style.transform=''; }); return; }
+  const n=seats.length; if(!n) return;
+  const mySeat=(view.players.find(p=>p.id===myId)||{seat:0}).seat||0;
+  const spots=seatPositionsFor(n);
+  const centerIdx=Math.floor((n-1)/2);
+  seats.forEach(el=>{
+    const pid=el.getAttribute('data-pid');
+    const p=view.players.find(x=>x.id===pid); if(!p) return;
+    const rel=((p.seat-mySeat)%n+n)%n;
+    const pos=spots[(rel+centerIdx)%n];
+    el.style.left=pos.x.toFixed(1)+'%'; el.style.top=pos.y.toFixed(1)+'%'; el.style.transform='translate(-50%,-50%)';
+  });
+}
+
+/* ---- cards ---- */
+function cardHtml(c, big){
+  const known=!!(c&&c.rank);
+  const red=known&&(c.suit==='\u2665'||c.suit==='\u2666');
+  const cls=big?'card-big':'mini-card';
+  if(!known) return '<div class="'+cls+' back">'+(big?'<span style="font-size:26px">🂠</span><span class="pts">?</span>':'?')+'</div>';
+  if(c.special){
+    const w=(view&&view.round)?view.round.specialTotal:0;
+    return '<div class="'+cls+' special" title="Special card — worth '+w+' this round">'+(big?'<span>★</span><span class="suit">SP</span><span class="pts">worth '+w+'</span>':'<span>★</span><span>SP</span>')+'</div>';
+  }
+  return '<div class="'+cls+(red?' red':'')+'">'+(big?'<span>'+esc(c.rank)+'</span><span class="suit">'+esc(c.suit)+'</span>':'<span>'+esc(c.rank)+'</span><span>'+esc(c.suit)+'</span>')+'</div>';
+}
+function miniCardHtml(c){ return cardHtml(c, false); }
+function cardValueLabel(c){
+  if(!c||!c.rank) return '?';
+  if(c.special) return ''+((view&&view.round)?view.round.specialTotal:0);
+  if(c.rank==='A') return 'A';
+  if(c.rank==='J'||c.rank==='Q'||c.rank==='K') return '10';
+  return c.rank;
+}
+function isMyHoleCard(p, idx, c){
+  return !!p && p.id===myId && idx===1 && !c.special && view && view.phase!=='settled';
+}
+function myCardHtml(c, idx, p){
+  if(isMyHoleCard(p, idx, c) && !myHoleRevealed[c.id]){
+    return '<div class="card-big back" data-hole="'+esc(c.id)+'" title="Your hole card — tap to peek"><span style="font-size:26px">🂠</span><span class="pts">hole card — tap to peek</span></div>';
+  }
+  return cardHtml(c, true);
+}
+function bannerFor(p){
+  const settled=view&&view.phase==='settled';
+  if(p.busted) return '<div class="banner bust">BUST</div>';
+  if(settled && view.results && view.results[p.id]){
+    const r=view.results[p.id];
+    if(r.outcome==='win'){
+      if(r.battleWinner) return '<div class="banner battle">⚔️ BATTLE BONYAS!</div><div class="banner win" style="top:64%">WIN!</div>';
+      return '<div class="banner win">WIN!</div>';
+    }
+    if(r.outcome==='push') return '<div class="banner push">PUSH</div>';
+    return '';
+  }
+  const n=p.cards?p.cards.length:0;
+  const total=p.total;
+  if(n>=5 && total===21) return '<div class="banner gold">BLACK NYACK</div>';
+  if(n>=5) return '<div class="banner gold">5 CARD</div>';
+  if(total===21) return '<div class="banner gold">BLACK NYACK</div>';
+  if(p.doubled) return '<div class="banner gold">DOUBLE DOWN</div>';
+  return '';
+}
+function seatColor(seat){ return SEAT_COLORS[(seat||0)%SEAT_COLORS.length]; }
+
+/* ---- render: everything on the table comes from the filtered view ---- */
+let prevPhase='', prevBusted=false, prevFive=false, lastBattleRound=0;
+function amSpectator(){
+  const me=view?view.players.find(p=>p.id===myId):null;
+  return isSpectator || !me || !!me.spectating;
+}
+function render(){
+  if(!view) return;
+  if(view.roundNumber!==lastRoundSeen){ lastRoundSeen=view.roundNumber; myHoleRevealed={}; }
+  const me=view.players.find(p=>p.id===myId)||null;
+  const isSpec=amSpectator();
+  const myDecided=!!(me&&(me.bet>0||me.spectating));
+  const isMyTurn=view.phase==='playerTurns'&&view.turnPlayerId===myId&&!isSpec;
+  const isMyBet=view.phase==='betting'&&me&&!myDecided&&!isSpec;
+  const turnP=view.players.find(p=>p.id===view.turnPlayerId);
+  const settled=view.phase==='settled';
+
+  show('battleBanner', !!(view.round&&view.round.battle));
+  if(view.round&&view.round.battle&&lastBattleRound!==view.roundNumber){
+    lastBattleRound=view.roundNumber;
+    dealerSay('battle');
+  }
+  if(me&&me.busted&&!prevBusted) dealerSay('bust');
+  if(me&&me.cards&&me.cards.length>=5&&!prevFive) dealerSay('fiveCard');
+  prevBusted=!!(me&&me.busted);
+  prevFive=!!(me&&me.cards&&me.cards.length>=5);
+
+  /* status */
+  let status='';
+  if(view.phase==='over'){ status='🏆 Game over — everyone left.'; }
+  else if(settled){
+    const wins=view.results?Object.keys(view.results).filter(id=>view.results[id].outcome==='win').map(id=>{ const p=view.players.find(x=>x.id===id); return p?p.name:id; }):[];
+    const bw=view.round&&view.round.battleWinnerId?view.players.find(x=>x.id===view.round.battleWinnerId):null;
+    status=wins.length?('🏆 Round '+view.roundNumber+' over — '+wins.join(' & ')+' beat the dealer'+(bw?' — ⚔️ '+bw.name+' takes the Battle Bonyas bonus!':'')):'😤 Round '+view.roundNumber+' over — the dealer takes it. Bonyas is insufferable about it.';
+  }
+  else if(view.phase==='betting'){
+    status=isSpec?'👀 Spectating — you\'re up for the next round. Stay on this screen: you\'ll be offered entry at the next betting round, no leaving and rejoining needed.':'🎲 Round '+view.roundNumber+' — place your bet (5 / 10 / 20 / 40 / 50) or spectate.';
+  }
+  else if(view.phase==='playerTurns'){
+    status=isMyTurn?'🃏 Your turn — Hit, Stay, or Double Down (2 cards only).':(turnP?turnP.name+' is playing…':'');
+  }
+  else if(view.phase==='dealerTurn'){ status='🎩 Dealer is playing…'; }
+  else { status='Waiting…'; }
+  const sub='Round '+view.roundNumber+' • Special total '+(view.round?view.round.specialTotal:0)+' • Deck '+view.deckCount+' cards'+(view.round&&view.round.battle?' • ⚔️ BATTLE BONYAS':'')+(me?' • Your stack: '+me.stack+' coins':'');
+  $('statusBox').innerHTML=esc(status)+'<small>'+esc(sub)+'</small>';
+
+  /* bet list (top-left, like the screenshots) */
+  $('betList').innerHTML=view.players.filter(p=>!p.left).map(p=>{
+    const right=p.bet>0?('<b>'+p.bet+' BET</b>'):(p.spectating?'<span class="tag2">spectating</span>':(view.phase==='betting'?'<span class="tag2">deciding…</span>':'<span class="tag2">—</span>'));
+    return '<div class="bl-row"><span><span class="dot" style="background:'+seatColor(p.seat)+'"></span>'+esc(p.name)+(p.isBot?' 🤖':'')+' <span class="tag2">• '+p.stack+'</span></span><span>'+right+'</span></div>';
+  }).join('');
+
+  /* special card box (top-right) */
+  const st=view.round?view.round.specialTotal:0;
+  $('specialTotal').textContent=st;
+  $('specialSub').textContent=st>0?('Every ★ is worth '+st):'No special value yet — deal a ★ to roll the die';
+
+  /* dealer hand (center) */
+  const d=view.dealer;
+  const dCards=d.cards.map(c=>cardHtml(c,true)).join('');
+  let dLabel='DEALER';
+  let dBanner='';
+  if(settled){
+    if(d.total!==null&&d.total!==undefined){
+      dLabel='DEALER — '+d.total+(d.total>21?' BUST':'');
+      if(d.total>21) dBanner='<div class="banner bust">BUST</div>';
+      else if(d.total===21) dLabel='DEALER — 21';
+    }
+  } else {
+    const up=d.cards.find(c=>c&&c.rank);
+    if(up) dLabel='DEALER — shows '+cardValueLabel(up);
+  }
+  $('dealerHand').innerHTML='<div class="dh-label">'+esc(dLabel)+'</div><div class="hand-wrap"><div class="scards">'+dCards+'</div>'+dBanner+'</div>';
+
+  /* opponents */
+  const oppBox=$('opponentsBox'); oppBox.innerHTML='';
+  view.players.filter(p=>p.id!==myId&&!p.left).forEach(p=>{
+    const active=p.id===view.turnPlayerId&&view.phase==='playerTurns';
+    const dEl=document.createElement('div');
+    dEl.className='seat'+(active?' active':'');
+    dEl.setAttribute('data-pid', p.id);
+    const totalLine=settled?(p.total!==null&&p.total!==undefined?(' • <b>'+p.total+'</b>'):''):(p.busted?' • <b>BUST</b>':'');
+    dEl.innerHTML='<div class="sname"><span class="dot" style="background:'+seatColor(p.seat)+'"></span>'+esc(p.name)+(p.isBot?' 🤖':'')+' <span class="tag2">• '+p.stack+' coins'+(p.bet>0?' • bet '+p.bet:'')+(p.doubled?' • doubled':'')+(active?' • to move':'')+'</span></div>'+
+      '<div class="hand-wrap"><div class="scards" data-pid="'+p.id+'">'+p.cards.map(c=>miniCardHtml(c)).join('')+'</div>'+bannerFor(p)+'</div>'+
+      (totalLine?'<div class="hand-total">Hand'+totalLine+'</div>':'');
+    oppBox.appendChild(dEl);
+  });
+
+  /* my seat */
+  const myBox=$('mySeat'); myBox.innerHTML='';
+  if(!me||isSpectator){
+    myBox.innerHTML='<div class="seat" data-pid="spectator"><div class="sname">👀 Spectating</div><div style="color:var(--mut);font-size:14px;line-height:1.5;padding:6px 0">You are watching this game. You\'re up for the next round — just stay on this screen and you\'ll be offered entry at the next betting round. No leaving and rejoining needed.</div></div>';
+  } else {
+    const md=document.createElement('div');
+    md.className='seat me'+(isMyTurn?' active':'');
+    md.setAttribute('data-pid', me.id);
+    const totalLine=(me.total!==null&&me.total!==undefined)?(' • <b>'+me.total+'</b>'+(me.busted?' — BUST':'')):'';
+    md.innerHTML='<div class="sname"><span class="dot" style="background:'+seatColor(me.seat)+'"></span>'+esc(me.name)+' (you) <span class="tag2">• '+me.stack+' coins'+(me.bet>0?' • bet '+me.bet:'')+(me.doubled?' • doubled':'')+'</span></div>'+
+      '<div class="hand-wrap"><div class="scards" id="myCards">'+me.cards.map((c,i)=>myCardHtml(c,i,me)).join('')+'</div>'+bannerFor(me)+'</div>'+
+      '<div class="hand-total">Your hand'+totalLine+'</div>';
+    myBox.appendChild(md);
+  }
+
+  /* betting panel */
+  show('betBox', !!isMyBet);
+  if(isMyBet){
+    $('betPrompt').textContent='Place your bet — or spectate this round. Your stack: '+me.stack+' coins.';
+    const chips=$('betChips'); chips.innerHTML='';
+    BETS.forEach(b=>{
+      const btn=document.createElement('button');
+      btn.type='button'; btn.className='chip c'+b; btn.textContent=''+b;
+      btn.disabled=me.stack<b;
+      btn.title=b+' coins';
+      btn.onclick=()=>sendAction({type:'placeBet', amount:b});
+      chips.appendChild(btn);
+    });
+    const waiting=view.players.filter(p=>!p.left&&p.bet<=0&&!p.spectating&&p.id!==myId).map(p=>p.name);
+    $('betWaiting').textContent=waiting.length?('Waiting for: '+waiting.join(', ')):'Everyone has decided…';
+    show('btnRebuyBet', me.stack===0);
+  } else { show('btnRebuyBet', false); }
+
+  /* action panel */
+  show('actionBox', !!isMyTurn);
+  if(isMyTurn){
+    $('actionPrompt').textContent='Your turn — '+me.total+' in hand. Hit, Stay, or Double Down?';
+    $('btnHit').disabled=!(me.cards.length<5);
+    $('btnDouble').disabled=!(me.cards.length===2&&me.stack>=me.bet);
+    $('btnDouble').title=(me.cards.length===2&&me.stack>=me.bet)?'Double your bet ('+me.bet+' more) for exactly one more card.':'Double down needs exactly 2 cards and enough chips to match your bet.';
+  }
+
+  /* next round / rebuy */
+  show('btnNextRound', settled&&(playMode==='local'||isHost));
+  show('btnRebuy', settled&&me&&me.stack===0&&!isSpec);
+  show('winNextRound', settled&&(playMode==='local'||isHost));
+
+  /* log */
+  $('logBox').innerHTML=(view.log||[]).map(l=>'<div>'+esc(l)+'</div>').join('');
+  const logEl=$('logBox'); logEl.scrollTop=logEl.scrollHeight;
+
+  if(settled) showWinDialog();
+  else show('winModal', false);
+  ensureMusic();
+  positionRoundSeats();
+}
+
+/* ---- WIN dialog (like screenshot 4: Win / Blacknyack / 5 Card / Acquired) ---- */
+function showWinDialog(){
+  if(!view||view.phase!=='settled'||!view.results) return;
+  const me=view.players.find(p=>p.id===myId);
+  if(!me||!me.cardCount) return;
+  if(winDialogShownFor===view.roundNumber) return;
+  winDialogShownFor=view.roundNumber;
+  const r=view.results[myId]; if(!r) return;
+  const bd=r.breakdown||{};
+  const rows=[];
+  if(r.outcome==='win'){
+    if(bd.win) rows.push(['Win', bd.win]);
+    if(bd.blacknyack) rows.push(['Blacknyack', bd.blacknyack]);
+    if(bd.fiveCard) rows.push(['5 Card', bd.fiveCard]);
+    if(bd.special) rows.push(['Special ×'+(r.specials||0), bd.special]);
+    if(bd.battle) rows.push(['Battle Bonyas', bd.battle]);
+  } else if(r.outcome==='push'){
+    rows.push(['Stake back', r.payout]);
+  } else {
+    rows.push(['Bet lost', 0]);
+  }
+  const bw=view.round&&view.round.battleWinnerId?view.players.find(x=>x.id===view.round.battleWinnerId):null;
+  if(r.outcome==='win'&&r.battleWinner) dealerSay('battleWin');
+  else if(r.outcome==='win') dealerSay('playerWin');
+  else if(r.outcome==='lose') dealerSay('dealerWin');
+  $('winTitle').textContent=r.outcome==='win'?'🏆 WIN!':(r.outcome==='push'?'🤝 PUSH':'😤 Dealer takes it');
+  $('winBody').innerHTML='<table class="win-rows">'+rows.map(x=>'<tr><td>'+esc(x[0])+'</td><td>🪙 '+x[1]+'</td></tr>').join('')+
+    '<tr class="total"><td>🪙 Acquired</td><td>🪙 '+r.payout+'</td></tr></table>'+
+    (bw&&bw.id!==myId?'<p style="color:var(--mut);font-size:13.5px">⚔️ Battle Bonyas winner: <b style="color:var(--txt)">'+esc(bw.name)+'</b> — the single best winning hand takes the bonus.</p>':'')+
+    (r.capped?'<p style="color:var(--mut);font-size:13.5px">Payout capped at the 1200-coin table maximum.</p>':'');
+  show('winModal', true);
+}
+
+/* ---- rules ---- */
+function rulesHtml(){
+  return '<p><b>Goal:</b> beat the dealer at 21 — together. Everyone at the table plays against Bonyas, not against each other.</p>'+
+  '<table class="points"><tr><th>Outcome</th><th>Payout (B = your bet at risk)</th></tr>'+
+  '<tr><td>Lose (bust, or dealer beats you)</td><td>0 — your bet is lost</td></tr>'+
+  '<tr><td>Push (exact tie)</td><td>B — your stake back, no bonuses</td></tr>'+
+  '<tr><td>Win</td><td>2 × B</td></tr>'+
+  '<tr><td>Win with exactly 21</td><td>+ 3 × B Blacknyack bonus</td></tr>'+
+  '<tr><td>Win with 5 cards</td><td>+ 5 × B 5-card bonus</td></tr>'+
+  '<tr><td>Win with special cards</td><td>+ 2 × B per special card</td></tr>'+
+  '<tr><td>Battle Bonyas winner</td><td>+ 5 × B battle bonus</td></tr></table>'+
+  '<p>Total payout for one player in one round is capped at <b>1200 coins</b>. Worked examples: bet 50, 5-card 21 → 100 + 150 + 250 = <b>500</b>. Bet 50, double down (B = 100), 3-card 21 with 1 special, Battle Bonyas winner → 200 + 300 + 200 + 500 = <b>1200</b>.</p>'+
+  '<ul style="margin:8px 0 8px 18px">'+
+  '<li><b>Bets:</b> every round, each player picks <b>5 / 10 / 20 / 40 / 50</b> coins or <b>spectates</b> that round. Spectators are automatically offered entry again next round. If nobody bets, the round is dead and everyone picks again. Everyone starts with <b>1000</b> coins; at 0 you may <b>rebuy 1000 free coins</b> between rounds. Anyone can <b>leave the match at any time</b>.</li>'+
+  '<li><b>Deal:</b> one 58-card deck (52 standard + 6 special), shuffled fresh every round. You get 2 cards: the first <b>face-up</b>, the second <b>face-down</b> (your hole card — only you see it; tap it to peek). The dealer gets 2 the same way. <b>Special cards are always face-up for everyone</b>, even as a second card.</li>'+
+  '<li><b>Card values:</b> numbered = face value, J/Q/K = 10, Ace = 1 or 11 (best without busting), special = the round\'s shared special total.</li>'+
+  '<li><b>Your turn — Hit, Stay, Double Down:</b> <b>Hit</b> takes one more card (up to 3 hits, 5 cards total). <b>Stay</b> keeps your hand. <b>Double down</b> is only with exactly 2 cards: you match your bet, get exactly one more card, and your turn ends.</li>'+
+  '<li><b>The 5-card rule:</b> 5 cards without busting beats <b>even a dealer 21</b>. 5 cards totalling exactly 21 is the strongest hand there is — it only ties against another 5-card 21.</li>'+
+  '<li><b>The dealer</b> reveals the hole card, then hits while under 17 and stands on 17 or more, including soft 17. If every player busts, the dealer doesn\'t draw.</li>'+
+  '<li><b>The special die:</b> whenever a special card is dealt to anyone, a 6-sided die (faces 0, 0, 1, 1, 2, 2) is rolled and the result is <b>added to the shared special total</b>. Every special card on the table is worth that total. Example: you roll 1, the dealer rolls 2 — every special is worth 3 this round.</li>'+
+  '<li><b>Battle Bonyas (secret random event):</b> at the start of each round there is a <b>12% chance</b> the round is a Battle Bonyas round — it lasts one round only. The <b>single best winning hand</b> among the players who beat the dealer takes the battle bonus; everyone else who beat the dealer gets their normal payout. If nobody beats the dealer, there is no battle winner.</li>'+
+  '<li>🎵 <b>Music:</b> the main song loops from the start of every match; the battle song plays only during a Battle Bonyas round, then it goes back to the main loop. Use the 🔊 button to mute.</li>'+
+  '<li>🦵⚾ <b>Break his legs:</b> purely for fun — a baseball bat, Bonyas, unlimited uses, any time, local only. It never touches the game.</li>'+
+  '<li><b>Joining late?</b> If you join a game already in progress you <b>spectate</b> — seats are fixed when the game starts, so you watch this match and join the next one from the lobby. If your connection drops mid-game, your seat is held for <b>10 seconds</b>; after that you\'re withdrawn and come back as a spectator.</li></ul>';
+}
+function openRules(){ $('rulesBody').innerHTML=rulesHtml(); show('rulesModal',true); }
+
+/* ---------- local / host game bootstrap + bot driver ---------- */
+let seatByClient={}; // host-side: clientId -> seat id ('p0'..'p4'), for reconnects
+function refreshView(){
+  if(!fullState) return;
+  view=filteredView(fullState, myId);
+}
+function broadcastOrRefresh(){
+  if(playMode==='online'&&isHost) broadcastViews();
+  else { refreshView(); render(); }
+}
+function syncSeatsToClients(){
+  if(!fullState||!isHost) return;
+  for(const cid of Object.keys(conns)){
+    const c=conns[cid]; if(!c||!c.open) continue;
+    const clientId=clients[cid]&&clients[cid].clientId;
+    if(!clientId) continue;
+    const seat=seatByClient[clientId];
+    if(seat&&c.gameId!==seat){
+      c.gameId=seat;
+      if(clients[cid]) clients[cid].seatId=seat;
+      try{ c.send({t:'seat', yourId:seat}); }catch(e){}
+    }
+  }
+}
+function broadcastViews(){
+  if(!isHost||!fullState) return;
+  syncSeatsToClients();
+  refreshView(); render();
+  for(const cid of Object.keys(conns)){
+    const c=conns[cid];
+    if(c&&c.open){ try{ c.send({t:'view', view:filteredView(fullState, (c.gameId||cid)), hash:stateFingerprint(fullState), yourId:(c.gameId||cid)}); }catch(e){} }
+  }
+}
+function sendToHost(obj){ try{ if(conn&&conn.open) conn.send(obj); }catch(e){} }
+function doLocalAction(action){
+  if(!fullState) return null;
+  const res=applyAction(fullState, myId, action);
+  if(res&&res.ok){ /* render picks up the new state below */ }
+  else if(res&&!res.ok){ toast(res.error); }
+  broadcastOrRefresh(); scheduleBots();
+  return res;
+}
+function sendAction(action){
+  if(!fullState&&playMode!=='online') return null;
+  if(playMode==='local') return doLocalAction(action);
+  if(isHost){
+    if(!fullState) return null;
+    const res=applyAction(fullState, myId, action);
+    if(res&&!res.ok) toast(res.error);
+    broadcastViews(); scheduleBots();
+    return res;
+  }
+  sendToHost({t:'action', action:action});
+  return {ok:true, sent:true};
+}
+function startLocalGame(names, seed, opts){
+  opts=opts||{};
+  fullState=newGame(names, seed, opts);
+  myId=fullState.players[0].id;
+  playMode='local'; isHost=true; isSpectator=false; leaving=false;
+  gameId++;
+  winDialogShownFor=0; lastRoundSeen=0; prevPhase=''; prevBusted=false; prevFive=false; lastBattleRound=0;
+  show('menuScreen',false); show('lobbyScreen',false); show('gameScreen',true);
+  $('connBox').textContent='Local game vs bots — no network needed. The dealer is already being rude.';
+  startMatchMusic();
+  refreshView(); render(); scheduleBots(); startTauntTimer();
+  dealerSay('idle');
+}
+function scheduleBots(delay){
+  clearTimeout(botTimer);
+  if(!fullState) return;
+  if(playMode==='online'&&!isHost) return;
+  if(fullState.phase==='settled'){
+    if(playMode==='local'){
+      const gid=gameId;
+      botTimer=setTimeout(()=>{ if(gid===gameId&&fullState&&fullState.phase==='settled') doLocalAction({type:'nextRound'}); }, 3000);
+    }
+    return;
+  }
+  if(fullState.phase==='over') return;
+  const gid=gameId;
+  const wait=(delay===undefined)?pace(BOT_PACE.thinkMin,BOT_PACE.thinkMax):delay;
+  botTimer=setTimeout(()=>{
+    if(gid!==gameId||!fullState||fullState.phase==='over'||fullState.phase==='settled') return;
+    let acted=false;
+    if(fullState.phase==='betting'){
+      for(const p of fullState.players.slice()){
+        if(!p.isBot||p.left||p.decided) continue;
+        const a=botChooseAction(fullState,p.id);
+        if(a){ const r=applyAction(fullState,p.id,a); if(r&&r.ok) acted=true; }
+        if(fullState.phase!=='betting') break;
+      }
+      if(acted) broadcastOrRefresh();
+      scheduleBots();
+      return;
+    }
+    if(fullState.phase==='playerTurns'){
+      const actor=fullState.players.find(p=>p.id===fullState.turnPlayerId);
+      if(actor&&actor.isBot){
+        const a=botChooseAction(fullState,actor.id);
+        if(a){ const r=applyAction(fullState,actor.id,a); if(r&&r.ok) acted=true; }
+        if(acted) broadcastOrRefresh();
+        scheduleBots();
+        return;
+      }
+    }
+    botTimer=setTimeout(()=>scheduleBots(), 800);
+  }, wait);
+}
+function goNextRound(){
+  if(!fullState) return;
+  if(playMode==='local') doLocalAction({type:'nextRound'});
+  else if(isHost){
+    const res=applyAction(fullState, myId, {type:'nextRound'});
+    if(res&&!res.ok) toast(res.error);
+    broadcastViews(); scheduleBots();
+  } else sendToHost({t:'next-round'});
+}
+function leaveMatch(){
+  if(playMode==='local'){
+    if(fullState){ doLocalAction({type:'leave'}); }
+    backToMenu();
+    return;
+  }
+  if(isHost){
+    if(fullState){
+      applyAction(fullState, myId, {type:'leave'});
+      if(fullState.phase==='over'){ backToMenu(); return; }
+      broadcastViews(); scheduleBots();
+    }
+    backToMenu();
+    return;
+  }
+  leaving=true;
+  sendToHost({t:'action', action:{type:'leave'}});
+  backToMenu();
+}
+function backToMenu(){
+  stopHeartbeat(); stopHelloLoop(); stopTauntTimer(); clearTimeout(botTimer); botTimer=null;
+  leaving=false;
+  try{ if(peer) peer.destroy(); }catch(e){}
+  peer=null; conn=null; conns={}; clients={}; spectators={}; disconnectedByClient={}; seatByClient={};
+  roomCode=null; isHost=false; isSpectator=false; playMode='local';
+  fullState=null; view=null; myId=null; lobbyPlayers=[];
+  unregisterPublicRoom();
+  stopMusic();
+  show('gameScreen',false); show('lobbyScreen',false); show('menuScreen',true);
+  setMenuMsg('');
+}
+function setMenuMsg(t){ const el=$('menuMsg'); if(el) el.textContent=t||''; }
+function viewHashOf(v){
+  let h=5381;
+  const s=JSON.stringify([v.phase,v.roundNumber,v.turnPlayerId,v.deckCount,v.round,
+    v.players.map(p=>[p.id,p.stack,p.bet,p.cards.map(c=>c.id||'H'),p.stood,p.busted,p.left]),
+    v.dealer.cardCount, v.results]);
+  for(let i=0;i<s.length;i++) h=((h<<5)+h+s.charCodeAt(i))>>>0;
+  return h;
+}
+
+/* ---------- menu / lobby / public rooms ---------- */
+function openBotPicker(title, sub, onPick){
+  $('botModalTitle').textContent=title; $('botModalSub').textContent=sub;
+  const box=$('botPick'); box.innerHTML='';
+  for(let n=0;n<=4;n++){
+    const b=document.createElement('button'); b.type='button'; b.textContent=n===0?'0 (solo)':(''+n);
+    b.title=n===0?'Just you vs the dealer':n+' bot'+(n===1?'':'s');
+    b.onclick=()=>{ show('botModal',false); onPick(n); };
+    box.appendChild(b);
+  }
+  show('botModal',true);
+}
+function renderLobby(){
+  $('lobbyCode').textContent=roomCode||'';
+  $('lobbyMsg').textContent=(roomVisibility==='public'?'🌍 Public room — listed in Browse public rooms while it waits for players. ':'🔒 Private room — code-only. ')+'Max '+roomMaxPlayers+' players (bots included). You can start alone vs the dealer, or wait for friends.';
+  $('lobbyList').innerHTML=lobbyPlayers.map(p=>'<div class="lobby-player"><span>'+esc(p.name)+(p.isBot?' 🤖':'')+'</span><span style="color:var(--mut)">'+(p.isHost?'host':'')+'</span></div>').join('')+
+    '<p style="color:var(--mut);font-size:13px;margin-top:8px">'+lobbyPlayers.length+' / '+roomMaxPlayers+' players.</p>';
+  show('btnStartGame', isHost);
+  $('lobbyWait').textContent=isHost?'You are the host — press Start when everyone is in.':'Waiting for the host to start…';
+}
+function showLobby(){
+  show('menuScreen',false); show('gameScreen',false); show('lobbyScreen',true); renderLobby();
+}
+function openRoomOptions(){
+  roomVisibility='private'; roomMaxPlayers=5;
+  const minMax=1+pendingLobbyBots;
+  const visBox=$('visPick');
+  const paintVis=()=>{ visBox.querySelectorAll('button').forEach(b=>{ b.style.outline=(b.getAttribute('data-vis')===roomVisibility)?'3px solid var(--gold)':'none'; }); };
+  visBox.querySelectorAll('button').forEach(b=>{ b.onclick=()=>{ roomVisibility=b.getAttribute('data-vis'); paintVis(); }; });
+  paintVis();
+  const maxBox=$('maxPick'); maxBox.innerHTML='';
+  for(let n=2;n<=5;n++){
+    const b=document.createElement('button'); b.type='button'; b.textContent=''+n;
+    b.disabled=n<minMax;
+    b.onclick=()=>{ roomMaxPlayers=n; paintMax(); };
+    maxBox.appendChild(b);
+  }
+  const paintMax=()=>{ maxBox.querySelectorAll('button').forEach(b=>{ b.style.outline=(parseInt(b.textContent,10)===roomMaxPlayers)?'3px solid var(--gold)':'none'; }); };
+  if(roomMaxPlayers<minMax) roomMaxPlayers=minMax;
+  paintMax();
+  $('roomOptMsg').textContent=pendingLobbyBots>0?('You + '+pendingLobbyBots+' bot'+(pendingLobbyBots===1?'':'s')+' already take '+(1+pendingLobbyBots)+' seats, so the max starts there.'):'';
+  show('roomOptModal',true);
+}
+function doCreateLobby(){
+  lobbyBots=pendingLobbyBots;
+  const code=makeCode(); roomCode=code;
+  setMenuMsg('Creating lobby '+code+'…');
+  try{ if(peer) peer.destroy(); }catch(e){}
+  peer=new Peer(peerIdFor(code));
+  peer.on('open',()=>{
+    isHost=true; playMode='online'; leaving=false;
+    lobbyPlayers=[{id:'host',name:myPlayerName(),isBot:false,isHost:true}];
+    for(let i=0;i<lobbyBots;i++) lobbyPlayers.push({id:'bot'+i,name:botNames(lobbyBots)[i],isBot:true});
+    setMenuMsg('Lobby '+code+' is live — send the code to your friends.');
+    showLobby(); startHeartbeat();
+    if(roomVisibility==='public') registerPublicRoom();
+  });
+  peer.on('connection',c=>{
+    const cid='c'+Math.random().toString(36).slice(2,8);
+    conns[cid]=c; clients[cid]={name:'…'};
+    c.on('data',msg=>handleHostMsg(cid,msg));
+    c.on('close',()=>{ onGuestDisconnect(cid); });
+    c.on('open',()=>{ try{ c.send({t:'welcome', yourId:cid, code:roomCode}); }catch(e){} });
+  });
+  peer.on('error',err=>{ setMenuMsg('Could not create the lobby ('+(err&&err.type||'error')+'). Try again.'); });
+}
+function startHeartbeat(){
+  stopHeartbeat();
+  if(playMode!=='online') return;
+  heartbeatTimer=setInterval(()=>{
+    if(isHost){ for(const cid of Object.keys(conns)){ const c=conns[cid]; if(c&&c.open){ try{ c.send({t:'ping', hash:stateFingerprint(fullState), n:fullState?fullState.round.log.length:0}); }catch(e){} } } }
+    else sendToHost({t:'ping', hash:view?viewHashOf(view):0, n:view?view.log.length:0});
+  },4000);
+}
+function stopHeartbeat(){ clearInterval(heartbeatTimer); heartbeatTimer=null; }
+function startHelloLoop(){ stopHelloLoop(); helloTimer=setInterval(()=>{ if(!stateReceived) sendToHost({t:'hello'}); else stopHelloLoop(); },2000); sendToHost({t:'hello'}); }
+function stopHelloLoop(){ clearInterval(helloTimer); helloTimer=null; }
+function currentRoomInfo(){
+  return {code:roomCode, hostName:myPlayerName(), players:lobbyPlayers.length, maxPlayers:roomMaxPlayers, bots:lobbyBots, status:fullState?'playing':'waiting'};
+}
+function registerPublicRoom(){
+  unregisterPublicRoom();
+  if(roomVisibility!=='public'||typeof Peer==='undefined') return;
+  let slot=1;
+  const trySlot=()=>{
+    if(slot>DIRECTORY_SLOTS){ return; }
+    const id=directoryPeerId(slot);
+    let p;
+    try{ p=new Peer(id); }catch(e){ return; }
+    dirSlot=slot;
+    p.on('open',()=>{ dirPeer=p; });
+    p.on('connection',c=>{
+      const answer=()=>{ try{ c.send({t:'room-info', room:currentRoomInfo()}); }catch(e){} };
+      c.on('open',answer);
+      c.on('data',msg=>{ if(msg&&msg.t==='list-query') answer(); });
+    });
+    p.on('error',err=>{
+      if(err&&err.type==='unavailable-id'){ try{ p.destroy(); }catch(e){} slot++; trySlot(); }
+      else { try{ p.destroy(); }catch(e){} dirPeer=null; dirSlot=0; }
+    });
+  };
+  trySlot();
+}
+function unregisterPublicRoom(){
+  if(dirPeer){ try{ dirPeer.destroy(); }catch(e){} dirPeer=null; dirSlot=0; }
+}
+function renderRoomsList(rooms, directoryOk){
+  const box=$('roomsList');
+  if(!rooms.length){
+    $('roomsMsg').textContent=directoryOk===false
+      ? 'Couldn\'t load the list — the directory didn\'t answer. Join with a code instead.'
+      : 'No public rooms right now — create one, or join a private lobby with its code.';
+    box.innerHTML='';
+    return;
+  }
+  $('roomsMsg').textContent=rooms.length+' public room'+(rooms.length===1?'':'s')+' open — tap one to join. (No auto-join: you always choose.)';
+  box.innerHTML=rooms.map(r=>{
+    const full=r.players>=r.maxPlayers;
+    const playing=r.status==='playing';
+    return '<div class="lobby-player"><span>🌍 <b>'+esc(r.hostName)+'</b> <span style="color:var(--mut)">· '+esc(r.code)+' · '+r.players+'/'+r.maxPlayers+' players'+(r.bots?' · '+r.bots+' bot'+(r.bots===1?'':'s'):'')+' · '+(playing?'playing':'waiting')+'</span></span>'+
+      (playing?'<span style="color:var(--mut)">playing — spectate</span>'
+        : full?'<span style="color:var(--mut)">full</span>'
+        : '<button type="button" class="small" data-room="'+esc(r.code)+'">Join →</button>')+'</div>';
+  }).join('');
+  box.querySelectorAll('[data-room]').forEach(b=>{ b.addEventListener('click',()=>joinRoom(b.getAttribute('data-room'))); });
+}
+function browsePublicRooms(){
+  if(typeof Peer==='undefined'){ $('roomsMsg').textContent='Couldn\'t load the list (multiplayer library unavailable) — join with a code instead.'; renderRoomsList([], false); return; }
+  $('roomsMsg').textContent='Asking the directory…';
+  $('roomsList').innerHTML='';
+  const rooms=[];
+  let probe, opened=false, finished=false;
+  const finish=()=>{ if(finished) return; finished=true; try{ probe.destroy(); }catch(e){} renderRoomsList(rooms, opened); };
+  try{ probe=new Peer(); }catch(e){ $('roomsMsg').textContent='Couldn\'t load the list — join with a code instead.'; return; }
+  setTimeout(finish, 5000);
+  probe.on('open',()=>{
+    opened=true;
+    for(let n=1;n<=DIRECTORY_SLOTS;n++){
+      const c=probe.connect(directoryPeerId(n),{reliable:true});
+      c.on('open',()=>{ try{ c.send({t:'list-query'}); }catch(e){} });
+      c.on('data',msg=>{
+        if(msg&&msg.t==='room-info'&&msg.room){
+          const info=msg.room;
+          if(info.code&&!rooms.find(r=>r.code===info.code)) rooms.push(info);
+          renderRoomsList(rooms, true);
+        }
+      });
+      c.on('error',()=>{});
+    }
+  });
+  probe.on('error',()=>{});
+}
+function startHostedGame(){
+  for(const k of Object.keys(disconnectedByClient)){
+    const d=disconnectedByClient[k]; clearTimeout(d.timer); delete disconnectedByClient[k];
+    const ix=lobbyPlayers.findIndex(p=>p.id===d.cid); if(ix>=0) lobbyPlayers.splice(ix,1);
+  }
+  const nextPlayers=lobbyPlayers.slice();
+  for(const cid of Object.keys(spectators)){
+    if(nextPlayers.length>=roomMaxPlayers) break;
+    nextPlayers.push({id:cid, name:spectators[cid].name, isBot:false});
+    delete spectators[cid];
+  }
+  if(nextPlayers.length<1){ toast('Need at least 1 player to start.'); return; }
+  lobbyPlayers=nextPlayers;
+  unregisterPublicRoom();
+  const names=lobbyPlayers.map(p=>({name:p.name,isBot:p.isBot}));
+  fullState=newGame(names, undefined, {});
+  const seatIds=fullState.players.map(p=>p.id);
+  const idMap={};
+  lobbyPlayers.forEach((p,i)=>{ idMap[p.id]=seatIds[i]; p.seatId=seatIds[i]; });
+  for(const cid of Object.keys(conns)){
+    const seat=idMap[cid];
+    if(seat){
+      conns[cid].gameId=seat;
+      if(clients[cid]) clients[cid].seatId=seat;
+      const clientId=clients[cid]&&clients[cid].clientId;
+      if(clientId) seatByClient[clientId]=seat;
+    }
+  }
+  myId=seatIds[0];
+  isHost=true; playMode='online'; isSpectator=false; leaving=false;
+  gameId++;
+  winDialogShownFor=0; lastRoundSeen=0; prevPhase=''; prevBusted=false; prevFive=false; lastBattleRound=0;
+  show('lobbyScreen',false); show('menuScreen',false); show('gameScreen',true);
+  $('connBox').innerHTML='Lobby <b>'+roomCode+'</b> — you are the host. Bets are per-player (5 / 10 / 20 / 40 / 50) or spectate. Bots run on your device.';
+  startMatchMusic();
+  for(const cid of Object.keys(conns)){
+    if(!idMap[cid]) continue;
+    try{ conns[cid].send({t:'seat', yourId:idMap[cid]}); conns[cid].send({t:'view', view:filteredView(fullState, idMap[cid]), hash:stateFingerprint(fullState), yourId:idMap[cid]}); }catch(e){}
+  }
+  broadcastViews(); startHeartbeat(); scheduleBots(); startTauntTimer();
+  dealerSay('idle');
+}
+
+/* ---------- multiplayer: join / host messages / disconnects ---------- */
+function joinRoom(code){
+  if(typeof Peer==='undefined'){ setMenuMsg('Could not load the multiplayer library (PeerJS). Check your connection and try again.'); return; }
+  roomCode=code; setMenuMsg('Joining lobby '+code+'…');
+  try{ if(peer) peer.destroy(); }catch(e){}
+  peer=new Peer();
+  peer.on('open',()=>{
+    const c=peer.connect(peerIdFor(code),{reliable:true});
+    conn=c;
+    c.on('data',msg=>handleGuestMsg(msg));
+    c.on('close',()=>{ onGuestConnClose(); });
+    c.on('open',()=>{ setMenuMsg('Joined lobby '+code+'! Waiting in the lobby…'); sendToHost({t:'join', name:myPlayerName(), clientId:getClientId()}); });
+    setTimeout(()=>{ if(!conn||!conn.open) setMenuMsg('Still trying to reach lobby '+code+' — is the code right, and is the host\'s lobby still open?'); },6000);
+  });
+  peer.on('error',err=>{ setMenuMsg('Could not join lobby '+code+' ('+(err&&err.type||'error')+'). Double-check the code.'); });
+}
+let reconnectTimer=null, disconnectAt=0, reconnectAttempt=0;
+function onGuestConnClose(){
+  stopHeartbeat(); stopHelloLoop();
+  if(leaving||!roomCode||reconnectTimer) return;
+  if(view&&(view.phase==='over')){ $('connBox').innerHTML='<b>Host disconnected.</b> The lobby is gone — head back to the menu for a new game.'; return; }
+  disconnectAt=Date.now(); reconnectAttempt=0;
+  $('connBox').innerHTML='<b>Connection lost — reconnecting…</b> Your seat is held for 10 seconds.';
+  const attempt=()=>{
+    reconnectTimer=null;
+    if(!roomCode) return;
+    if(Date.now()-disconnectAt>9000){ $('connBox').innerHTML='<b>Could not rejoin in time.</b> Your seat was withdrawn — rejoin from the menu to come back as a spectator.'; return; }
+    reconnectAttempt++;
+    joinRoom(roomCode);
+    reconnectTimer=setTimeout(attempt, reconnectAttempt===1?2500:3000);
+  };
+  reconnectTimer=setTimeout(attempt, 1200);
+}
+function onGuestDisconnect(cid){
+  delete conns[cid];
+  if(spectators[cid]){ delete spectators[cid]; return; }
+  if(!fullState){
+    const ix=lobbyPlayers.findIndex(p=>p.id===cid); if(ix>=0) lobbyPlayers.splice(ix,1);
+    renderLobby(); return;
+  }
+  const seatId=(clients[cid]&&clients[cid].seatId)||null;
+  const clientId=(clients[cid]&&clients[cid].clientId)||null;
+  const name=(clients[cid]&&clients[cid].name)||'Player';
+  if(!seatId||!clientId){
+    const ix=lobbyPlayers.findIndex(p=>p.id===cid); if(ix>=0) lobbyPlayers.splice(ix,1);
+    broadcastViews(); return;
+  }
+  const timer=setTimeout(()=>{ withdrawGuest(clientId); }, DISCONNECT_GRACE_MS+100);
+  disconnectedByClient[clientId]={cid, seatId, name, timer};
+  broadcastViews();
+}
+function withdrawGuest(clientId){
+  const d=disconnectedByClient[clientId]; if(!d) return;
+  delete disconnectedByClient[clientId];
+  if(!fullState) return;
+  leavePlayer(fullState, d.seatId);
+  delete seatByClient[clientId];
+  const ix=lobbyPlayers.findIndex(p=>p.id===d.cid); if(ix>=0) lobbyPlayers.splice(ix,1);
+  broadcastViews(); scheduleBots();
+}
+function handleHostMsg(cid, msg){
+  if(!msg||typeof msg!=='object') return;
+  if(msg.t==='join'){
+    if(fullState){
+      // Reconnecting to a held seat?
+      if(msg.clientId&&seatByClient[msg.clientId]){
+        const seat=seatByClient[msg.clientId];
+        const p=playerById(fullState, seat);
+        if(p&&!p.left){
+          const held=disconnectedByClient[msg.clientId];
+          if(held){ clearTimeout(held.timer); delete disconnectedByClient[msg.clientId]; }
+          conns[cid].gameId=seat;
+          clients[cid]={name:msg.name||'Player', clientId:msg.clientId, seatId:seat};
+          try{
+            conns[cid].send({t:'welcome', yourId:cid, code:roomCode});
+            conns[cid].send({t:'seat', yourId:seat});
+            conns[cid].send({t:'view', view:filteredView(fullState, seat), hash:stateFingerprint(fullState), yourId:seat});
+          }catch(e){}
+          broadcastViews();
+          return;
+        }
+      }
+      // Late joiner: seats are fixed when the game starts, so they watch.
+      spectators[cid]={name:msg.name||'Player', clientId:msg.clientId||null};
+      clients[cid]={name:msg.name||'Player', clientId:msg.clientId||null};
+      try{
+        conns[cid].send({t:'welcome', yourId:cid, code:roomCode});
+        conns[cid].send({t:'spectating', code:roomCode});
+        conns[cid].send({t:'view', view:filteredView(fullState, cid), hash:stateFingerprint(fullState), yourId:cid});
+      }catch(e){}
+      fullState.round.log.push((msg.name||'Player')+' joined to spectate — seats are fixed once a game starts.');
+      broadcastViews();
+      return;
+    }
+    if(lobbyPlayers.length>=roomMaxPlayers){
+      try{ conns[cid].send({t:'join-rejected', error:'room is full.'}); }catch(e){}
+      try{ conns[cid].close(); }catch(e){}
+      delete conns[cid];
+      return;
+    }
+    clients[cid]={name:msg.name||'Player', clientId:msg.clientId||null};
+    if(!lobbyPlayers.find(p=>p.id===cid)) lobbyPlayers.push({id:cid,name:msg.name||'Player',isBot:false});
+    renderLobby();
+    for(const id of Object.keys(conns)){ try{ conns[id].send({t:'lobby', players:lobbyPlayers, code:roomCode, maxPlayers:roomMaxPlayers, visibility:roomVisibility}); }catch(e){} }
+  } else if(msg.t==='action'){
+    if(!fullState) return;
+    if(spectators[cid]) return;
+    const seatId=(conns[cid]&&conns[cid].gameId)||cid;
+    const res=applyAction(fullState, seatId, msg.action);
+    if(res&&res.ok){
+      if(msg.action.type==='leave'){
+        const ix=lobbyPlayers.findIndex(p=>p.id===cid); if(ix>=0) lobbyPlayers.splice(ix,1);
+        try{ conns[cid].send({t:'left'}); }catch(e){}
+        try{ conns[cid].close(); }catch(e){}
+        delete conns[cid]; delete clients[cid];
+        broadcastViews(); scheduleBots();
+        return;
+      }
+      try{ conns[cid].send({t:'view', view:filteredView(fullState, seatId), hash:stateFingerprint(fullState), ack:true, result:res, yourId:seatId}); }catch(e){}
+      broadcastViews(); scheduleBots();
+    } else {
+      try{ conns[cid].send({t:'action-error', error:res?res.error:'invalid action'}); }catch(e){}
+    }
+  } else if(msg.t==='leave'){
+    const ix=lobbyPlayers.findIndex(p=>p.id===cid); if(ix>=0){ lobbyPlayers.splice(ix,1); renderLobby(); }
+    try{ conns[cid].close(); }catch(e){}
+    delete conns[cid]; delete clients[cid];
+  } else if(msg.t==='hello'||msg.t==='need-sync'){
+    const seatId=(conns[cid]&&conns[cid].gameId)||cid;
+    if(fullState){ try{ conns[cid].send({t:'view', view:filteredView(fullState, seatId), hash:stateFingerprint(fullState), yourId:seatId}); }catch(e){} }
+  } else if(msg.t==='ping'){
+    const seatId=(conns[cid]&&conns[cid].gameId)||cid;
+    if(fullState&&msg.hash!==stateFingerprint(fullState)){ try{ conns[cid].send({t:'view', view:filteredView(fullState, seatId), hash:stateFingerprint(fullState), yourId:seatId}); }catch(e){} }
+  } else if(msg.t==='next-round'){
+    if(fullState&&fullState.phase==='settled'){
+      const r=applyAction(fullState, fullState.players[0].id, {type:'nextRound'});
+      if(r&&r.ok){ broadcastViews(); scheduleBots(); }
+    }
+  }
+}
+function handleGuestMsg(msg){
+  if(!msg||typeof msg!=='object') return;
+  if(msg.t==='welcome'){ myId=msg.yourId; playMode='online'; stateReceived=false; startHelloLoop(); if(reconnectTimer){ clearTimeout(reconnectTimer); reconnectTimer=null; } }
+  else if(msg.t==='seat'){ myId=msg.yourId; playMode='online'; isSpectator=false; }
+  else if(msg.t==='spectating'){ isSpectator=true; if(reconnectTimer){ clearTimeout(reconnectTimer); reconnectTimer=null; } }
+  else if(msg.t==='join-rejected'){
+    setMenuMsg('Could not join: '+(msg.error||'room is full.'));
+    try{ if(conn) conn.close(); }catch(e){}
+    try{ if(peer) peer.destroy(); }catch(e){}
+    conn=null; peer=null; roomCode=null;
+    show('lobbyScreen',false); show('gameScreen',false); show('menuScreen',true);
+  }
+  else if(msg.t==='lobby'){
+    lobbyPlayers=msg.players||lobbyPlayers; roomCode=msg.code||roomCode;
+    if(msg.maxPlayers) roomMaxPlayers=msg.maxPlayers;
+    if(msg.visibility) roomVisibility=msg.visibility;
+    showLobby();
+  }
+  else if(msg.t==='view'){
+    view=msg.view; stateReceived=true;
+    playMode='online';
+    if(msg.yourId!==undefined&&msg.yourId!==null) myId=msg.yourId;
+    if(reconnectTimer){ clearTimeout(reconnectTimer); reconnectTimer=null; }
+    if(view.players.some(p=>p.id===myId)) isSpectator=false;
+    if(!musicStarted) musicStarted=true;
+    show('menuScreen',false); show('lobbyScreen',false); show('gameScreen',true);
+    render();
+  }
+  else if(msg.t==='action-error'){ toast(msg.error||'That move was not allowed.'); }
+  else if(msg.t==='ping'){
+    if(view&&msg.hash!==viewHashOf(view)) sendToHost({t:'need-sync'});
+  }
+}
+
+/* ---------- wiring ---------- */
+$('botCancel').onclick=()=>show('botModal',false);
+$('btnBots').onclick=()=>{
+  openBotPicker('How many bots?', 'You + bots, 1–5 players total. 0 bots = just you vs the dealer. Fully local, works offline.', (n)=>{
+    const names=[{name:myPlayerName(),isBot:false}].concat(botNames(n).map(x=>({name:x,isBot:true})));
+    startLocalGame(names);
+  });
+};
+$('btnCreate').onclick=()=>{
+  if(typeof Peer==='undefined'){ setMenuMsg('Could not load the multiplayer library (PeerJS). Check your connection — bot play still works.'); return; }
+  openBotPicker('Create lobby — how many bots?', 'Bots fill seats in your lobby (max 5 players total: humans + bots).', (n)=>{
+    pendingLobbyBots=n; openRoomOptions();
+  });
+};
+$('roomOptCancel').onclick=()=>show('roomOptModal',false);
+$('roomOptCreate').onclick=()=>{ show('roomOptModal',false); doCreateLobby(); };
+$('btnJoin').onclick=()=>{
+  const code=($('joinCode').value||'').trim().toUpperCase();
+  if(!code){ setMenuMsg('Type a lobby code first.'); return; }
+  joinRoom(code);
+};
+$('btnBrowseRooms').onclick=browsePublicRooms;
+$('btnRefreshRooms').onclick=browsePublicRooms;
+$('btnCopyLobby').onclick=async()=>{
+  const link=location.origin+location.pathname+'?room='+roomCode;
+  const txt='Black Nyack lobby '+roomCode+' — join me: '+link;
+  try{ await navigator.clipboard.writeText(txt); $('btnCopyLobby').textContent='Copied!'; setTimeout(()=>$('btnCopyLobby').textContent='Copy code / link',1500); }
+  catch(e){ prompt('Copy your lobby link:',txt); }
+};
+$('btnLeaveLobby').onclick=backToMenu;
+$('btnStartGame').onclick=()=>{ if(isHost) startHostedGame(); };
+$('btnBannedMenu').onclick=backToMenu;
+$('btnHit').onclick=()=>sendAction({type:'hit'});
+$('btnStay').onclick=()=>sendAction({type:'stay'});
+$('btnDouble').onclick=()=>sendAction({type:'double'});
+$('btnSpectate').onclick=()=>sendAction({type:'spectate'});
+$('btnRebuy').onclick=()=>sendAction({type:'rebuy'});
+$('btnRebuyBet').onclick=()=>sendAction({type:'rebuy'});
+$('btnNextRound').onclick=goNextRound;
+$('winNextRound').onclick=()=>{ show('winModal',false); goNextRound(); };
+$('winClose').onclick=()=>show('winModal',false);
+$('btnLeaveMatch').onclick=leaveMatch;
+$('btnMenu2').onclick=backToMenu;
+$('btnRules').onclick=openRules; $('btnRules2').onclick=openRules;
+$('rulesClose').onclick=()=>show('rulesModal',false);
+$('rulesCloseX').onclick=()=>show('rulesModal',false);
+$('musicToggle').onclick=toggleMusic;
+$('musicHint').onclick=()=>{ show('musicHint',false); if(musicStarted){ currentTrack=null; ensureMusic(); } };
+$('breakLegsBtn').onclick=breakLegs;
+$('mySeat').addEventListener('click', e=>{
+  const h=e.target.closest?e.target.closest('[data-hole]'):null;
+  if(h){ const id=h.getAttribute('data-hole'); myHoleRevealed[id]=!myHoleRevealed[id]; render(); }
+});
+(function deepLink(){
+  try{
+    const q=new URLSearchParams(location.search);
+    const room=(q.get('room')||'').trim().toUpperCase();
+    if(room){ $('joinCode').value=room; setMenuMsg('Lobby '+room+' detected — press Join lobby to enter.'); }
+  }catch(e){}
+})();
+if(typeof window!=='undefined' && window.matchMedia){
+  const mq=matchMedia('(orientation: landscape) and (min-width: 700px)');
+  const onLayoutChange=()=>{ applyLayoutMode(); render(); };
+  if(mq.addEventListener) mq.addEventListener('change', onLayoutChange);
+  else if(mq.addListener) mq.addListener(onLayoutChange);
+}
+window.addEventListener('resize', ()=>{ applyLayoutMode(); positionRoundSeats(); });
+applyLayoutMode();
+</script>
+</body>
+</html>

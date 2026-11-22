@@ -1,0 +1,205 @@
+// Black Nyack UI smoke test (jsdom, no browser needed).
+// Drives a real local game through the DOM: bet chips, spectate, hit/stay,
+// hole-card peek, WIN dialog, next round, break-the-legs button, music
+// elements + track selection, layout helpers, rules modal.
+// Run: node test/ui.test.js
+const fs = require('fs');
+const path = require('path');
+const { JSDOM, VirtualConsole } = require('jsdom');
+
+const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
+
+let pass = 0, fail = 0;
+function check(name, cond, extra) {
+  if (cond) { pass++; console.log('  ok  ' + name); }
+  else { fail++; console.log('FAIL  ' + name + (extra ? ' — ' + extra : '')); }
+}
+
+(async () => {
+  const vc = new VirtualConsole();
+  vc.on('jsdomError', () => {}); // swallow "HTMLMediaElement.play not implemented" noise
+  const dom = new JSDOM(html, {
+    url: 'http://localhost/',
+    runScripts: 'dangerously',
+    pretendToBeVisual: true,
+    virtualConsole: vc,
+  });
+  const { window } = dom;
+  const $ = id => window.document.getElementById(id);
+  const ev = src => window.eval(src);
+  await new Promise(r => { if (window.document.readyState === 'complete') r(); else window.addEventListener('load', r); });
+
+  /* ---- static checks: every screen / panel / button exists ---- */
+  check('menu screen exists', !!$('menuScreen'));
+  check('lobby screen exists', !!$('lobbyScreen'));
+  check('game screen exists', !!$('gameScreen'));
+  check('round table exists', !!$('tableWrap'));
+  check('dealer SVG exists', !!$('dealerSvg'));
+  check('dealer legs group exists', !!$('dealerLegs'));
+  check('baseball bat element exists', !!$('bat'));
+  check('taunt bubble exists', !!$('tauntBubble'));
+  check('break-legs button exists', !!$('breakLegsBtn'));
+  check('legs counter exists', !!$('legsCount'));
+  check('special card box exists', !!$('specialBox'));
+  check('bet list exists', !!$('betList'));
+  check('dealer hand area exists', !!$('dealerHand'));
+  check('bet panel exists', !!$('betBox'));
+  check('action panel exists', !!$('actionBox'));
+  check('hit / stay / double buttons exist', !!$('btnHit') && !!$('btnStay') && !!$('btnDouble'));
+  check('next round button exists', !!$('btnNextRound'));
+  check('rebuy button exists', !!$('btnRebuy'));
+  check('leave match button exists', !!$('btnLeaveMatch'));
+  check('WIN dialog exists', !!$('winModal'));
+  check('rules modal exists', !!$('rulesModal'));
+  check('bot picker modal exists', !!$('botModal'));
+  check('room options modal exists', !!$('roomOptModal'));
+  check('music toggle exists', !!$('musicToggle'));
+  check('log box exists', !!$('logBox'));
+  check('battle banner exists', !!$('battleBanner'));
+
+  /* ---- music: the two songs, correct files, looped ---- */
+  check('main song element points at music.mp3', $('musicMain').getAttribute('src') === 'music.mp3');
+  check('battle song element points at battle.mp3', $('musicBattle').getAttribute('src') === 'battle.mp3');
+  check('both songs loop', $('musicMain').loop === true && $('musicBattle').loop === true);
+  check('battle round picks the battle song', ev(`musicTrackFor(true)`) === 'battle.mp3');
+  check('normal round picks the main loop', ev(`musicTrackFor(false)`) === 'music.mp3');
+  check('music starts on', ev(`musicOn`) === true);
+
+  /* ---- layout helpers (pure functions) ---- */
+  check('landscape desktop is the round table', ev(`layoutModeFor(1200, 700)`) === 'round');
+  check('portrait phone is stacked', ev(`layoutModeFor(500, 900)`) === 'stacked');
+  check('narrow landscape is stacked', ev(`layoutModeFor(600, 400)`) === 'stacked');
+  check('5 seats on the arc', ev(`seatPositionsFor(5).length`) === 5);
+  check('middle seat sits bottom-center', ev(`seatPositionsFor(5)[2].x`) === 50);
+  check('arc seats stay inside the table', ev(`seatPositionsFor(5).every(p=>p.x>10&&p.x<90&&p.y>40&&p.y<90)`));
+  check('solo seat sits bottom-center', ev(`seatPositionsFor(1)[0].x`) === 50);
+
+  /* ---- rules modal ---- */
+  $('btnRules').click();
+  check('rules modal opens', !$('rulesModal').classList.contains('hidden'));
+  check('rules mention Battle Bonyas', /Battle Bonyas/.test($('rulesBody').textContent));
+  check('rules show the 1200 cap', /1200/.test($('rulesBody').textContent));
+  check('rules mention the special die', /special die/i.test($('rulesBody').textContent));
+  check('rules mention breaking his legs', /Break his legs/.test($('rulesBody').textContent));
+  $('rulesClose').click();
+  check('rules modal closes', $('rulesModal').classList.contains('hidden'));
+
+  /* ---- scenario 0: menu flow through the real buttons ---- */
+  check('create lobby without PeerJS warns instead of breaking', (() => {
+    $('btnCreate').click();
+    return /multiplayer library/.test($('menuMsg').textContent);
+  })());
+  $('btnBots').click();
+  check('bot picker opens from the menu', !$('botModal').classList.contains('hidden'));
+  check('bot picker offers 0–4 bots', window.document.querySelectorAll('#botPick button').length === 5);
+  [...window.document.querySelectorAll('#botPick button')].find(b => b.textContent.trim() === '1').click();
+  check('picking 1 bot starts a local game', !$('gameScreen').classList.contains('hidden') && ev(`view.phase`) === 'betting');
+  $('btnMenu2').click();
+  check('back to menu works', !$('menuScreen').classList.contains('hidden') && $('gameScreen').classList.contains('hidden'));
+
+  /* ---- scenario 1: a full round through the DOM (me + 1 bot) ---- */
+  window.eval(`startLocalGame([{name:'Test',isBot:false},{name:'Bot',isBot:true}], 42, {})`);
+  check('game screen shows', !$('gameScreen').classList.contains('hidden'));
+  check('phase is betting', ev(`view.phase`) === 'betting');
+  check('bet panel shows in betting phase', !$('betBox').classList.contains('hidden'));
+  check('5 bet chips offered', window.document.querySelectorAll('#betChips .chip').length === 5);
+  check('bet chips are 5/10/20/40/50', [...window.document.querySelectorAll('#betChips .chip')].map(b => b.textContent.trim()).join(',') === '5,10,20,40,50');
+  check('bet list shows both players', window.document.querySelectorAll('#betList .bl-row').length === 2);
+  check('special box starts at 0', $('specialTotal').textContent === '0');
+  // Bet 20 via the real chip button.
+  [...window.document.querySelectorAll('#betChips .chip')].find(b => b.textContent.trim() === '20').click();
+  check('my bet is 20', ev(`view.players.find(p=>p.id===myId).bet`) === 20);
+  check('my stack dropped by 20', ev(`view.players.find(p=>p.id===myId).stack`) === 980);
+  check('bet panel hides once I decided', $('betBox').classList.contains('hidden'));
+  // Bot answers its bet directly (its timer would do the same).
+  ev(`applyAction(fullState, 'p1', botChooseAction(fullState, 'p1'))`);
+  ev(`refreshView(); render();`);
+  check('cards are dealt after both bets', ev(`view.phase`) === 'playerTurns');
+  check('I was dealt 2 cards', ev(`view.players.find(p=>p.id===myId).cards.length`) === 2);
+  check('dealer was dealt 2 cards', ev(`view.dealer.cards.length`) === 2);
+  check('my turn — action panel shows', !$('actionBox').classList.contains('hidden'));
+  check('double down is offered with 2 cards', !$('btnDouble').disabled);
+  check('hit is offered', !$('btnHit').disabled);
+  // Hole card: my 2nd card is face-down unless it is a special.
+  const hole = window.document.querySelector('#myCards [data-hole]');
+  const mySecond = ev(`view.players.find(p=>p.id===myId).cards[1]`);
+  if (hole) {
+    check('hole card renders face-down', hole.classList.contains('back'));
+    hole.click();
+    check('tapping the hole card peeks at it', !window.document.querySelector('#myCards [data-hole]'));
+    check('peeked card shows its rank', /[0-9JQKA]/.test(window.document.querySelector('#myCards').textContent));
+  } else {
+    check('no hole element means 2nd card is a face-up special', mySecond && mySecond.special === true);
+  }
+  // Stay via the real button.
+  $('btnStay').click();
+  check('my turn ends after Stay', ev(`view.players.find(p=>p.id===myId).stood`) === true);
+  // Bot finishes its turn directly.
+  ev(`applyAction(fullState, 'p1', botChooseAction(fullState, 'p1'))`);
+  ev(`refreshView(); render();`);
+  // If the bot hit and is still to move, drive it until the round settles.
+  for (let i = 0; i < 5 && ev(`view.phase`) === 'playerTurns'; i++) {
+    ev(`applyAction(fullState, 'p1', botChooseAction(fullState, 'p1'))`);
+    ev(`refreshView(); render();`);
+  }
+  check('round settles', ev(`view.phase`) === 'settled');
+  check('results exist for me', !!ev(`view.results`) && !!ev(`view.results[myId]`));
+  check('WIN dialog shows at settle', !$('winModal').classList.contains('hidden'));
+  check('WIN dialog shows the acquired total', /Acquired/.test($('winBody').textContent));
+  check('dealer total is revealed at settle', /DEALER/.test($('dealerHand').textContent));
+  $('winClose').click();
+  check('WIN dialog closes', $('winModal').classList.contains('hidden'));
+  // Next round via the real button.
+  $('btnNextRound').click();
+  check('next round opens betting again', ev(`view.phase`) === 'betting' && ev(`view.roundNumber`) === 2);
+  check('bet panel shows again next round', !$('betBox').classList.contains('hidden'));
+
+  /* ---- scenario 2: spectate this round, auto-offered next round ----
+     (A dead round can happen if the bot spectates too — then my decision
+     resets and I spectate again; the bot re-rolls after a dead round.) */
+  $('btnSpectate').click();
+  check('I am spectating', ev(`view.players.find(p=>p.id===myId).spectating`) === true);
+  check('bet panel hides while spectating', $('betBox').classList.contains('hidden'));
+  let guard = 0;
+  while (ev(`view.phase`) === 'betting' && guard++ < 10) {
+    ev(`applyAction(fullState, 'p1', botChooseAction(fullState, 'p1'))`);
+    ev(`refreshView(); render();`);
+    if (ev(`view.phase`) === 'betting' && !ev(`view.players.find(p=>p.id===myId).spectating`)) $('btnSpectate').click();
+  }
+  check('bot plays alone while I spectate', ev(`view.phase`) === 'settled' || ev(`view.phase`) === 'playerTurns');
+  for (let i = 0; i < 5 && ev(`view.phase`) === 'playerTurns'; i++) {
+    ev(`applyAction(fullState, 'p1', botChooseAction(fullState, 'p1'))`);
+    ev(`refreshView(); render();`);
+  }
+  check('spectated round settles', ev(`view.phase`) === 'settled');
+  check('no WIN dialog for a spectator', $('winModal').classList.contains('hidden'));
+  $('btnNextRound').click();
+  check('spectator is offered entry again next round', ev(`view.phase`) === 'betting' && !$('betBox').classList.contains('hidden'));
+
+  /* ---- scenario 3: break his legs — anytime, infinitely ---- */
+  check('legs start unbroken', $('legsCount').textContent === '0');
+  $('breakLegsBtn').click();
+  $('breakLegsBtn').click();
+  $('breakLegsBtn').click();
+  check('three bat swings counted', $('legsCount').textContent === '3');
+  check('dealer legs show broken', $('dealerLegs').classList.contains('broken'));
+  check('bat swung', $('bat').classList.contains('swing'));
+  check('dealer complains in the taunt bubble', /legs/i.test($('tauntBubble').textContent));
+
+  /* ---- scenario 4: solo game (0 bots) works ---- */
+  window.eval(`startLocalGame([{name:'Solo',isBot:false}], 7, {})`);
+  check('solo game starts in betting', ev(`view.phase`) === 'betting');
+  check('solo table has one seat', ev(`view.players.length`) === 1);
+  [...window.document.querySelectorAll('#betChips .chip')].find(b => b.textContent.trim() === '5').click();
+  check('solo player is dealt in alone', ev(`view.phase`) === 'playerTurns' && ev(`view.turnPlayerId`) === ev(`myId`));
+
+  /* ---- scenario 5: forced Battle Bonyas round ---- */
+  window.eval(`startLocalGame([{name:'Test',isBot:false},{name:'Bot',isBot:true}], 99, {forceBattle:true})`);
+  check('battle round is flagged', ev(`view.round.battle`) === true);
+  check('battle banner shows', !$('battleBanner').classList.contains('hidden'));
+  check('battle song is the selected track', ev(`musicTrackFor(view.round.battle)`) === 'battle.mp3');
+  check('battle track is active after match start', ev(`currentTrack`) === 'battle.mp3');
+
+  console.log('\n' + pass + ' passed, ' + fail + ' failed');
+  process.exit(fail ? 1 : 0);
+})().catch(e => { console.error('UI TEST CRASHED:', e); process.exit(1); });

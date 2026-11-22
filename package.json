@@ -1,0 +1,12 @@
+{
+  "description": "Black Nyack — free browser blackjack (21), 1-5 players vs the dealer. Special cards, 5-card hands, Battle Bonyas. PeerJS P2P, $0 hosting.",
+  "name": "black_nyack",
+  "private": true,
+  "scripts": {
+    "test": "node test/engine.test.js && node test/payout.test.js && node test/battle.test.js && node test/ui.test.js"
+  },
+  "version": "1.0.0",
+  "devDependencies": {
+    "jsdom": "^31.0.1"
+  }
+}
