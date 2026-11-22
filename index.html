@@ -54,7 +54,7 @@ table.points th{color:var(--gold)}
 body.round-table .table-wrap{height:clamp(430px,78vh,700px);border-radius:50%/46%}
 body.round-table #opponentsBox,body.round-table #mySeat{display:contents}
 body.round-table .table-wrap .seat{position:absolute;z-index:3;width:210px}
-body.round-table .dealer-hand{position:absolute;left:50%;top:52%;transform:translateX(-50%);z-index:2;text-align:center}
+body.round-table .dealer-hand{position:absolute;left:50%;top:166px;transform:translateX(-50%);z-index:2;text-align:center}
 body.round-table .dealer-zone{position:absolute;left:50%;top:0;transform:translateX(-50%);z-index:2}
 .seats{display:grid;grid-template-columns:1fr;gap:10px;position:relative;z-index:2}
 .seat{background:rgba(0,0,0,.28);border:2px solid transparent;border-radius:12px;padding:8px 10px;position:relative}
@@ -104,8 +104,6 @@ body.round-table .dealer-zone{position:absolute;left:50%;top:0;transform:transla
    so it never covers the cards or the legs line */
 body.round-table .taunt{position:absolute;left:calc(50% + 100px);top:40px;width:170px;max-width:170px;margin:0;text-align:left}
 body.round-table .taunt::before{left:-8px;top:18px;transform:none;border:8px solid transparent;border-right-color:#fff;border-left:0}
-.legs-line{font-size:12px;color:var(--mut);margin-top:4px}
-.legs-line b{color:var(--gold)}
 #dealerSvg.bonked{animation:bonkShake .5s ease}
 @keyframes bonkShake{0%,100%{transform:translate(0,0) rotate(0)}20%{transform:translate(-8px,2px) rotate(-6deg)}40%{transform:translate(7px,-2px) rotate(5deg)}60%{transform:translate(-5px,1px) rotate(-3deg)}80%{transform:translate(3px,0) rotate(2deg)}}
 #dealerLegs.broken{transform-origin:110px 150px}
@@ -122,7 +120,7 @@ body.round-table .taunt::before{left:-8px;top:18px;transform:none;border:8px sol
 .bat{position:absolute;right:-6px;bottom:8px;width:16px;height:96px;border-radius:8px 8px 4px 4px;background:linear-gradient(90deg,#8a5a2b,#d9a441 45%,#8a5a2b);border:2px solid #5b3a1e;transform:rotate(-58deg);transform-origin:50% 92%;opacity:0;pointer-events:none;z-index:6}
 .bat.swing{opacity:1;animation:batSwing .5s ease-in-out}
 @keyframes batSwing{0%{transform:rotate(-115deg)}55%{transform:rotate(38deg)}100%{transform:rotate(-58deg);opacity:0}}
-.bat-hit-float{position:absolute;right:8px;top:30%;color:#ffe27a;font-weight:900;font-size:20px;text-shadow:0 2px 4px #000;animation:floatUp 1s ease-out forwards;pointer-events:none;z-index:7}
+.bat-hit-float{position:absolute;left:0;top:70%;color:#ffe27a;font-weight:900;font-size:20px;text-shadow:0 2px 4px #000;animation:floatUp 1s ease-out forwards;pointer-events:none;z-index:7}
 @keyframes floatUp{0%{opacity:1;transform:translateY(0)}100%{opacity:0;transform:translateY(-34px)}}
 /* coin rain on a win — more coins the bigger the win */
 #coinLayer{position:absolute;inset:0;overflow:hidden;pointer-events:none;z-index:8}
@@ -237,7 +235,7 @@ footer{color:var(--mut);font-size:12.5px;text-align:center;margin-top:26px;line-
         <li>🎵 The main song loops every match; the battle song plays only during a Battle Bonyas round.</li>
       </ul>
     </div>
-    <footer>Black Nyack v1.4 — a fan-made game, just for fun.<br>
+    <footer>Black Nyack v1.5 — a fan-made game, just for fun.<br>
     Nyau and all SEGA characters are © SEGA. All credit to SEGA — the creator of this site holds no rights to Nyau or any SEGA property, and this game is not affiliated with or endorsed by SEGA.<br>
     Free play coins only — no real money. Hosted on Cloudflare Pages. Code on GitHub.</footer>
   </div>
@@ -335,7 +333,6 @@ footer{color:var(--mut);font-size:12.5px;text-align:center;margin-top:26px;line-
         </div>
         </div>
         <div class="taunt hidden" id="tauntBubble">Welcome to MY table. The coins are basically already mine.</div>
-        <div class="legs-line">🦵 Legs broken: <b id="legsCount">0</b> — Nyau the dealer</div>
       </div>
       <div class="dealer-hand" id="dealerHand"></div>
       <div class="seats" id="opponentsBox"></div>
@@ -1058,6 +1055,12 @@ const TAUNTS={
   general:["I'm gonna win. I always win. It's basically my job.","The coins were always mine. You're just holding them for me.","Go on, take your time. I've got all day. You don't.","I could do this in my sleep. I probably am.","You know the house always wins, right? I'm the house.","Keep the coins warm for me, will you?","I never lose. I just let you think you have a chance. For a bit.","My ears are lucky. My paws are luckier.","You're playing against ME. Let that sink in.","I deal the cards, I take the coins, I look fabulous. That's the job.","One day you'll beat me. Not today. Probably not ever.","I'm not even trying and I'm still winning.","Nice cards. Shame about the dealer.","The table loves me. The table is mine, actually.","Welcome to MY table. The coins are basically already mine.","I have never lost. Not once. Ask anyone. (Don't ask anyone.)","You play like my grandmother. And she is a chair.","Hurry up. My ears are getting tired just watching you think."]
 };
 function pickTaunt(){ const arr=TAUNTS.general; return arr[Math.floor(Math.random()*arr.length)]; }
+/* The one exception: breaking his legs. That is not a game event — it is the
+   player's own direct action on their own screen, so a pain line is always in
+   sync with what just happened. His face shows the pain every time; the
+   words only sometimes (dealerSay still gates on tauntChance). */
+const PAIN_LINES=["OW! MY LEGS! ...You know what? I'm still dealing. Sit down.","MY LEGS! That hurt! A lot! ...I'm still dealing.","Again?! My legs! Fine. FINE. The game goes on."];
+function pickPainLine(){ return PAIN_LINES[Math.floor(Math.random()*PAIN_LINES.length)]; }
 /* The bubble only appears when he actually speaks, and goes away a few
    seconds later — most of the time there is no bubble at all. */
 function hideBubble(){ const el=$('tauntBubble'); if(el) el.classList.add('hidden'); }
@@ -1070,7 +1073,9 @@ function showBubble(){
 function dealerSay(kindOrText, chance){
   if(Math.random()>=(chance===undefined?tauntChance:chance)) return; // most of the time he just stays quiet
   const el=$('tauntBubble'); if(!el) return;
-  el.textContent=pickTaunt(); // the moment only decides WHEN he speaks; the line is always general
+  // a legs break gets a pain line (still only sometimes, via the chance
+  // gate above); every other moment gets a general line
+  el.textContent=(kindOrText==='legs')?pickPainLine():pickTaunt();
   lastTauntAt=Date.now();
   showBubble();
 }
@@ -1175,7 +1180,6 @@ function healLegs(){
 }
 function breakLegs(){
   legBreaks++;
-  const n=$('legsCount'); if(n) n.textContent=legBreaks;
   playThwack();
   const svg=$('dealerSvg'), legs=$('dealerLegs'), bat=$('bat');
   if(svg){ svg.classList.remove('bonked'); void svg.getBoundingClientRect(); svg.classList.add('bonked'); }
@@ -1192,7 +1196,7 @@ function breakLegs(){
     zone.appendChild(fl);
     setTimeout(()=>{ if(fl.parentNode) fl.parentNode.removeChild(fl); }, 1000);
   }
-  toast('🦵⚾ CRACK! Nyau\'s legs: broken '+legBreaks+' time'+(legBreaks===1?'':'s')+'. He\'s still dealing. (Local fun only — the table doesn\'t care.)');
+  toast('🦵⚾ CRACK! He\'s still dealing. (Local fun only — the table doesn\'t care.)');
 }
 
 /* ---- round-table layout: landscape / desktop = the round table from the
@@ -1432,7 +1436,7 @@ function render(){
   /* dealer hand (center) — during the reveal only the first
      dealerRevealCount cards are face-up; the rest stay face-down */
   const d=view.dealer;
-  const dCards=d.cards.map((c,i)=>(settled&&!resultsShown&&i>=dealerRevealCount)?{hidden:true}:c).map(c=>cardHtml(c,true)).join('');
+  const dCards=d.cards.map((c,i)=>(settled&&!resultsShown&&i>=dealerRevealCount)?{hidden:true}:c).map(c=>cardHtml(c,false)).join('');
   let dLabel='DEALER';
   let dBanner='';
   if(settled&&resultsShown){

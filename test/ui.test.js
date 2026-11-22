@@ -49,7 +49,7 @@ function check(name, cond, extra) {
   check('special box has a die, hidden until a ★ is dealt', !!$('specialDie') && $('specialDieWrap').classList.contains('hidden'));
   check('break-legs button sits next to Nyau inside the table', $('dealerZone').contains($('breakLegsBtn')) && $('breakLegsBtn').classList.contains('break-mini'));
   check('break-legs button exists', !!$('breakLegsBtn'));
-  check('legs counter exists', !!$('legsCount'));
+  check('no legs counter line on the table', !$('legsCount'));
   check('special card box exists', !!$('specialBox'));
   check('bet list exists', !!$('betList'));
   check('dealer hand area exists', !!$('dealerHand'));
@@ -157,8 +157,8 @@ function check(name, cond, extra) {
   // v1.4: the settle is a reveal, not an instant — the dealer flips one card
   // at a time, then a second to look, then the win text, then the pop-up.
   check('dealer shows only his up-card at first', (() => {
-    const cards = window.document.querySelectorAll('#dealerHand .card-big');
-    const backs = window.document.querySelectorAll('#dealerHand .card-big.back');
+    const cards = window.document.querySelectorAll('#dealerHand .mini-card');
+    const backs = window.document.querySelectorAll('#dealerHand .mini-card.back');
     return cards.length === ev(`view.dealer.cardCount`) && backs.length === cards.length - 1;
   })());
   check('WIN dialog does NOT open at settle', $('winModal').classList.contains('hidden'));
@@ -167,7 +167,7 @@ function check(name, cond, extra) {
   // Drive the reveal without waiting on real timers: flip the dealer cards
   // one by one, then the look pause, then the win text, then the pop-up.
   ev(`while(dealerRevealCount<view.dealer.cardCount) advanceDealerReveal();`);
-  check('all dealer cards are showing after the reveal', window.document.querySelectorAll('#dealerHand .card-big.back').length === 0);
+  check('all dealer cards are showing after the reveal', window.document.querySelectorAll('#dealerHand .mini-card.back').length === 0);
   ev(`showSettleResults()`);
   check('dealer total is revealed after the look', /DEALER — \d+/.test($('dealerHand').textContent));
   check('WIN dialog does NOT open before the win text has had its beat', $('winModal').classList.contains('hidden'));
@@ -211,24 +211,24 @@ function check(name, cond, extra) {
   /* ---- scenario 3: break his legs — anytime, infinitely; bat hides after
      2s, legs grow back after a few minutes (both driven by named functions
      the test can call directly instead of waiting on real timers) ---- */
-  check('legs start unbroken', $('legsCount').textContent === '0');
+  check('legs start unbroken', ev(`legBreaks`) === 0);
   ev(`tauntChance=1`); // the bubble only speaks sometimes — force it for this check
   $('breakLegsBtn').click();
   $('breakLegsBtn').click();
   $('breakLegsBtn').click();
-  check('three bat swings counted', $('legsCount').textContent === '3');
+  check('three bat swings counted', ev(`legBreaks`) === 3);
   check('dealer legs show broken', $('dealerLegs').classList.contains('broken'));
   check('bat swung', $('bat').classList.contains('swing'));
   check('dealer face shows pain while legs are broken', $('dealerSvg').classList.contains('pain'));
-  check('dealer still talks smack when his legs are broken — a general line, never a legs line', (() => {
+  check('dealer yelps in pain when his legs are broken — a pain line, only sometimes', (() => {
     const t = $('tauntBubble').textContent;
-    return ev(`TAUNTS.general.includes(${JSON.stringify(t)})`) && !/legs/i.test(t);
+    return ev(`PAIN_LINES.includes(${JSON.stringify(t)})`);
   })());
   ev(`hideBat()`);
   check('bat disappears after the hit (hideBat)', !$('bat').classList.contains('swing'));
   check('legs counter is a lifetime total even after healing', (() => {
     ev(`healLegs()`);
-    return $('legsCount').textContent === '3' && !$('dealerLegs').classList.contains('broken');
+    return ev(`legBreaks`) === 3 && !$('dealerLegs').classList.contains('broken');
   })());
   check('dealer face leaves pain once legs heal', !$('dealerSvg').classList.contains('pain'));
   ev(`tauntChance=0.35`); // back to the game's rarely-speaks default
@@ -257,7 +257,6 @@ function check(name, cond, extra) {
   check('footer credits SEGA', /SEGA/.test(window.document.body.textContent));
   check('footer says fan-made, no rights held', /fan-made/i.test(window.document.body.textContent) && /no rights/i.test(window.document.body.textContent));
   check('dealer art is labelled Nyau', /Nyau/.test($('dealerSvg').getAttribute('aria-label') || ''));
-  check('legs line names Nyau', /Nyau/.test(window.document.querySelector('.legs-line').textContent));
   check('coin layer exists', !!$('coinLayer'));
   // Taunts: rarely, not every time — gated by tauntChance; the bubble
   // only appears when he speaks and goes away a few seconds later.
@@ -356,9 +355,9 @@ function check(name, cond, extra) {
     ev(`tauntChance=1`); ev(`dealerSay('bust')`);
     return ev(`TAUNTS.general.includes($('tauntBubble').textContent)`);
   })());
-  check('a legs moment still speaks a general line', (() => {
+  check('a legs moment speaks a pain line', (() => {
     ev(`dealerSay('legs')`);
-    return ev(`TAUNTS.general.includes($('tauntBubble').textContent)`);
+    return ev(`PAIN_LINES.includes($('tauntBubble').textContent)`);
   })());
   ev(`tauntChance=0.35`);
   // No Hit / Double Down at 21 (UI helper).
@@ -381,8 +380,8 @@ function check(name, cond, extra) {
   check('reveal: dealer flips one card at a time', (() => {
     ev(`view={phase:'settled',turnPlayerId:null,roundNumber:1,round:{specialTotal:0,battle:false,battleWinnerId:null},version:1,deckCount:40,results:{me:{outcome:'win',payout:500,breakdown:{win:200,blacknyack:300,fiveCard:0,special:0,battle:0},total:21,handClass:'blacknyack',specials:0,bet:100,battleWinner:false}},log:['Black Nyack — round 1.','Test bets 100.','Dealer stands on 19.','Test wins 500 (21)'],dealer:{cardCount:3,total:19,cards:[{rank:'9',suit:'♣',special:false,faceUp:true},{rank:'K',suit:'♥',special:false,faceUp:true},{rank:'5',suit:'♦',special:false,faceUp:true}]},players:[{id:'me',name:'Test',isBot:false,seat:0,stack:1500,bet:0,doubled:false,stood:true,busted:false,spectating:false,left:false,cardCount:2,total:21,cards:[{rank:'A',suit:'♠',special:false,faceUp:true},{rank:'K',suit:'♥',special:false,faceUp:true}]},{id:'bot',name:'Ada',isBot:true,seat:1,stack:900,bet:0,doubled:false,stood:true,busted:false,spectating:false,left:false,cardCount:2,total:19,cards:[{rank:'9',suit:'♠',special:false,faceUp:true},{rank:'K',suit:'♦',special:false,faceUp:true}]}]}`);
     ev(`render()`);
-    const cards = window.document.querySelectorAll('#dealerHand .card-big');
-    const backs = window.document.querySelectorAll('#dealerHand .card-big.back');
+    const cards = window.document.querySelectorAll('#dealerHand .mini-card');
+    const backs = window.document.querySelectorAll('#dealerHand .mini-card.back');
     return cards.length === 3 && backs.length === 2
       && !$('logBox').textContent.includes('wins 500')
       && !/WIN!/.test($('mySeat').textContent)
@@ -391,9 +390,9 @@ function check(name, cond, extra) {
   })());
   check('reveal: the dealer cards flip one by one', (() => {
     ev(`advanceDealerReveal()`); // hole card flips
-    const after1 = window.document.querySelectorAll('#dealerHand .card-big.back').length;
+    const after1 = window.document.querySelectorAll('#dealerHand .mini-card.back').length;
     ev(`advanceDealerReveal()`); // drawn card flips
-    const after2 = window.document.querySelectorAll('#dealerHand .card-big.back').length;
+    const after2 = window.document.querySelectorAll('#dealerHand .mini-card.back').length;
     return after1 === 1 && after2 === 0;
   })());
   check('reveal: the look pause shows the results but not the pop-up', (() => {
@@ -410,6 +409,34 @@ function check(name, cond, extra) {
   // The die is a real six-sided die: two blank sides worth 0, two 1s, two 2s.
   check('die is a real six-sided die', JSON.stringify(ev(`SPECIAL_DIE_FACES`)) === '[0,0,1,1,2,2]');
   check('die has two blank sides worth 0', ev(`SPECIAL_DIE_FACES.filter(f=>f===0).length`) === 2);
+
+  /* ---- scenario 9: v1.5 — dealer cards up close and small, no legs
+     counter line, pain lines back (sometimes) ---- */
+  check('dealer cards are mini, not big', (() => {
+    window.eval(`startLocalGame([{name:'Test',isBot:false},{name:'Bot',isBot:true}], 42, {})`);
+    [...window.document.querySelectorAll('#betChips .chip')].find(b => b.textContent.trim() === '20').click();
+    ev(`applyAction(fullState, 'p1', botChooseAction(fullState, 'p1'))`);
+    ev(`refreshView(); render();`);
+    const minis = window.document.querySelectorAll('#dealerHand .mini-card').length;
+    const bigs = window.document.querySelectorAll('#dealerHand .card-big').length;
+    return minis === ev(`view.dealer.cardCount`) && bigs === 0;
+  })());
+  check('dealer hand sits just under the ring on the round table', (() => {
+    ev(`document.body.classList.add('round-table')`);
+    return window.getComputedStyle($('dealerHand')).top === '166px';
+  })());
+  check('dealer hand clears the bottom seat even on the shortest table', (() => {
+    const handTop = parseInt(window.getComputedStyle($('dealerHand')).top, 10);
+    // the hand is ~70px tall (label + mini cards); the bottom seat's center
+    // sits at 82% of the table, whose shortest height is 430px
+    return handTop + 70 < 0.82 * 430;
+  })());
+  check('pain lines never mention a game event', !/bust|21|losing|you lost|you won|winner|battle|double down|special|blackjack/i.test(ev(`PAIN_LINES.join(' ')`)));
+  check('pain lines are a small pool', ev(`PAIN_LINES.length`) === 3);
+  check('CRACK float sits bottom-left of the dealer zone, clear of the bubble', (() => {
+    const css = window.document.querySelector('style').textContent;
+    return /\.bat-hit-float\{position:absolute;left:0;top:70%/.test(css);
+  })());
 
   console.log('\n' + pass + ' passed, ' + fail + ' failed');
   process.exit(fail ? 1 : 0);

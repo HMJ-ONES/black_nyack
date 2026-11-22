@@ -4,14 +4,32 @@
 in the same format as Wellington and Five-Card Poker: a single `index.html`, no sign-up,
 no cost, multiplayer peer-to-peer via PeerJS, hosted free on Cloudflare Pages.
 
-> **v1.4:** Nyau talks general smack only, the dealer reveals his cards one
-> by one, and you can't Hit or Double Down on 21. All tests green:
-> `npm test` (see [Tests](#tests)).
+> **v1.5:** the dealer's cards sit right under him, small, and never under
+> the seats; the legs counter line is gone; his pain lines are back
+> (sometimes). All tests green: `npm test` (see [Tests](#tests)).
 
 - **Repo:** https://github.com/HMJ-ONES/black_nyack
 - **Live:** https://black-nyack.pages.dev *(connected + verified Nov 22 — home page and both songs serve 200)*
 - **Players:** 1–5 at a round table, dealer in the middle (mobile sideways = same round table as PC)
 - **Currency:** casino coins — free play coins only, no real money
+
+## v1.5 — Dealer cards up close, no counter line, pain lines back (Nov 22)
+
+- **Dealer cards up close and small** — the dealer's hand now sits right
+  under Nyau's ring (166px from the top of the table, at any table height)
+  and uses the small mini cards instead of the big ones, so it can never end
+  up underneath the player seats. The "CRACK! +1" float moved to the
+  bottom-left of the dealer zone, clear of the speech bubble.
+- **No legs counter line** — the "🦵 Legs broken: N — Nyau the dealer" line
+  is gone from the table, and the toast after a break no longer shows a
+  count or a name. The break still counts internally (the face still shows
+  the pain, the legs still regrow after 3 minutes).
+- **Pain lines are back — sometimes** — breaking his legs can make him yelp
+  again ("OW! MY LEGS! ...I'm still dealing."), gated by the same ~35%
+  chance as his other lines. This is the one exception to the general-only
+  rule: the break is the player's own direct action on their own screen, so
+  a pain line is always in sync with what just happened. His face shows the
+  pain every time; the words only sometimes.
 
 ## v1.4 — The reveal, general smack, no Hit on 21 (Nov 22)
 
