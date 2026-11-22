@@ -72,12 +72,41 @@ console.log('Constants:');
   check('START_STACK is 1000', E.START_STACK === 1000);
   check('MAX_PLAYERS is 5', E.MAX_PLAYERS === 5);
   check('MAX_PAYOUT is 1200', E.MAX_PAYOUT === 1200);
-  check('BATTLE_ODDS is 0.12', E.BATTLE_ODDS === 0.12);
+  check('BATTLE_ODDS is 0.08', E.BATTLE_ODDS === 0.08);
   check('DEALER_STAND is 17', E.DEALER_STAND === 17);
   check('special die faces are 0,0,1,1,2,2', JSON.stringify(E.SPECIAL_DIE_FACES) === '[0,0,1,1,2,2]');
   check('die has 6 faces', E.SPECIAL_DIE_FACES.length === 6);
   check('die has exactly two blank sides worth 0', E.SPECIAL_DIE_FACES.filter(f => f === 0).length === 2);
   check('die has exactly two 1s and two 2s', E.SPECIAL_DIE_FACES.filter(f => f === 1).length === 2 && E.SPECIAL_DIE_FACES.filter(f => f === 2).length === 2);
+  // every roll is recorded in the round's roll list, in order — the die
+  // watches this list, never the game log (a 0-roll is still a roll)
+  check('rollSpecialDie records the face in round.rolls', (() => {
+    const st = mkGame(2, 42, { forceBattle: false });
+    const r1 = E.rollSpecialDie(st, 'A');
+    const r2 = E.rollSpecialDie(st, 'B');
+    return JSON.stringify(st.round.rolls) === JSON.stringify([r1, r2]) && st.round.specialTotal === r1 + r2;
+  })());
+  check('a 0-roll is recorded (total stays 0, roll list still grows)', (() => {
+    // find a seed whose first roll is a blank side
+    for (let s = 1; s < 200; s++) {
+      const st = mkGame(2, s, { forceBattle: false });
+      const r = E.rollSpecialDie(st, 'A');
+      if (r === 0) return st.round.rolls.length === 1 && st.round.rolls[0] === 0 && st.round.specialTotal === 0;
+    }
+    return false;
+  })());
+  check('rolls reset on the next round', (() => {
+    const st = mkGame(2, 42, { forceBattle: false });
+    E.rollSpecialDie(st, 'A');
+    betAll(st, { p0: 10, p1: 10 });
+    E.nextRound(st);
+    return st.round.rolls.length === 0 && st.round.specialTotal === 0;
+  })());
+  check('viewFor carries the roll list', (() => {
+    const st = mkGame(2, 42, { forceBattle: false });
+    E.rollSpecialDie(st, 'A');
+    return JSON.stringify(E.viewFor(st, 'p0').round.rolls) === JSON.stringify(st.round.rolls);
+  })());
 }
 
 console.log('No Hit / Double Down at 21:');

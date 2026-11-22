@@ -4,14 +4,28 @@
 in the same format as Wellington and Five-Card Poker: a single `index.html`, no sign-up,
 no cost, multiplayer peer-to-peer via PeerJS, hosted free on Cloudflare Pages.
 
-> **v1.5:** the dealer's cards sit right under him, small, and never under
-> the seats; the legs counter line is gone; his pain lines are back
-> (sometimes). All tests green: `npm test` (see [Tests](#tests)).
+> **v1.5.1:** the die can never miss a roll again, and Battle Bonyas is a
+> little rarer (8%). All tests green: `npm test` (see [Tests](#tests)).
 
 - **Repo:** https://github.com/HMJ-ONES/black_nyack
 - **Live:** https://black-nyack.pages.dev *(connected + verified Nov 22 — home page and both songs serve 200)*
 - **Players:** 1–5 at a round table, dealer in the middle (mobile sideways = same round table as PC)
 - **Currency:** casino coins — free play coins only, no real money
+
+## v1.5.1 — The die never misses a roll; Battle Bonyas rarer (Nov 22)
+
+- **Die bug, fixed** — a special could be dealt and the die would never
+  roll: the special stayed "worth 0" and the box said "no value yet".
+  Cause: the die watched the game log for "rolled N" lines, but the log only
+  keeps its last 40 lines — in a long session (round 8 in the report) an old
+  roll line slid out of the window in the same render a new roll arrived,
+  and the count re-baseline swallowed the new roll. The die now watches the
+  round's own roll list (one entry per special dealt, in order, never
+  trimmed), so a roll can never be missed. A 0-roll also counts now: the die
+  lands on its blank face and the box says "Every ★ is worth 0" instead of
+  "no value yet".
+- **Battle Bonyas is a bit rarer** — 12% → **8%** per round, about one
+  battle round in twelve instead of one in eight.
 
 ## v1.5 — Dealer cards up close, no counter line, pain lines back (Nov 22)
 
@@ -218,7 +232,7 @@ Worked examples (both verified by regression tests in `test/payout.test.js`):
 
 ### Battle Bonyas (secret random event)
 
-- At the start of **each round** (when betting opens) there is a **12% chance**
+- At the start of **each round** (when betting opens) there is an **8% chance**
   the round is a **Battle Bonyas** round. It lasts **one round only** and can
   trigger again on later rounds.
 - The **Battle winner** is the **single best winning hand** among the players who
@@ -409,7 +423,7 @@ Current (v1.3, Nov 22): engine **131**, payout **37**, battle **29**, UI **141**
 |---|---|
 | `test/engine.test.js` | Constants, 58-card deck, deal + face-up/hole flags, hand values + classes, betting (invalid/insufficient/double-decide, dead rounds, dead-round bot retry, spectators, rebuy), hit/stay/double rules (3-hit max, double only on 2 cards, forced stand), special-die rolls, dealer (stands on 17 incl. soft 17, hits on 16, busts, no draw when all bust), filtered views (hole cards never leak, special 2nd card visible, log clean), leave/remove, bots, plus a **500-round bot soak** (no throws, no negative stacks, no payout over 1200, every round terminates) |
 | `test/payout.test.js` | The payout table (plain win, dealer bust, 21 bonus, 5-card bonus, special bonus, push, lose, bust-vs-bust) and all four regression cases: (a) 50 / 5-card 21 → **500**; (b) 50 doubled / 3-card 21 / 1 special / battle winner → **1200**; (c) same without battle → **700**; (d) doubled 3-card 21 / 2 specials / battle winner → 1400 uncapped, **capped to 1200** |
-| `test/battle.test.js` | 12% odds (constant + statistical check over 500 seeded rounds), single winner, ranking (class → total → specials → earliest seat), no winner when the dealer wins all / pushes / everyone busts, re-trigger across rounds, battle lasts exactly one round, battle bonus never leaks to other winners |
+| `test/battle.test.js` | 8% odds (constant + statistical check over 500 seeded rounds), single winner, ranking (class → total → specials → earliest seat), no winner when the dealer wins all / pushes / everyone busts, re-trigger across rounds, battle lasts exactly one round, battle bonus never leaks to other winners |
 | `test/ui.test.js` | jsdom DOM smoke test: every screen/panel/button exists, music elements + track selection (`music.mp3` / `battle.mp3`), layout helpers (round vs stacked, arc seat positions), rules modal, menu flow through the real buttons (bot picker → game → back to menu), a full round through the DOM (bet chip → deal → hole-card peek → Stay → settle → WIN dialog → next round), spectate + auto-offered entry next round (incl. dead-round retry), break-the-legs button ×3 (bat hides, legs regrow, pain face), solo game (0 bots), forced Battle Bonyas round, the v1.1 checks: SEGA footer credit, sometimes-only taunts, red BUST / shining DOUBLE DOWN / WIN! +amount banners, coin rain scaling with the win, sad/pain/happy faces, 8s win hold; the v1.2 checks: bet list / special box above the table, log below it, bubble starts hidden and goes away after 6s, taunts at 35% with idle chatter once a minute, face resets after 7s, break-legs button next to Nyau; and the v1.3 checks: special die faces 0/1/2, tumble + land, a fresh "rolled N" log line makes it roll, die hides on a new round, log below the chips and buttons |
 
 ## Deploy to Cloudflare Pages ($0)

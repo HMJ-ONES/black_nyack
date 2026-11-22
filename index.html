@@ -235,7 +235,7 @@ footer{color:var(--mut);font-size:12.5px;text-align:center;margin-top:26px;line-
         <li>🎵 The main song loops every match; the battle song plays only during a Battle Bonyas round.</li>
       </ul>
     </div>
-    <footer>Black Nyack v1.5 — a fan-made game, just for fun.<br>
+    <footer>Black Nyack v1.5.1 — a fan-made game, just for fun.<br>
     Nyau and all SEGA characters are © SEGA. All credit to SEGA — the creator of this site holds no rights to Nyau or any SEGA property, and this game is not affiliated with or endorsed by SEGA.<br>
     Free play coins only — no real money. Hosted on Cloudflare Pages. Code on GitHub.</footer>
   </div>
@@ -424,7 +424,7 @@ const BETS = [5, 10, 20, 40, 50];   // allowed bets (casino coins)
 const START_STACK = 1000;           // free coins every player starts with (and rebuys)
 const MAX_PLAYERS = 5;              // seats at the table
 const MAX_PAYOUT = 1200;            // hard cap on one player's payout in one round
-const BATTLE_ODDS = 0.12;           // chance a round is a Battle Bonyas round
+const BATTLE_ODDS = 0.08;           // chance a round is a Battle Bonyas round — about one in twelve
 const DEALER_STAND = 17;            // dealer stands on 17, including soft 17
 const SPECIAL_DIE_FACES = [0, 0, 1, 1, 2, 2]; // the special-card die
 const RANKS = ['2','3','4','5','6','7','8','9','10','J','Q','K','A'];
@@ -498,7 +498,7 @@ function newGame(playerNames, seed, opts){
       stack:START_STACK, bet:0, doubled:false, hand:[], stood:false, busted:false,
       spectating:false, decided:false, left:false})),
     dealer:{hand:[]}, deck:[],
-    round:{specialTotal:0, battle:false, battleWinnerId:null, deadCount:0, log:[]},
+    round:{specialTotal:0, battle:false, battleWinnerId:null, deadCount:0, log:[], rolls:[]},
     turnPlayerId:null, results:null, version:1 };
   st.log=st.round.log; // alias: the log lives on the round, st.log is a shortcut
   rollBattle(st, opts.forceBattle);
@@ -522,6 +522,7 @@ function rollBattle(st, force){
 function rollSpecialDie(st, whoName){
   const roll=SPECIAL_DIE_FACES[Math.floor(rngNext(st)*6)];
   st.round.specialTotal+=roll;
+  (st.round.rolls=st.round.rolls||[]).push(roll); // the round's roll list: one entry per special dealt, in order — the die watches this, never the log
   st.round.log.push((whoName||'Someone')+' rolled '+roll+' — special cards now worth '+st.round.specialTotal+'.');
   return roll;
 }
@@ -536,6 +537,7 @@ function dealOne(st, toHand, faceUp, whoName){
 function dealRound(st){
   st.deck=shuffle(buildDeck(), function(){ return rngNext(st); });
   st.round.specialTotal=0;
+  st.round.rolls=[]; // a new round starts with no rolls
   const ent=entrants(st);
   for(const p of ent) dealOne(st, p.hand, true, p.name);   // 1st card: face up
   dealOne(st, st.dealer.hand, true, 'Dealer');
@@ -667,7 +669,7 @@ function nextRound(st, opts){
   opts=opts||{};
   st.roundNumber++;
   const oldLog=st.round.log;
-  st.round={specialTotal:0, battle:false, battleWinnerId:null, deadCount:0, log:oldLog};
+  st.round={specialTotal:0, battle:false, battleWinnerId:null, deadCount:0, log:oldLog, rolls:[]};
   st.log=st.round.log;
   for(const p of st.players){
     p.hand=[]; p.bet=0; p.doubled=false; p.stood=false; p.busted=false;
@@ -853,7 +855,7 @@ function viewFor(st, viewerId){
   return {
     seed:st.seed, roundNumber:st.roundNumber, phase:st.phase,
     turnPlayerId:st.turnPlayerId,
-    round:{specialTotal:st.round.specialTotal, battle:st.round.battle, battleWinnerId:st.round.battleWinnerId},
+    round:{specialTotal:st.round.specialTotal, battle:st.round.battle, battleWinnerId:st.round.battleWinnerId, rolls:(st.round.rolls||[]).slice()},
     players:players,
     dealer:{ cardCount:st.dealer.hand.length,
       total: settled ? bestValue(st.dealer.hand, st.round.specialTotal).total : null,
@@ -1044,7 +1046,7 @@ let tauntChance=TAUNT_CHANCE; // tests can set 0 / 1; the game leaves it at 0.35
 let legBreaks=0, legsBroken=false, lastTauntAt=0, tauntTimer=null, legsHealTimer=null, batHideTimer=null;
 let dealerMood='happy'; // happy | sad | pain
 let faceKey='happy', faceTimer=null, bubbleHideTimer=null;
-let dieQueue=[], dieRolling=false, dieTimer=null, dieTick=null, seenRolls=0, lastDieRound=0;
+let dieQueue=[], dieRolling=false, dieTimer=null, dieTick=null, seenRollsThisRound=0, lastDieRound=0;
 /* Nyau's lines are GENERAL trash-talk, never about a specific event. The
    bubble is not synced to the game state, so a line about a bust, a 21 or
    "you're still losing" would show up on the wrong screen at the wrong time.
@@ -1122,14 +1124,18 @@ function runNextDieRoll(){
   dieTimer=setTimeout(()=>landDie(face), DIE_ROLL_MS);
 }
 function queueDieRoll(face){ dieQueue.push(face===1?1:face===2?2:0); runNextDieRoll(); }
-/* Watch the game log for fresh "rolled N" lines — every special dealt rolls
-   the die once, and the log is the one place that names each single roll. */
+/* Watch the round's roll list — one entry per special dealt, in order.
+   The die used to watch the game log for "rolled N" lines, but the log only
+   keeps its last 40 lines: in a long session an old roll line slides out of
+   the window in the same render a new roll arrives, and the count
+   re-baseline swallowed the new roll — the die never showed, the special
+   stayed "worth 0" and the box said "no value yet". The roll list is
+   per-round and never trimmed, so a roll can never be missed. */
 function detectSpecialRolls(){
-  if(!view||!view.log) return;
-  const rolls=view.log.map(l=>{ const m=/ rolled ([0-2]) /.exec(l); return m?+m[1]:null; }).filter(x=>x!==null);
-  if(rolls.length<seenRolls) seenRolls=rolls.length; // log trimmed to the last 40 — re-baseline, don't replay
-  for(let i=seenRolls;i<rolls.length;i++) queueDieRoll(rolls[i]);
-  seenRolls=rolls.length;
+  if(!view||!view.round) return;
+  const rolls=view.round.rolls||[];
+  for(let i=seenRollsThisRound;i<rolls.length;i++) queueDieRoll(rolls[i]);
+  seenRollsThisRound=rolls.length;
 }
 function dealerLostRound(){
   if(!view||view.phase!=='settled') return false;
@@ -1427,10 +1433,11 @@ function render(){
 
   /* special card box (top-right) */
   const st=view.round?view.round.specialTotal:0;
+  const rolled=((view.round&&view.round.rolls)||[]).length>0; // a 0-roll is still a roll — the die landed on blank
   $('specialTotal').textContent=st;
-  $('specialSub').textContent=st>0?('Every ★ is worth '+st):'No special value yet — deal a ★ to roll the die';
+  $('specialSub').textContent=rolled?('Every ★ is worth '+st):'No special value yet — deal a ★ to roll the die';
   // a new round starts with a clean die; rolls in this round re-show it
-  if(view.roundNumber!==lastDieRound){ lastDieRound=view.roundNumber; hideDie(); dieQueue.length=0; clearTimeout(dieTimer); clearInterval(dieTick); dieRolling=false; }
+  if(view.roundNumber!==lastDieRound){ lastDieRound=view.roundNumber; hideDie(); dieQueue.length=0; clearTimeout(dieTimer); clearInterval(dieTick); dieRolling=false; seenRollsThisRound=0; }
   detectSpecialRolls();
 
   /* dealer hand (center) — during the reveal only the first
@@ -1588,7 +1595,7 @@ function rulesHtml(){
   '<li><b>The 5-card rule:</b> 5 cards without busting beats <b>even a dealer 21</b>. 5 cards totalling exactly 21 is the strongest hand there is — it only ties against another 5-card 21.</li>'+
   '<li><b>The dealer</b> reveals the hole card, then hits while under 17 and stands on 17 or more, including soft 17. If every player busts, the dealer doesn\'t draw.</li>'+
   '<li><b>The special die:</b> whenever a special card is dealt to anyone, a 6-sided die (faces 0, 0, 1, 1, 2, 2) is rolled and the result is <b>added to the shared special total</b>. Every special card on the table is worth that total. Example: you roll 1, the dealer rolls 2 — every special is worth 3 this round.</li>'+
-  '<li><b>Battle Bonyas (secret random event):</b> at the start of each round there is a <b>12% chance</b> the round is a Battle Bonyas round — it lasts one round only. The <b>single best winning hand</b> among the players who beat the dealer takes the battle bonus; everyone else who beat the dealer gets their normal payout. If nobody beats the dealer, there is no battle winner.</li>'+
+  '<li><b>Battle Bonyas (secret random event):</b> at the start of each round there is an <b>8% chance</b> the round is a Battle Bonyas round — it lasts one round only. The <b>single best winning hand</b> among the players who beat the dealer takes the battle bonus; everyone else who beat the dealer gets their normal payout. If nobody beats the dealer, there is no battle winner.</li>'+
   '<li>🎵 <b>Music:</b> the main song loops from the start of every match; the battle song plays only during a Battle Bonyas round, then it goes back to the main loop. Use the 🔊 button to mute.</li>'+
   '<li>🦵⚾ <b>Break his legs:</b> purely for fun — a baseball bat, Nyau, unlimited uses, any time, local only. His legs grow back after a few minutes, and the bat disappears 2 seconds after the hit. It never touches the game.</li>'+
   '<li><b>Joining late?</b> If you join a game already in progress you <b>spectate</b> — seats are fixed when the game starts, so you watch this match and join the next one from the lobby. If your connection drops mid-game, your seat is held for <b>10 seconds</b>; after that you\'re withdrawn and come back as a spectator.</li></ul>';

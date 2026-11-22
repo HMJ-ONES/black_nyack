@@ -330,15 +330,15 @@ function check(name, cond, extra) {
     return !$('specialDieWrap').classList.contains('hidden') && $('specialDie').classList.contains('rolling');
   })());
   check('die lands on the rolled face (landDie)', (() => { ev(`landDie(2)`); return $('specialDie').classList.contains('face-2') && !$('specialDie').classList.contains('rolling'); })());
-  check('a fresh "rolled N" log line makes the die roll', (() => {
+  check('a fresh roll in the round makes the die roll', (() => {
     // start a real game first: scenario 6 replaced view with a stub that has no log
     window.eval(`startLocalGame([{name:'Test',isBot:false},{name:'Bot',isBot:true}], 99, {forceBattle:false})`);
-    ev(`view.log.push('Ada rolled 1 — special cards now worth 1.')`);
+    ev(`rollSpecialDie(fullState, 'Ada'); refreshView();`);
     ev(`hideDie()`); ev(`render()`);
     return !$('specialDieWrap').classList.contains('hidden') && $('specialDie').classList.contains('rolling');
   })());
   check('die hides again on a new round', (() => {
-    ev(`lastDieRound=0`); ev(`render()`);
+    ev(`nextRound(fullState); refreshView(); render();`); // a real new round: fresh empty roll list, so nothing re-queues
     return $('specialDieWrap').classList.contains('hidden');
   })());
   check('die tumbles about 0.75s before landing', ev(`DIE_ROLL_MS`) === 750);
@@ -436,6 +436,32 @@ function check(name, cond, extra) {
   check('CRACK float sits bottom-left of the dealer zone, clear of the bubble', (() => {
     const css = window.document.querySelector('style').textContent;
     return /\.bat-hit-float\{position:absolute;left:0;top:70%/.test(css);
+  })());
+
+  /* ---- scenario 10: v1.5.1 — the die never misses a roll, even in a long
+     session; a 0-roll still shows the die and says what specials are worth ---- */
+  check('die still shows a roll after the log window slides (round-8 bug)', (() => {
+    window.eval(`startLocalGame([{name:'Test',isBot:false},{name:'Bot',isBot:true}], 42, {})`);
+    [...window.document.querySelectorAll('#betChips .chip')].find(b => b.textContent.trim() === '20').click();
+    ev(`applyAction(fullState, 'p1', botChooseAction(fullState, 'p1'))`);
+    ev(`refreshView(); render();`);
+    // three earlier rolls, all shown — then let the die settle
+    ev(`rollSpecialDie(fullState, 'Test'); rollSpecialDie(fullState, 'Test'); rollSpecialDie(fullState, 'Test'); refreshView(); render();`);
+    ev(`clearTimeout(dieTimer); clearInterval(dieTick); dieRolling=false; dieQueue.length=0; hideDie();`);
+    // a long session: push filler log lines until the oldest line in the
+    // 40-line window is a roll line — the exact spot where the old
+    // count-based detection swallowed the next roll
+    ev(`let guard=0; while(guard++<60 && !/ rolled [0-2] /.test(fullState.round.log.slice(-40)[0])) fullState.round.log.push('filler line '+guard);`);
+    // one more special is dealt — its roll must still show the die
+    ev(`rollSpecialDie(fullState, 'Test'); refreshView(); render();`);
+    return !$('specialDieWrap').classList.contains('hidden') && ev(`seenRollsThisRound`) === ev(`fullState.round.rolls.length`);
+  })());
+  check('a 0-roll still shows the die and says the specials are worth 0', (() => {
+    window.eval(`startLocalGame([{name:'Test',isBot:false}], 7, {})`);
+    [...window.document.querySelectorAll('#betChips .chip')].find(b => b.textContent.trim() === '20').click();
+    ev(`refreshView(); render();`);
+    ev(`fullState.round.specialTotal=0; fullState.round.rolls=[0]; seenRollsThisRound=0; refreshView(); render();`);
+    return !$('specialDieWrap').classList.contains('hidden') && ev(`dieRolling`) === true && $('specialSub').textContent === 'Every ★ is worth 0';
   })());
 
   console.log('\n' + pass + ' passed, ' + fail + ' failed');
