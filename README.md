@@ -4,14 +4,21 @@
 in the same format as Wellington and Five-Card Poker: a single `index.html`, no sign-up,
 no cost, multiplayer peer-to-peer via PeerJS, hosted free on Cloudflare Pages.
 
-> **v1.7:** Nyau draws one card at a time (each shows before the next),
-> Ace hands read "4 or 14", and Hit is never allowed at 5 cards. All tests
-> green: `npm test` (see [Tests](#tests)).
+> **v1.7.1:** the dealer never draws a 6th card either — 5 cards is the
+> most any hand can hold. All tests green: `npm test` (see [Tests](#tests)).
 
 - **Repo:** https://github.com/HMJ-ONES/black_nyack
 - **Live:** https://black-nyack.pages.dev *(connected + verified Nov 22 — home page and both songs serve 200)*
 - **Players:** 1–5 at a round table, dealer in the middle (mobile sideways = same round table as PC)
 - **Currency:** casino coins — free play coins only, no real money
+
+## v1.7.1 — The dealer never draws a 6th card either (Nov 25)
+
+- **5 cards is the most any hand can hold — the dealer's included.** A
+  live screenshot showed Nyau with six cards in Round 2; he kept drawing
+  under 17 with no cap. Now he stands at 5 cards even if he is still
+  under 17 (the log says "Dealer stands on N with 5 cards"), so no hand
+  on the table — his or anyone's — ever holds a 6th card.
 
 ## v1.7 — Nyau draws one by one, Ace hands read "4 or 14" (Nov 25)
 
@@ -224,7 +231,8 @@ Getting **5 cards without busting** is one of the strongest hands in the game:
 - The dealer reveals the hole card, then **draws one card at a time while
   under 17** — each card shows on the table (and his running total updates)
   before the next one arrives — and **stands on 17 or more, including soft
-  17** (Ace + 6).
+  17** (Ace + 6), **or at 5 cards** — 5 is the most any hand can hold, his
+  included, so he never draws a 6th card even if he is still under 17.
 - If **every entrant busted**, the dealer **does not draw** — the hole card is
   just revealed and the round settles.
 

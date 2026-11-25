@@ -235,7 +235,7 @@ footer{color:var(--mut);font-size:12.5px;text-align:center;margin-top:26px;line-
         <li>🎵 The main song loops every match; the battle song plays only during a Battle Bonyas round.</li>
       </ul>
     </div>
-    <footer>Black Nyack v1.7 — a fan-made game, just for fun.<br>
+    <footer>Black Nyack v1.7.1 — a fan-made game, just for fun.<br>
     Nyau and all SEGA characters are © SEGA. All credit to SEGA — the creator of this site holds no rights to Nyau or any SEGA property, and this game is not affiliated with or endorsed by SEGA.<br>
     Free play coins only — no real money. Hosted on Cloudflare Pages. Code on GitHub.</footer>
   </div>
@@ -606,8 +606,10 @@ function dealerStart(st){
    the driver knows whether to draw again or settle. */
 function dealerDrawOne(st){
   const dv=bestValue(st.dealer.hand, st.round.specialTotal);
-  if(dv.total>=DEALER_STAND || !st.deck.length){
-    if(!st.round.dealerStood){ st.round.dealerStood=true; st.round.log.push('Dealer stands on '+dv.total+'.'); }
+  // never a 6th card: 5 cards is the most any hand can hold, the dealer's
+  // included — so he stands at 5 cards even if he is still under 17.
+  if(dv.total>=DEALER_STAND || !st.deck.length || st.dealer.hand.length>=MAX_CARDS){
+    if(!st.round.dealerStood){ st.round.dealerStood=true; st.round.log.push('Dealer stands on '+dv.total+(st.dealer.hand.length>=MAX_CARDS?' with 5 cards':'')+'.'); }
     return {drew:false, stood:true, total:dv.total};
   }
   if(!dealOne(st, st.dealer.hand, true, 'Dealer')) return {drew:false, stood:true, total:dv.total};

@@ -255,6 +255,21 @@ console.log('Stepwise dealer turn:');
     const dv = E.viewFor(st, 'p0').dealer;
     return st.phase === 'dealerTurn' && dv.total === 17 && dv.low === 17;
   })());
+  check('the dealer never draws a 6th card — he stands at 5 even under 17', (() => {
+    const st = mkGame(2, 42, { forceBattle: false });
+    betAll(st, { p0: 10, p1: 10 });
+    setHand(st, 'p0', [C('9', '♣'), C('8', '♦')]);
+    setHand(st, 'p1', [C('9', '♠'), C('8', '♥')]);
+    // the dealer holds 5 cards totalling 16 — under 17, but already at the cap
+    st.dealer.hand = [C('2', '♠'), C('3', '♥'), C('4', '♦'), C('5', '♣'), C('2', '♦')].map((c, i) => ({ ...c, faceUp: true }));
+    E.applyAction(st, 'p0', { type: 'stay' });
+    E.applyAction(st, 'p1', { type: 'stay' });
+    const r = E.dealerDrawOne(st);
+    const stands = st.round.log.join(' ').includes('Dealer stands on 16 with 5 cards');
+    E.dealerPlay(st);
+    return r.drew === false && r.stood === true && r.total === 16 &&
+      st.dealer.hand.length === 5 && stands && st.phase === 'settled';
+  })());
   check('dealerPlay (the whole turn at once) still settles a full round', (() => {
     const st = mkGame(2, 42, { forceBattle: false });
     betAll(st, { p0: 10, p1: 10 });
