@@ -51,6 +51,8 @@ function playTurns(st, rnd) {
     const r = E.applyAction(st, pid, a);
     if (!r.ok) throw new Error('bot action failed: ' + r.error);
   }
+  // Nyau draws one card at a time — finish his turn, then the round settles.
+  if (st.phase === 'dealerTurn') E.dealerPlay(st);
   return st;
 }
 /* Rig a settled round with a battle flag and given hands. */

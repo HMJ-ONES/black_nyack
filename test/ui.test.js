@@ -147,27 +147,27 @@ function check(name, cond, extra) {
   // Bot finishes its turn directly.
   ev(`applyAction(fullState, 'p1', botChooseAction(fullState, 'p1'))`);
   ev(`refreshView(); render();`);
-  // If the bot hit and is still to move, drive it until the round settles.
+  // If the bot hit and is still to move, drive it until its turn ends.
   for (let i = 0; i < 5 && ev(`view.phase`) === 'playerTurns'; i++) {
     ev(`applyAction(fullState, 'p1', botChooseAction(fullState, 'p1'))`);
     ev(`refreshView(); render();`);
   }
+  // Nyau draws one card at a time (the driver steps him in real play);
+  // the test finishes his turn at once with the synchronous wrapper.
+  if (ev(`view.phase`) === 'dealerTurn') { ev(`dealerPlay(fullState); refreshView(); render();`); }
   check('round settles', ev(`view.phase`) === 'settled');
   check('results exist for me', !!ev(`view.results`) && !!ev(`view.results[myId]`));
-  // v1.4: the settle is a reveal, not an instant — the dealer flips one card
-  // at a time, then a second to look, then the win text, then the pop-up.
-  check('dealer shows only his up-card at first', (() => {
+  // v1.7: the dealer drew one card at a time during his turn, so by the
+  // settle every dealer card is already showing — the reveal is just the
+  // beat to look at the finished table before the results come out.
+  check('all dealer cards are showing at the settle', (() => {
     const cards = window.document.querySelectorAll('#dealerHand .mini-card');
     const backs = window.document.querySelectorAll('#dealerHand .mini-card.back');
-    return cards.length === ev(`view.dealer.cardCount`) && backs.length === cards.length - 1;
+    return cards.length === ev(`view.dealer.cardCount`) && backs.length === 0;
   })());
   check('WIN dialog does NOT open at settle', $('winModal').classList.contains('hidden'));
   check('Next round does NOT show during the reveal', $('btnNextRound').classList.contains('hidden'));
   check('log hides the settle lines during the reveal', !$('logBox').textContent.includes('wins') && !$('logBox').textContent.includes('loses'));
-  // Drive the reveal without waiting on real timers: flip the dealer cards
-  // one by one, then the look pause, then the win text, then the pop-up.
-  ev(`while(dealerRevealCount<view.dealer.cardCount) advanceDealerReveal();`);
-  check('all dealer cards are showing after the reveal', window.document.querySelectorAll('#dealerHand .mini-card.back').length === 0);
   ev(`showSettleResults()`);
   check('dealer total is revealed after the look', /DEALER — \d+/.test($('dealerHand').textContent));
   check('WIN dialog does NOT open before the win text has had its beat', $('winModal').classList.contains('hidden'));
@@ -194,15 +194,15 @@ function check(name, cond, extra) {
     ev(`refreshView(); render();`);
     if (ev(`view.phase`) === 'betting' && !ev(`view.players.find(p=>p.id===myId).spectating`)) $('btnSpectate').click();
   }
-  check('bot plays alone while I spectate', ev(`view.phase`) === 'settled' || ev(`view.phase`) === 'playerTurns');
+  check('bot plays alone while I spectate', ev(`view.phase`) === 'settled' || ev(`view.phase`) === 'playerTurns' || ev(`view.phase`) === 'dealerTurn');
   for (let i = 0; i < 5 && ev(`view.phase`) === 'playerTurns'; i++) {
     ev(`applyAction(fullState, 'p1', botChooseAction(fullState, 'p1'))`);
     ev(`refreshView(); render();`);
   }
+  if (ev(`view.phase`) === 'dealerTurn') { ev(`dealerPlay(fullState); refreshView(); render();`); }
   check('spectated round settles', ev(`view.phase`) === 'settled');
   check('no WIN dialog for a spectator', $('winModal').classList.contains('hidden'));
   // the round still has to be revealed before it can move on
-  ev(`while(dealerRevealCount<view.dealer.cardCount) advanceDealerReveal();`);
   ev(`showSettleResults(); openSettleDialog(); clearRevealTimers();`);
   check('Next round shows once the results are out', !$('btnNextRound').classList.contains('hidden'));
   $('btnNextRound').click();
@@ -377,23 +377,22 @@ function check(name, cond, extra) {
     return $('btnHit').disabled && $('btnDouble').disabled && /Stay/.test($('actionPrompt').textContent) && /21 in hand/.test($('statusBox').textContent);
   })());
   // The dealer reveal, driven end to end on a crafted settled round.
-  check('reveal: dealer flips one card at a time', (() => {
-    ev(`view={phase:'settled',turnPlayerId:null,roundNumber:1,round:{specialTotal:0,battle:false,battleWinnerId:null},version:1,deckCount:40,results:{me:{outcome:'win',payout:500,breakdown:{win:200,blacknyack:300,fiveCard:0,special:0,battle:0},total:21,handClass:'blacknyack',specials:0,bet:100,battleWinner:false}},log:['Black Nyack — round 1.','Test bets 100.','Dealer stands on 19.','Test wins 500 (21)'],dealer:{cardCount:3,total:19,cards:[{rank:'9',suit:'♣',special:false,faceUp:true},{rank:'K',suit:'♥',special:false,faceUp:true},{rank:'5',suit:'♦',special:false,faceUp:true}]},players:[{id:'me',name:'Test',isBot:false,seat:0,stack:1500,bet:0,doubled:false,stood:true,busted:false,spectating:false,left:false,cardCount:2,total:21,cards:[{rank:'A',suit:'♠',special:false,faceUp:true},{rank:'K',suit:'♥',special:false,faceUp:true}]},{id:'bot',name:'Ada',isBot:true,seat:1,stack:900,bet:0,doubled:false,stood:true,busted:false,spectating:false,left:false,cardCount:2,total:19,cards:[{rank:'9',suit:'♠',special:false,faceUp:true},{rank:'K',suit:'♦',special:false,faceUp:true}]}]}`);
+  // v1.7: the dealer drew one card at a time during his turn, so every
+  // dealer card is already showing at the settle — the reveal is just the
+  // beat to look at the finished table before the results come out.
+  check('reveal: every dealer card is already showing at the settle', (() => {
+    ev(`view={phase:'settled',turnPlayerId:null,roundNumber:1,round:{specialTotal:0,battle:false,battleWinnerId:null},version:1,deckCount:40,results:{me:{outcome:'win',payout:500,breakdown:{win:200,blacknyack:300,fiveCard:0,special:0,battle:0},total:21,handClass:'blacknyack',specials:0,bet:100,battleWinner:false}},log:['Black Nyack — round 1.','Test bets 100.','Dealer stands on 19.','Test wins 500 (21)'],dealer:{cardCount:3,total:19,low:19,cards:[{rank:'9',suit:'♣',special:false,faceUp:true},{rank:'K',suit:'♥',special:false,faceUp:true},{rank:'5',suit:'♦',special:false,faceUp:true}]},players:[{id:'me',name:'Test',isBot:false,seat:0,stack:1500,bet:0,doubled:false,stood:true,busted:false,spectating:false,left:false,cardCount:2,total:21,low:11,cards:[{rank:'A',suit:'♠',special:false,faceUp:true},{rank:'K',suit:'♥',special:false,faceUp:true}]},{id:'bot',name:'Ada',isBot:true,seat:1,stack:900,bet:0,doubled:false,stood:true,busted:false,spectating:false,left:false,cardCount:2,total:19,low:19,cards:[{rank:'9',suit:'♠',special:false,faceUp:true},{rank:'K',suit:'♦',special:false,faceUp:true}]}]}`);
     ev(`render()`);
     const cards = window.document.querySelectorAll('#dealerHand .mini-card');
     const backs = window.document.querySelectorAll('#dealerHand .mini-card.back');
-    return cards.length === 3 && backs.length === 2
+    return cards.length === 3 && backs.length === 0
       && !$('logBox').textContent.includes('wins 500')
       && !/WIN!/.test($('mySeat').textContent)
       && $('winModal').classList.contains('hidden')
-      && /revealing his cards/.test($('statusBox').textContent);
+      && /results in a moment/.test($('statusBox').textContent);
   })());
-  check('reveal: the dealer cards flip one by one', (() => {
-    ev(`advanceDealerReveal()`); // hole card flips
-    const after1 = window.document.querySelectorAll('#dealerHand .mini-card.back').length;
-    ev(`advanceDealerReveal()`); // drawn card flips
-    const after2 = window.document.querySelectorAll('#dealerHand .mini-card.back').length;
-    return after1 === 1 && after2 === 0;
+  check('reveal: the dealer label shows his total at the settle', (() => {
+    return /DEALER — 19/.test($('dealerHand').textContent);
   })());
   check('reveal: the look pause shows the results but not the pop-up', (() => {
     ev(`showSettleResults()`);
@@ -480,14 +479,65 @@ function check(name, cond, extra) {
     return seat && seat.querySelectorAll('.mini-card').length === 3 && seat.querySelectorAll('.mini-card.back').length === 2;
   })());
   check('the dealer play opens every folded card automatically', (() => {
-    // rig the bot to 21 with two folded cards, then let it stay — the dealer plays next
+    // rig the bot to 21 with two folded cards, then let it stay — the dealer
+    // starts playing next, and his first act opens every folded card
     ev(`fullState.players[1].hand=[{id:'b1',rank:'5',suit:'♠',special:false,faceUp:true},{id:'b2',rank:'6',suit:'♥',special:false,faceUp:false},{id:'b3',rank:'K',suit:'♦',special:false,faceUp:false}]; refreshView(); render();`);
     ev(`applyAction(fullState, 'p1', botChooseAction(fullState, 'p1'))`);
     ev(`refreshView(); render();`);
     const seat = window.document.querySelector('.seat[data-pid="p1"]');
-    const ok = ev(`view.phase`) === 'settled' && seat && seat.querySelectorAll('.mini-card').length === 3 && seat.querySelectorAll('.mini-card.back').length === 0;
+    const opened = ev(`view.phase`) === 'dealerTurn' && seat && seat.querySelectorAll('.mini-card').length === 3 && seat.querySelectorAll('.mini-card.back').length === 0;
+    ev(`dealerPlay(fullState); refreshView(); render();`); // finish Nyau's turn, then settle
+    const ok = opened && ev(`view.phase`) === 'settled';
     ev(`clearRevealTimers()`);
     return ok;
+  })());
+
+  /* ---- scenario 12: v1.7 — no Hit at 5 cards, Ace hands read "4 or 14",
+     Nyau draws one card at a time ---- */
+  check('Hit is never allowed at 5 cards (button disabled, engine refuses)', (() => {
+    window.eval(`startLocalGame([{name:'Test',isBot:false},{name:'Bot',isBot:true}], 42, {})`);
+    [...window.document.querySelectorAll('#betChips .chip')].find(b => b.textContent.trim() === '20').click();
+    ev(`applyAction(fullState, 'p1', botChooseAction(fullState, 'p1'))`);
+    ev(`refreshView(); render();`);
+    // rig my hand to 5 cards (2+3+2+2+2 = 11, no bust) on my turn
+    ev(`fullState.players[0].hand=[{id:'m1',rank:'2',suit:'♠',special:false,faceUp:true},{id:'m2',rank:'3',suit:'♥',special:false,faceUp:true},{id:'m3',rank:'2',suit:'♦',special:false,faceUp:false},{id:'m4',rank:'2',suit:'♣',special:false,faceUp:false},{id:'m5',rank:'2',suit:'♠',special:false,faceUp:false}]; refreshView(); render();`);
+    const btnDisabled = $('btnHit').disabled === true;
+    const engineRefuses = ev(`applyAction(fullState, 'p0', {type:'hit'})`).ok === false;
+    return btnDisabled && engineRefuses;
+  })());
+  check('an Ace hand reads "4 or 14" (A+3)', (() => {
+    ev(`fullState.players[0].hand=[{id:'m1',rank:'A',suit:'♠',special:false,faceUp:true},{id:'m2',rank:'3',suit:'♥',special:false,faceUp:true}]; refreshView(); render();`);
+    return /Your hand • 4 or 14/.test($('mySeat').textContent);
+  })());
+  check('A+K reads "11 or 21", and a hand with no Ace reads one number', (() => {
+    ev(`fullState.players[0].hand=[{id:'m1',rank:'A',suit:'♠',special:false,faceUp:true},{id:'m2',rank:'K',suit:'♥',special:false,faceUp:true}]; refreshView(); render();`);
+    const ace = /Your hand • 11 or 21/.test($('mySeat').textContent);
+    ev(`fullState.players[0].hand=[{id:'m1',rank:'9',suit:'♠',special:false,faceUp:true},{id:'m2',rank:'7',suit:'♥',special:false,faceUp:true}]; refreshView(); render();`);
+    const plain = /Your hand • 16/.test($('mySeat').textContent) && !/or/.test($('mySeat').textContent);
+    return ace && plain;
+  })());
+  check('Nyau draws one card at a time, each shown before the next', (() => {
+    // a fresh round: I stay, the bot stays, and the dealer turn starts —
+    // he has only his first 2 cards until the driver steps him
+    window.eval(`startLocalGame([{name:'Test',isBot:false},{name:'Bot',isBot:true}], 42, {})`);
+    [...window.document.querySelectorAll('#betChips .chip')].find(b => b.textContent.trim() === '20').click();
+    ev(`applyAction(fullState, 'p1', botChooseAction(fullState, 'p1'))`);
+    ev(`refreshView(); render();`);
+    ev(`fullState.players[0].hand=[{id:'m1',rank:'9',suit:'♠',special:false,faceUp:true},{id:'m2',rank:'8',suit:'♥',special:false,faceUp:false}]; fullState.players[1].hand=[{id:'b1',rank:'9',suit:'♣',special:false,faceUp:true},{id:'b2',rank:'8',suit:'♦',special:false,faceUp:false}]; fullState.dealer.hand=[{id:'d1',rank:'2',suit:'♠',special:false,faceUp:true},{id:'d2',rank:'3',suit:'♥',special:false,faceUp:false}]; fullState.deck.push({id:'4♣-rig',rank:'4',suit:'♣'}); refreshView(); render();`);
+    $('btnStay').click();
+    ev(`applyAction(fullState, 'p1', botChooseAction(fullState, 'p1'))`);
+    ev(`refreshView(); render();`);
+    const atDealerTurn = ev(`view.phase`) === 'dealerTurn' && ev(`view.dealer.cardCount`) === 2;
+    const before = window.document.querySelectorAll('#dealerHand .mini-card').length;
+    ev(`dealerDrawOne(fullState); refreshView(); render();`);
+    const oneMore = window.document.querySelectorAll('#dealerHand .mini-card').length === before + 1;
+    const labelShowsTotal = /DEALER — 9/.test($('dealerHand').textContent); // 2+3+4 = 9
+    // step him until he stands, then settle
+    ev(`let g=0; while(g++<10){ const r=dealerDrawOne(fullState); if(!r.drew) break; } refreshView(); render();`);
+    ev(`dealerFinish(fullState); refreshView(); render();`);
+    const settled = ev(`view.phase`) === 'settled';
+    ev(`clearRevealTimers()`);
+    return atDealerTurn && before === 2 && oneMore && labelShowsTotal && settled;
   })());
 
   console.log('\n' + pass + ' passed, ' + fail + ' failed');

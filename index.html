@@ -235,7 +235,7 @@ footer{color:var(--mut);font-size:12.5px;text-align:center;margin-top:26px;line-
         <li>🎵 The main song loops every match; the battle song plays only during a Battle Bonyas round.</li>
       </ul>
     </div>
-    <footer>Black Nyack v1.6 — a fan-made game, just for fun.<br>
+    <footer>Black Nyack v1.7 — a fan-made game, just for fun.<br>
     Nyau and all SEGA characters are © SEGA. All credit to SEGA — the creator of this site holds no rights to Nyau or any SEGA property, and this game is not affiliated with or endorsed by SEGA.<br>
     Free play coins only — no real money. Hosted on Cloudflare Pages. Code on GitHub.</footer>
   </div>
@@ -461,9 +461,10 @@ function bestValue(hand, specialTotal){
     else if(c.rank==='J'||c.rank==='Q'||c.rank==='K') total+=10;
     else total+=parseInt(c.rank,10);
   }
+  const low=total; // every Ace as 1 — the lower half of a "4 or 14" hand
   let soft=false;
   while(aces>0 && total+10<=21){ total+=10; aces--; soft=true; }
-  return {total:total, soft:soft, bust:total>21};
+  return {total:total, soft:soft, bust:total>21, low:low};
 }
 
 /* ---- hand classes for comparing vs the dealer (higher class wins
@@ -569,14 +570,21 @@ function checkBettingComplete(st){
 function advanceTurn(st){
   const next=activeEntrants(st)[0]; // seats act in order; first not yet done is next
   if(next){ st.turnPlayerId=next.id; return; }
-  st.turnPlayerId=null;
-  st.phase='dealerTurn';
-  dealerPlay(st);
+  dealerStart(st); // the dealer turn is stepwise — the driver draws one card at a time
 }
 
 /* ---- dealer: reveal the hole card, hit while < 17, stand on 17+
    INCLUDING soft 17. If every entrant busted, the dealer does not draw. ---- */
-function dealerPlay(st){
+/* ---- dealer: the dealer turn is STEPWISE, not instant. dealerStart flips
+   the hole card and opens every player's cards (v1.6); then the driver
+   (the local game, or the host online) calls dealerDrawOne once per beat,
+   so Nyau actually draws one card at a time and each card shows before
+   the next one arrives; dealerFinish settles the round. dealerPlay runs
+   the whole turn at once (tests, and any caller that wants it instant). ---- */
+function dealerStart(st){
+  if(st.round.dealerStarted) return; // the turn already started (idempotent)
+  st.round.dealerStarted=true;
+  st.turnPlayerId=null; st.phase='dealerTurn';
   for(const c of st.dealer.hand) c.faceUp=true;
   const ent=entrants(st);
   // the dealer plays: the software opens EVERYONE's cards automatically —
@@ -591,13 +599,29 @@ function dealerPlay(st){
     st.round.log.push('Dealer reveals — every player busted, so the dealer does not draw.');
     return settle(st);
   }
-  while(bestValue(st.dealer.hand, st.round.specialTotal).total < DEALER_STAND){
-    if(!dealOne(st, st.dealer.hand, true, 'Dealer')) break;
-  }
+  st.round.log.push('Dealer plays — watch him draw, one card at a time.');
+}
+/* one dealer draw: draw a single card if he is under 17, and say what it
+   is; or stand (and say so) when he is at 17+. Returns what happened, so
+   the driver knows whether to draw again or settle. */
+function dealerDrawOne(st){
   const dv=bestValue(st.dealer.hand, st.round.specialTotal);
-  if(dv.bust) st.round.log.push('Dealer busts with '+dv.total+'.');
-  else st.round.log.push('Dealer stands on '+dv.total+'.');
-  return settle(st);
+  if(dv.total>=DEALER_STAND || !st.deck.length){
+    if(!st.round.dealerStood){ st.round.dealerStood=true; st.round.log.push('Dealer stands on '+dv.total+'.'); }
+    return {drew:false, stood:true, total:dv.total};
+  }
+  if(!dealOne(st, st.dealer.hand, true, 'Dealer')) return {drew:false, stood:true, total:dv.total};
+  const v=bestValue(st.dealer.hand, st.round.specialTotal);
+  if(v.bust) st.round.log.push('Dealer busts with '+v.total+'.');
+  return {drew:true, card:st.dealer.hand[st.dealer.hand.length-1], total:v.total, busted:v.bust};
+}
+function dealerFinish(st){ return settle(st); }
+function dealerPlay(st){ // the whole dealer turn, at once (tests / instant callers)
+  dealerStart(st);
+  if(st.phase!=='dealerTurn') return; // already settled (no entrants / everyone busted)
+  let r;
+  do { r=dealerDrawOne(st); } while(r&&r.drew);
+  return dealerFinish(st);
 }
 
 /* ---- settlement ----
@@ -713,7 +737,7 @@ function leavePlayer(st, playerId){
   if(st.phase==='betting') return checkBettingComplete(st);
   if(st.phase==='playerTurns'){
     if(wasTurn) advanceTurn(st);
-    else if(!activeEntrants(st).length){ st.turnPlayerId=null; st.phase='dealerTurn'; dealerPlay(st); }
+    else if(!activeEntrants(st).length){ dealerStart(st); }
   }
   return {ok:true};
 }
@@ -847,25 +871,33 @@ function viewFor(st, viewerId){
   const settled=st.phase==='settled';
   const players=st.players.map(p=>{
     const isViewer=viewer&&viewer.id===p.id;
+    const pv=bestValue(p.hand, st.round.specialTotal);
+    const showTotal=isViewer||settled;
     return {
       id:p.id, name:p.name, isBot:!!p.isBot, seat:p.seat,
       stack:p.stack, bet:p.bet, doubled:!!p.doubled,
       stood:!!p.stood, busted:!!p.busted, spectating:!!p.spectating, left:!!p.left,
       cardCount:p.hand.length,
-      total:(isViewer||settled) ? bestValue(p.hand, st.round.specialTotal).total : null,
+      total:showTotal ? pv.total : null,
+      low:showTotal ? pv.low : null, // the lower half of an Ace hand ("4 or 14")
       cards:p.hand.map(c=>{
         if(isViewer || c.faceUp) return {id:c.id, rank:c.rank, suit:c.suit, special:!!c.special, faceUp:true};
         return {hidden:true};
       })
     };
   });
+  // the dealer's total is public once he plays (his hole card is flipped
+  // at the dealer turn) — so the running total shows while he draws.
+  const showDealer=settled||st.phase==='dealerTurn';
+  const dv=bestValue(st.dealer.hand, st.round.specialTotal);
   return {
     seed:st.seed, roundNumber:st.roundNumber, phase:st.phase,
     turnPlayerId:st.turnPlayerId,
     round:{specialTotal:st.round.specialTotal, battle:st.round.battle, battleWinnerId:st.round.battleWinnerId, rolls:(st.round.rolls||[]).slice()},
     players:players,
     dealer:{ cardCount:st.dealer.hand.length,
-      total: settled ? bestValue(st.dealer.hand, st.round.specialTotal).total : null,
+      total: showDealer ? dv.total : null,
+      low: showDealer ? dv.low : null,
       cards:st.dealer.hand.map(c=>{
         if(settled || c.faceUp) return {id:c.id, rank:c.rank, suit:c.suit, special:!!c.special, faceUp:true};
         return {hidden:true};
@@ -917,7 +949,7 @@ function botChooseAction(st, playerId, rnd){
   return {type:'stay'};
 }
 
-if(typeof module!=='undefined'&&module.exports){ module.exports={BETS,START_STACK,MAX_PLAYERS,MAX_PAYOUT,BATTLE_ODDS,DEALER_STAND,SPECIAL_DIE_FACES,RANKS,SUITS,MAX_CARDS,MAX_HITS,mulberry32,randomSeed,shuffle,buildDeck,isSpecial,bestValue,handClass,newGame,currentPlayer,playerById,playerIndex,entrants,applyAction,dealRound,dealerPlay,settle,nextRound,rollBattle,rollSpecialDie,viewFor,filteredView,leavePlayer,removePlayer,legalActions,botChooseAction,stateFingerprint,serializeState,deserializeState}; }
+if(typeof module!=='undefined'&&module.exports){ module.exports={BETS,START_STACK,MAX_PLAYERS,MAX_PAYOUT,BATTLE_ODDS,DEALER_STAND,SPECIAL_DIE_FACES,RANKS,SUITS,MAX_CARDS,MAX_HITS,mulberry32,randomSeed,shuffle,buildDeck,isSpecial,bestValue,handClass,newGame,currentPlayer,playerById,playerIndex,entrants,applyAction,dealRound,dealerStart,dealerDrawOne,dealerFinish,dealerPlay,settle,nextRound,rollBattle,rollSpecialDie,viewFor,filteredView,leavePlayer,removePlayer,legalActions,botChooseAction,stateFingerprint,serializeState,deserializeState}; }
 </script>
 <script>
 "use strict";
@@ -1264,10 +1296,17 @@ function cardHtml(c, big){
 function miniCardHtml(c){ return cardHtml(c, false); }
 function cardValueLabel(c){
   if(!c||!c.rank) return '?';
-  if(c.special) return ''+((view&&view.round)?view.round.specialTotal:0);
+  if(c.special) return '★ '+((view&&view.round)?view.round.specialTotal:0);
   if(c.rank==='A') return 'A';
   if(c.rank==='J'||c.rank==='Q'||c.rank==='K') return '10';
   return c.rank;
+}
+/* A hand with an Ace shows both values: "4 or 14" (low, then best). A hand
+   without a soft total shows just the one number. */
+function fmtTotal(total, low){
+  if(total===null||total===undefined) return '';
+  if(low!==null&&low!==undefined&&low<total) return low+' or '+total;
+  return ''+total;
 }
 function isMyHoleCard(p, idx, c){
   return !!p && p.id===myId && idx===1 && !c.special && view && view.phase!=='settled';
@@ -1278,45 +1317,27 @@ function myCardHtml(c, idx, p){
   }
   return cardHtml(c, true);
 }
-/* ---- the settle reveal: the round is NOT instant. When the round settles,
-   the dealer draws his cards one by one (one flip per DEALER_REVEAL_MS),
-   then everyone gets SETTLE_LOOK_MS to look at the finished hands, then
-   the big win text appears, and only then — WIN_DIALOG_DELAY_MS later —
-   does the pop-up open. Until the results show, the dealer total, the
-   banners, the log's settle lines and the Next round button all stay
-   hidden, so nothing spoils the reveal. ---- */
-const DEALER_REVEAL_MS=800;    // the dealer reveals one card at a time, this long apart
+/* ---- the settle reveal: the round is NOT instant. The dealer's cards
+   were already drawn one by one during his turn, so they are all showing
+   when the round settles — the reveal is now just a beat to look at the
+   finished table (SETTLE_LOOK_MS), then the big win text appears, and
+   only then — WIN_DIALOG_DELAY_MS later — does the pop-up open. Until the
+   results show, the banners, the log's settle lines and the Next round
+   button all stay hidden, so nothing spoils the moment. ---- */
 const SETTLE_LOOK_MS=1000;     // a second to look at the cards before the result shows
 const WIN_DIALOG_DELAY_MS=900; // the big win text shows first, then the pop-up opens
+const DEALER_DRAW_MS=900;      // the pause between each of Nyau's draws, so each card shows before the next one
 let settleRevealFor=0, dealerRevealCount=0, resultsShown=false, dialogReady=false;
 let advanceScheduledFor=0; // the round the auto-advance hold was scheduled for
-let revealTimer=null, lookTimer=null, dialogTimer=null, advanceTimer=null;
+let lookTimer=null, dialogTimer=null, advanceTimer=null;
 function clearRevealTimers(){
-  clearTimeout(revealTimer); clearTimeout(lookTimer); clearTimeout(dialogTimer); clearTimeout(advanceTimer);
-  revealTimer=null; lookTimer=null; dialogTimer=null; advanceTimer=null;
+  clearTimeout(lookTimer); clearTimeout(dialogTimer); clearTimeout(advanceTimer);
+  lookTimer=null; dialogTimer=null; advanceTimer=null;
 }
 function resetRevealState(){
   settleRevealFor=0; dealerRevealCount=0; resultsShown=false; dialogReady=false;
   advanceScheduledFor=0;
   clearRevealTimers();
-}
-/* one step of the reveal: flip the next dealer card, or — when they are all
-   showing — hand off to the look pause. Timers call this; tests call it
-   directly to drive the sequence without waiting. */
-function advanceDealerReveal(){
-  if(!view||view.phase!=='settled'||settleRevealFor!==view.roundNumber) return;
-  if(dealerRevealCount<view.dealer.cardCount){
-    dealerRevealCount++;
-    render();
-    scheduleRevealStep();
-  } else {
-    clearTimeout(lookTimer);
-    lookTimer=setTimeout(showSettleResults, SETTLE_LOOK_MS);
-  }
-}
-function scheduleRevealStep(){
-  clearTimeout(revealTimer);
-  revealTimer=setTimeout(advanceDealerReveal, DEALER_REVEAL_MS);
 }
 /* the look pause is over: show the results (totals, banners, status). */
 function showSettleResults(){
@@ -1344,10 +1365,12 @@ function openSettleDialog(){
 }
 function startDealerReveal(){
   settleRevealFor=view.roundNumber;
-  dealerRevealCount=1; // the up-card is already showing; the hole card flips first
+  // the dealer's cards were already drawn one by one during his turn, so
+  // they are all showing — the reveal is just the beat to look at them.
+  dealerRevealCount=view.dealer.cardCount;
   resultsShown=false; dialogReady=false;
   clearRevealTimers();
-  scheduleRevealStep();
+  lookTimer=setTimeout(showSettleResults, SETTLE_LOOK_MS);
 }
 
 function bannerFor(p){
@@ -1407,14 +1430,15 @@ function render(){
   prevBusted=!!(me&&me.busted);
   prevFive=!!(me&&me.cards&&me.cards.length>=5);
 
-  // a fresh settle starts the reveal: the dealer flips his cards one by one
+  // a fresh settle starts the reveal: a beat to look at the finished table
+  // (the dealer's cards were already drawn one by one during his turn)
   if(settled && settleRevealFor!==view.roundNumber) startDealerReveal();
 
   /* status */
   let status='';
   if(view.phase==='over'){ status='🏆 Game over — everyone left.'; }
   else if(settled){
-    if(!resultsShown){ status='🎩 Dealer is revealing his cards…'; }
+    if(!resultsShown){ status='🎩 Dealer is done — results in a moment…'; }
     else {
       const wins=view.results?Object.keys(view.results).filter(id=>view.results[id].outcome==='win').map(id=>{ const p=view.players.find(x=>x.id===id); return p?p.name:id; }):[];
       const bw=view.round&&view.round.battleWinnerId?view.players.find(x=>x.id===view.round.battleWinnerId):null;
@@ -1447,18 +1471,18 @@ function render(){
   if(view.roundNumber!==lastDieRound){ lastDieRound=view.roundNumber; hideDie(); dieQueue.length=0; clearTimeout(dieTimer); clearInterval(dieTick); dieRolling=false; seenRollsThisRound=0; }
   detectSpecialRolls();
 
-  /* dealer hand (center) — during the reveal only the first
-     dealerRevealCount cards are face-up; the rest stay face-down */
+  /* dealer hand (center) — his cards were drawn one by one during his
+     turn, so they are all showing by the time the round settles. The label
+     shows his running total whenever it is public (his turn, and the
+     settle) — an Ace hand reads "7 or 17". Before he plays, only the
+     up-card shows. */
   const d=view.dealer;
   const dCards=d.cards.map((c,i)=>(settled&&!resultsShown&&i>=dealerRevealCount)?{hidden:true}:c).map(c=>cardHtml(c,false)).join('');
   let dLabel='DEALER';
   let dBanner='';
-  if(settled&&resultsShown){
-    if(d.total!==null&&d.total!==undefined){
-      dLabel='DEALER — '+d.total+(d.total>21?' BUST':'');
-      if(d.total>21) dBanner='<div class="banner bust">BUST</div>';
-      else if(d.total===21) dLabel='DEALER — 21';
-    }
+  if(d.total!==null&&d.total!==undefined){
+    dLabel='DEALER — '+fmtTotal(d.total,d.low)+(d.total>21?' BUST':'');
+    if(d.total>21) dBanner='<div class="banner bust">BUST</div>';
   } else {
     const up=d.cards.find(c=>c&&c.rank);
     if(up) dLabel='DEALER — shows '+cardValueLabel(up);
@@ -1472,7 +1496,7 @@ function render(){
     const dEl=document.createElement('div');
     dEl.className='seat'+(active?' active':'');
     dEl.setAttribute('data-pid', p.id);
-    const totalLine=(settled&&resultsShown)?(p.total!==null&&p.total!==undefined?(' • <b>'+p.total+'</b>'):''):(p.busted?' • <b>BUST</b>':'');
+    const totalLine=(settled&&resultsShown)?(p.total!==null&&p.total!==undefined?(' • <b>'+fmtTotal(p.total,p.low)+'</b>'):''):(p.busted?' • <b>BUST</b>':'');
     dEl.innerHTML='<div class="sname"><span class="dot" style="background:'+seatColor(p.seat)+'"></span>'+esc(p.name)+(p.isBot?' 🤖':'')+' <span class="tag2">• '+p.stack+' coins'+(p.bet>0?' • bet '+p.bet:'')+(p.doubled?' • doubled':'')+(active?' • to move':'')+'</span></div>'+
       '<div class="hand-wrap"><div class="scards" data-pid="'+p.id+'">'+p.cards.map(c=>miniCardHtml(c)).join('')+'</div>'+bannerFor(p)+'</div>'+
       (totalLine?'<div class="hand-total">Hand'+totalLine+'</div>':'');
@@ -1487,7 +1511,7 @@ function render(){
     const md=document.createElement('div');
     md.className='seat me'+(isMyTurn?' active':'');
     md.setAttribute('data-pid', me.id);
-    const totalLine=(me.total!==null&&me.total!==undefined)?(' • <b>'+me.total+'</b>'+(me.busted?' — BUST':'')):'';
+    const totalLine=(me.total!==null&&me.total!==undefined)?(' • <b>'+fmtTotal(me.total,me.low)+'</b>'+(me.busted?' — BUST':'')):'';
     md.innerHTML='<div class="sname"><span class="dot" style="background:'+seatColor(me.seat)+'"></span>'+esc(me.name)+' (you) <span class="tag2">• '+me.stack+' coins'+(me.bet>0?' • bet '+me.bet:'')+(me.doubled?' • doubled':'')+'</span></div>'+
       '<div class="hand-wrap"><div class="scards" id="myCards">'+me.cards.map((c,i)=>myCardHtml(c,i,me)).join('')+'</div>'+bannerFor(me)+'</div>'+
       '<div class="hand-total">Your hand'+totalLine+'</div>';
@@ -1707,6 +1731,18 @@ function scheduleBots(delay){
         scheduleBots();
         return;
       }
+    }
+    if(fullState.phase==='dealerTurn'){
+      // Nyau draws one card at a time: each draw shows before the next one.
+      const r=dealerDrawOne(fullState);
+      broadcastOrRefresh();
+      if(r&&(r.stood||r.busted)){
+        // one last beat to see the final card, then settle
+        botTimer=setTimeout(()=>{ if(gid===gameId&&fullState&&fullState.phase==='dealerTurn'){ dealerFinish(fullState); broadcastOrRefresh(); } }, DEALER_DRAW_MS);
+      } else {
+        scheduleBots(DEALER_DRAW_MS);
+      }
+      return;
     }
     botTimer=setTimeout(()=>scheduleBots(), 800);
   }, wait);

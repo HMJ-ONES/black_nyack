@@ -4,14 +4,35 @@
 in the same format as Wellington and Five-Card Poker: a single `index.html`, no sign-up,
 no cost, multiplayer peer-to-peer via PeerJS, hosted free on Cloudflare Pages.
 
-> **v1.6:** hit and double-down cards come folded, and the dealer play
-> opens everyone's cards automatically. All tests green: `npm test` (see
-> [Tests](#tests)).
+> **v1.7:** Nyau draws one card at a time (each shows before the next),
+> Ace hands read "4 or 14", and Hit is never allowed at 5 cards. All tests
+> green: `npm test` (see [Tests](#tests)).
 
 - **Repo:** https://github.com/HMJ-ONES/black_nyack
 - **Live:** https://black-nyack.pages.dev *(connected + verified Nov 22 — home page and both songs serve 200)*
 - **Players:** 1–5 at a round table, dealer in the middle (mobile sideways = same round table as PC)
 - **Currency:** casino coins — free play coins only, no real money
+
+## v1.7 — Nyau draws one by one, Ace hands read "4 or 14" (Nov 25)
+
+- **Nyau draws one card at a time** — his turn used to happen instantly
+  (all his cards were already in his hand, and the settle just flipped
+  them over one by one). Now the dealer turn is stepwise: the hole card
+  flips, then he draws a single card, it shows on the table and his
+  running total updates, then — about a second later — the next one. You
+  watch each card land before he takes the next. The settle no longer
+  re-flips his cards; it is just the beat to look at the finished table
+  before the results come out.
+- **Ace hands show both values** — a hand with an Ace reads "4 or 14"
+  (A + 3), "11 or 21" (A + K), and so on, everywhere a total shows: your
+  hand, the dealer's running total, and the seats at the settle. A hand
+  with no soft total reads one number, as before.
+- **Hit is never allowed at 5 cards** — the rule was already enforced in
+  the engine and the button, and v1.7 adds a test proving both: at 5
+  cards the Hit button is disabled and the engine refuses the action.
+  (Also fixed a display quirk found while working on this: when the
+  dealer's up-card was a special worth 0, the label read "DEALER — shows
+  0" — it now reads "DEALER — shows ★ 0".)
 
 ## v1.6 — Folded hit cards, opened at the dealer play (Nov 22)
 
@@ -168,7 +189,8 @@ or any SEGA property, and the game is not affiliated with or endorsed by SEGA.
 |---|---|
 | Numbered 2–10 | Face value |
 | J / Q / K | 10 |
-| Ace | 1 or 11, whichever is best without busting |
+| Ace | 1 or 11, whichever is best without busting — a hand with an Ace shows
+  both values, e.g. A + 3 reads **"4 or 14"** |
 | Special card | The round's shared **special total** (see below) |
 
 ### Your turn — hit, stay, double down
@@ -176,7 +198,8 @@ or any SEGA property, and the game is not affiliated with or endorsed by SEGA.
 On your turn you have three options:
 
 - **Hit** — take one more card. You may hit **up to 3 times** (5 cards total).
-  If you reach 5 cards your turn ends automatically. Hit over 21 and you **bust**
+  If you reach 5 cards your turn ends automatically, and Hit is never offered
+  again — the button is disabled and the engine refuses it. Hit over 21 and you **bust**
   and lose your bet, even if the dealer busts too. A hit card comes **folded**:
   only its owner sees it — everyone else sees a red back until the dealer
   plays, when the software opens every player's cards automatically.
@@ -198,8 +221,10 @@ Getting **5 cards without busting** is one of the strongest hands in the game:
 
 ### The dealer
 
-- The dealer reveals the hole card, then **hits while under 17 and stands on 17
-  or more, including soft 17** (Ace + 6).
+- The dealer reveals the hole card, then **draws one card at a time while
+  under 17** — each card shows on the table (and his running total updates)
+  before the next one arrives — and **stands on 17 or more, including soft
+  17** (Ace + 6).
 - If **every entrant busted**, the dealer **does not draw** — the hole card is
   just revealed and the round settles.
 

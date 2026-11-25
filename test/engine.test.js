@@ -64,6 +64,8 @@ function playTurns(st, rnd) {
     const r = E.applyAction(st, pid, a);
     if (!r.ok) throw new Error('bot action failed for ' + pid + ' ' + JSON.stringify(a) + ': ' + r.error);
   }
+  // Nyau draws one card at a time — finish his turn, then the round settles.
+  if (st.phase === 'dealerTurn') E.dealerPlay(st);
   if (st.phase !== 'settled') throw new Error('expected settled, got ' + st.phase);
   return st;
 }
@@ -167,6 +169,7 @@ console.log('Folded hit / double-down cards:');
     const foldedBefore = E.playerById(st, 'p0').hand[2].faceUp === false;
     E.applyAction(st, 'p0', { type: 'stay' });
     E.applyAction(st, 'p1', { type: 'stay' }); // dealer plays, then settles
+    E.dealerPlay(st); // finish Nyau's turn (he draws one card at a time)
     return foldedBefore && st.phase === 'settled' &&
       st.players.every(p => p.hand.every(c => c.faceUp === true));
   })());
@@ -176,8 +179,103 @@ console.log('Folded hit / double-down cards:');
     const holeBefore = st.players.every(p => p.hand[1].faceUp === false || p.hand[1].special);
     E.applyAction(st, 'p0', { type: 'stay' });
     E.applyAction(st, 'p1', { type: 'stay' });
+    E.dealerPlay(st); // finish Nyau's turn (he draws one card at a time)
     return holeBefore && st.phase === 'settled' &&
       st.players.every(p => p.hand.every(c => c.faceUp === true));
+  })());
+}
+
+console.log('Ace hands show both totals ("4 or 14"):');
+{
+  const bv = (cards) => E.bestValue(cards.map(c => C(c[0], c[1])), 0);
+  check('A+3 is 14 with low 4 (soft)', (() => { const v = bv([['A', '♠'], ['3', '♥']]); return v.total === 14 && v.low === 4 && v.soft === true; })());
+  check('A+K is 21 with low 11 (soft)', (() => { const v = bv([['A', '♠'], ['K', '♥']]); return v.total === 21 && v.low === 11 && v.soft === true; })());
+  check('A+K+9 is 20 with low 20 (no soft total)', (() => { const v = bv([['A', '♠'], ['K', '♥'], ['9', '♦']]); return v.total === 20 && v.low === 20 && v.soft === false; })());
+  check('A+A+9 is 21 with low 11 (one Ace as 11)', (() => { const v = bv([['A', '♠'], ['A', '♥'], ['9', '♦']]); return v.total === 21 && v.low === 11 && v.soft === true; })());
+  check('9+7 is 16 with low 16 (no Ace, single total)', (() => { const v = bv([['9', '♠'], ['7', '♥']]); return v.total === 16 && v.low === 16 && v.soft === false; })());
+  check('the view carries the low total for my hand', (() => {
+    const st = mkGame(2, 42, { forceBattle: false });
+    betAll(st, { p0: 10, p1: 10 });
+    setHand(st, 'p0', [C('A', '♠'), C('3', '♥')]);
+    const me = E.viewFor(st, 'p0').players.find(p => p.id === 'p0');
+    return me.total === 14 && me.low === 4;
+  })());
+}
+
+console.log('Stepwise dealer turn:');
+{
+  check('dealerStart flips the hole card and opens the players, but draws nothing yet', (() => {
+    const st = mkGame(2, 42, { forceBattle: false });
+    betAll(st, { p0: 10, p1: 10 });
+    setHand(st, 'p0', [C('9', '♣'), C('8', '♦')]);
+    setHand(st, 'p1', [C('9', '♠'), C('8', '♥')]);
+    E.applyAction(st, 'p0', { type: 'stay' });
+    E.applyAction(st, 'p1', { type: 'stay' });
+    return st.phase === 'dealerTurn' && st.dealer.hand.length === 2 &&
+      st.dealer.hand.every(c => c.faceUp === true) &&
+      st.players.every(p => p.hand.every(c => c.faceUp === true));
+  })());
+  check('dealerDrawOne draws exactly one card per call', (() => {
+    const st = mkGame(2, 42, { forceBattle: false });
+    betAll(st, { p0: 10, p1: 10 });
+    setHand(st, 'p0', [C('9', '♣'), C('8', '♦')]);
+    setHand(st, 'p1', [C('9', '♠'), C('8', '♥')]);
+    // rig the dealer's hand low so he must draw, and the deck top so the draw is known
+    st.dealer.hand = [C('2', '♠'), C('3', '♥')].map((c, i) => ({ ...c, faceUp: true }));
+    E.applyAction(st, 'p0', { type: 'stay' });
+    E.applyAction(st, 'p1', { type: 'stay' });
+    const before = st.dealer.hand.length;
+    st.deck.push({ id: '4♣-rig', rank: '4', suit: '♣' });
+    const r = E.dealerDrawOne(st);
+    return st.phase === 'dealerTurn' && r.drew === true && r.total === 9 &&
+      st.dealer.hand.length === before + 1 && st.dealer.hand[2].rank === '4';
+  })());
+  check('dealerDrawOne stops at 17 and stands (no second draw, one stand line)', (() => {
+    const st = mkGame(2, 42, { forceBattle: false });
+    betAll(st, { p0: 10, p1: 10 });
+    setHand(st, 'p0', [C('9', '♣'), C('8', '♦')]);
+    setHand(st, 'p1', [C('9', '♠'), C('8', '♥')]);
+    st.dealer.hand = [C('9', '♠'), C('8', '♥')].map((c, i) => ({ ...c, faceUp: true }));
+    E.applyAction(st, 'p0', { type: 'stay' });
+    E.applyAction(st, 'p1', { type: 'stay' });
+    const r1 = E.dealerDrawOne(st);
+    const r2 = E.dealerDrawOne(st);
+    const stands = st.round.log.filter(l => l.includes('Dealer stands on 17')).length;
+    return r1.drew === false && r1.stood === true && r1.total === 17 &&
+      r2.drew === false && r2.stood === true && stands === 1;
+  })());
+  check('the dealer total is visible in the view during his turn', (() => {
+    const st = mkGame(2, 42, { forceBattle: false });
+    betAll(st, { p0: 10, p1: 10 });
+    setHand(st, 'p0', [C('9', '♣'), C('8', '♦')]);
+    setHand(st, 'p1', [C('9', '♠'), C('8', '♥')]);
+    st.dealer.hand = [C('9', '♠'), C('8', '♥')].map((c, i) => ({ ...c, faceUp: true }));
+    E.applyAction(st, 'p0', { type: 'stay' });
+    E.applyAction(st, 'p1', { type: 'stay' });
+    const dv = E.viewFor(st, 'p0').dealer;
+    return st.phase === 'dealerTurn' && dv.total === 17 && dv.low === 17;
+  })());
+  check('dealerPlay (the whole turn at once) still settles a full round', (() => {
+    const st = mkGame(2, 42, { forceBattle: false });
+    betAll(st, { p0: 10, p1: 10 });
+    setHand(st, 'p0', [C('9', '♣'), C('8', '♦')]);
+    setHand(st, 'p1', [C('9', '♠'), C('8', '♥')]);
+    E.applyAction(st, 'p0', { type: 'stay' });
+    E.applyAction(st, 'p1', { type: 'stay' });
+    E.dealerPlay(st);
+    return st.phase === 'settled' && !!st.results;
+  })());
+  check('everyone busted: the dealer does not draw, the round settles at once', (() => {
+    const st = mkGame(2, 42, { forceBattle: false });
+    betAll(st, { p0: 10, p1: 10 });
+    setHand(st, 'p0', [C('K', '♠'), C('Q', '♥'), C('5', '♦')]); // 25 — busts on the hit
+    setHand(st, 'p1', [C('K', '♣'), C('Q', '♦'), C('5', '♠')]);
+    st.phase = 'playerTurns'; st.turnPlayerId = 'p0';
+    st.deck.push({ id: '5♣-rig', rank: '5', suit: '♣' });
+    E.applyAction(st, 'p0', { type: 'hit' });
+    E.applyAction(st, 'p1', { type: 'hit' });
+    return st.phase === 'settled' && st.dealer.hand.length === 2 &&
+      st.round.log.join(' ').includes('does not draw');
   })());
 }
 
@@ -390,6 +488,7 @@ console.log('Dealer:');
   setDealerHand(st, [C('K', '♦'), C('7', '♣')]); // 17
   E.applyAction(st, 'p0', { type: 'stay' });
   E.applyAction(st, 'p1', { type: 'stay' });
+  E.dealerPlay(st); // Nyau draws one card at a time — finish his turn here
   check('dealer stands on hard 17 without drawing', st.phase === 'settled' && st.dealer.hand.length === 2);
   // Dealer stands on SOFT 17 (Ace + 6).
   const st2 = mkGame(2, 32, { forceBattle: false });
@@ -399,6 +498,7 @@ console.log('Dealer:');
   st2.deck = [C('2', '♦')];
   E.applyAction(st2, 'p0', { type: 'stay' });
   E.applyAction(st2, 'p1', { type: 'stay' });
+  E.dealerPlay(st2);
   check('dealer stands on soft 17', st2.phase === 'settled' && st2.dealer.hand.length === 2);
   // Dealer hits on 16 and stops at 17+.
   const st3 = mkGame(2, 33, { forceBattle: false });
@@ -408,6 +508,7 @@ console.log('Dealer:');
   st3.deck = [C('5', '♦'), C('2', '♠')]; // draws 2 (18), stops
   E.applyAction(st3, 'p0', { type: 'stay' });
   E.applyAction(st3, 'p1', { type: 'stay' });
+  E.dealerPlay(st3);
   check('dealer hits on 16 and stands on 18', st3.phase === 'settled' && st3.dealer.hand.length === 3 && E.bestValue(st3.dealer.hand, 0).total === 18);
   // Dealer busts.
   const st4 = mkGame(2, 34, { forceBattle: false });
@@ -417,6 +518,7 @@ console.log('Dealer:');
   st4.deck = [C('9', '♦')]; // draws 9 -> 25 bust
   E.applyAction(st4, 'p0', { type: 'stay' });
   E.applyAction(st4, 'p1', { type: 'stay' });
+  E.dealerPlay(st4);
   check('dealer busts when drawing over 21', st4.phase === 'settled' && E.bestValue(st4.dealer.hand, 0).bust === true && st4.results['p0'].outcome === 'win');
   // Dealer does not draw when every entrant busted.
   const st5 = mkGame(2, 35, { forceBattle: false });
