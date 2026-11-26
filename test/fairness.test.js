@@ -28,11 +28,11 @@ const val = c => c.special ? 0 : (c.rank === 'A' ? 11 : (['J', 'Q', 'K'].include
 
 console.log('Fairness Monte Carlo (fixed seeds, so it is reproducible):');
 {
-  // the deck itself: a full 58, no card weighted, duplicated, or missing
+  // the deck itself: a full 55, no card weighted, duplicated, or missing
   const deck = E.buildDeck();
   const rankCount = {};
   for (const c of deck) rankCount[c.rank] = (rankCount[c.rank] || 0) + 1;
-  check('deck is 58 cards: 52 standard + 6 specials', deck.length === 58 && deck.filter(c => c.special).length === 6);
+  check('deck is 55 cards: 52 standard + 3 specials', deck.length === 55 && deck.filter(c => c.special).length === 3);
   check('every standard rank appears exactly 4 times', Object.entries(rankCount).filter(([r]) => r !== 'SP').every(([, n]) => n === 4));
 
   const ROUNDS = 2000;

@@ -229,13 +229,13 @@ footer{color:var(--mut);font-size:12.5px;text-align:center;margin-top:26px;line-
       <ul>
         <li><b>Bet 5, 10, 20, 40 or 50</b> casino coins to enter a round, or spectate until the next one. Everyone starts with <b>1000</b> coins; broke players rebuy 1000 free coins between rounds.</li>
         <li><b>Hit, stay, or double down</b> (2 cards only). Get <b>5 cards without busting</b> and you beat even a dealer 21 — 5 cards totalling exactly 21 is the strongest hand there is.</li>
-        <li><b>Special cards:</b> 6 in the deck. Every time one is dealt, a die (0, 0, 1, 1, 2, 2) is rolled and the result is <b>added to a shared total</b> — every special card on the table is worth that total. Watch the die tumble and land in the SPECIAL box. Specials are always face-up.</li>
+        <li><b>Special cards:</b> 3 in the deck. Every time one is dealt, a die (0, 0, 1, 1, 2, 2) is rolled and the result is <b>added to a shared total</b> — every special card on the table is worth that total. Watch the die tumble and land in the SPECIAL box. Specials are always face-up.</li>
         <li><b>Battle Bonyas:</b> a rare secret round (12%) where the single best winning hand takes a huge bonus — up to <b>1200 coins</b> on a 50-coin doubled-down bet.</li>
         <li>The dealer stands on 17 (including soft 17). The full rules are under <b>📖 Rules</b>.</li>
         <li>🎵 The main song loops every match; the battle song plays only during a Battle Bonyas round.</li>
       </ul>
     </div>
-    <footer>Black Nyack v1.7.1 — a fan-made game, just for fun.<br>
+    <footer>Black Nyack v1.7.2 — a fan-made game, just for fun.<br>
     Nyau and all SEGA characters are © SEGA. All credit to SEGA — the creator of this site holds no rights to Nyau or any SEGA property, and this game is not affiliated with or endorsed by SEGA.<br>
     Free play coins only — no real money. Hosted on Cloudflare Pages. Code on GitHub.</footer>
   </div>
@@ -445,8 +445,8 @@ function clone(o){ return JSON.parse(JSON.stringify(o)); }
 function buildDeck(){
   const deck=[];
   for(const s of SUITS) for(const r of RANKS) deck.push({id:r+s, rank:r, suit:s});
-  for(let i=1;i<=6;i++) deck.push({id:'SP'+i, rank:'SP', suit:'special', special:true});
-  return deck; // 52 standard + 6 special = 58
+  for(let i=1;i<=3;i++) deck.push({id:'SP'+i, rank:'SP', suit:'special', special:true});
+  return deck; // 52 standard + 3 special = 55
 }
 function isSpecial(c){ return !!c && !!c.special; }
 
@@ -1622,7 +1622,7 @@ function rulesHtml(){
   '<p>Total payout for one player in one round is capped at <b>1200 coins</b>. Worked examples: bet 50, 5-card 21 → 100 + 150 + 250 = <b>500</b>. Bet 50, double down (B = 100), 3-card 21 with 1 special, Battle Bonyas winner → 200 + 300 + 200 + 500 = <b>1200</b>.</p>'+
   '<ul style="margin:8px 0 8px 18px">'+
   '<li><b>Bets:</b> every round, each player picks <b>5 / 10 / 20 / 40 / 50</b> coins or <b>spectates</b> that round. Spectators are automatically offered entry again next round. If nobody bets, the round is dead and everyone picks again. Everyone starts with <b>1000</b> coins; at 0 you may <b>rebuy 1000 free coins</b> between rounds. Anyone can <b>leave the match at any time</b>.</li>'+
-  '<li><b>Deal:</b> one 58-card deck (52 standard + 6 special), shuffled fresh every round. You get 2 cards: the first <b>face-up</b>, the second <b>face-down</b> (your hole card — only you see it; tap it to peek). The dealer gets 2 the same way. <b>Special cards are always face-up for everyone</b>, even as a second card.</li>'+
+  '<li><b>Deal:</b> one 55-card deck (52 standard + 3 special), shuffled fresh every round. You get 2 cards: the first <b>face-up</b>, the second <b>face-down</b> (your hole card — only you see it; tap it to peek). The dealer gets 2 the same way. <b>Special cards are always face-up for everyone</b>, even as a second card.</li>'+
   '<li><b>Card values:</b> numbered = face value, J/Q/K = 10, Ace = 1 or 11 (best without busting), special = the round\'s shared special total.</li>'+
   '<li><b>Your turn — Hit, Stay, Double Down:</b> <b>Hit</b> takes one more card (up to 3 hits, 5 cards total). <b>Stay</b> keeps your hand. <b>Double down</b> is only with exactly 2 cards: you match your bet, get exactly one more card, and your turn ends.</li>'+
   '<li><b>The 5-card rule:</b> 5 cards without busting beats <b>even a dealer 21</b>. 5 cards totalling exactly 21 is the strongest hand there is — it only ties against another 5-card 21.</li>'+

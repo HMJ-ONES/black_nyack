@@ -321,9 +321,9 @@ console.log('No Hit / Double Down at 21:');
 console.log('Deck:');
 {
   const deck = E.buildDeck();
-  check('deck has 58 cards (52 + 6 special)', deck.length === 58);
-  check('deck has exactly 6 special cards', deck.filter(c => c.special).length === 6);
-  check('special ids are SP1..SP6', deck.filter(c => c.special).map(c => c.id).join(',') === 'SP1,SP2,SP3,SP4,SP5,SP6');
+  check('deck has 55 cards (52 + 3 special)', deck.length === 55);
+  check('deck has exactly 3 special cards', deck.filter(c => c.special).length === 3);
+  check('special ids are SP1..SP3', deck.filter(c => c.special).map(c => c.id).join(',') === 'SP1,SP2,SP3');
   check('52 standard cards are unique', new Set(deck.filter(c => !c.special).map(c => c.id)).size === 52);
   check('newGame rejects 0 players', (() => { try { E.newGame([], 1); return false; } catch (e) { return true; } })());
   check('newGame rejects 6 players', (() => { try { E.newGame(['a','b','c','d','e','f'], 1); return false; } catch (e) { return true; } })());
@@ -337,10 +337,10 @@ console.log('Deal:');
   const st = mkGame(3, 7, { forceBattle: false });
   betAll(st, { p0: 10, p1: 20, p2: 50 });
   check('each entrant gets 2 cards, dealer gets 2', st.players.every(p => p.hand.length === 2) && st.dealer.hand.length === 2);
-  check('deck shrinks by the cards dealt (58 - 8)', st.deck.length === 50);
+  check('deck shrinks by the cards dealt (55 - 8)', st.deck.length === 47);
   check('all dealt cards are unique', (() => {
     const all = st.players.flatMap(p => p.hand).concat(st.dealer.hand, st.deck);
-    return new Set(all.map(c => c.id)).size === 58;
+    return new Set(all.map(c => c.id)).size === 55;
   })());
   check('first card is face-up, second is the hole card', st.players.every(p => p.hand[0].faceUp === true && (p.hand[1].faceUp === false || p.hand[1].special)));
   check('dealer first card up, second down (unless special)', st.dealer.hand[0].faceUp === true && (st.dealer.hand[1].faceUp === false || st.dealer.hand[1].special));

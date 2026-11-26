@@ -4,13 +4,21 @@
 in the same format as Wellington and Five-Card Poker: a single `index.html`, no sign-up,
 no cost, multiplayer peer-to-peer via PeerJS, hosted free on Cloudflare Pages.
 
-> **v1.7.1:** the dealer never draws a 6th card either — 5 cards is the
-> most any hand can hold. All tests green: `npm test` (see [Tests](#tests)).
+> **v1.7.2:** special cards are rarer — 3 in the deck instead of 6.
+> All tests green: `npm test` (see [Tests](#tests)).
 
 - **Repo:** https://github.com/HMJ-ONES/black_nyack
 - **Live:** https://black-nyack.pages.dev *(connected + verified Nov 22 — home page and both songs serve 200)*
 - **Players:** 1–5 at a round table, dealer in the middle (mobile sideways = same round table as PC)
 - **Currency:** casino coins — free play coins only, no real money
+
+## v1.7.2 — Specials are rarer: 3 in the deck (Nov 25)
+
+- **Special cards cut from 6 to 3** — the deck is now 55 cards (52
+  standard + 3 special), so a dealt card is a special about 5.5% of the
+  time instead of about 10%. Everything about a special is unchanged
+  once it shows up: the die still rolls 0/1/2, the results still stack
+  into one shared value, specials are still always face-up.
 
 ## v1.7.1 — The dealer never draws a 6th card either (Nov 25)
 
@@ -184,7 +192,7 @@ or any SEGA property, and the game is not affiliated with or endorsed by SEGA.
 
 ### The deal
 
-- One **58-card deck** (52 standard cards + **6 special cards**), shuffled fresh
+- One **55-card deck** (52 standard cards + **3 special cards**), shuffled fresh
   every round.
 - Each entrant gets **2 cards**: the first **face-up**, the second **face-down**
   (the hole card — only its owner sees it). The dealer gets 2 the same way.
@@ -238,7 +246,7 @@ Getting **5 cards without busting** is one of the strongest hands in the game:
 
 ### The special die
 
-There are **6 special cards** in the deck. Whenever a special card is dealt to
+There are **3 special cards** in the deck. Whenever a special card is dealt to
 **anyone** — player or dealer, on the deal, on a hit, or on a double down — a
 **6-sided die** is rolled. Its faces are **0, 0, 1, 1, 2, 2**, and the result is
 **added to the round's shared special total**. **Every special card on the table
@@ -470,7 +478,7 @@ Current (v1.3, Nov 22): engine **131**, payout **37**, battle **29**, UI **141**
 
 | File | Covers |
 |---|---|
-| `test/engine.test.js` | Constants, 58-card deck, deal + face-up/hole flags, hand values + classes, betting (invalid/insufficient/double-decide, dead rounds, dead-round bot retry, spectators, rebuy), hit/stay/double rules (3-hit max, double only on 2 cards, forced stand), special-die rolls, dealer (stands on 17 incl. soft 17, hits on 16, busts, no draw when all bust), filtered views (hole cards never leak, special 2nd card visible, log clean), leave/remove, bots, plus a **500-round bot soak** (no throws, no negative stacks, no payout over 1200, every round terminates) |
+| `test/engine.test.js` | Constants, 55-card deck, deal + face-up/hole flags, hand values + classes, betting (invalid/insufficient/double-decide, dead rounds, dead-round bot retry, spectators, rebuy), hit/stay/double rules (3-hit max, double only on 2 cards, forced stand), special-die rolls, dealer (stands on 17 incl. soft 17, hits on 16, busts, no draw when all bust), filtered views (hole cards never leak, special 2nd card visible, log clean), leave/remove, bots, plus a **500-round bot soak** (no throws, no negative stacks, no payout over 1200, every round terminates) |
 | `test/payout.test.js` | The payout table (plain win, dealer bust, 21 bonus, 5-card bonus, special bonus, push, lose, bust-vs-bust) and all four regression cases: (a) 50 / 5-card 21 → **500**; (b) 50 doubled / 3-card 21 / 1 special / battle winner → **1200**; (c) same without battle → **700**; (d) doubled 3-card 21 / 2 specials / battle winner → 1400 uncapped, **capped to 1200** |
 | `test/battle.test.js` | 8% odds (constant + statistical check over 500 seeded rounds), single winner, ranking (class → total → specials → earliest seat), no winner when the dealer wins all / pushes / everyone busts, re-trigger across rounds, battle lasts exactly one round, battle bonus never leaks to other winners |
 | `test/ui.test.js` | jsdom DOM smoke test: every screen/panel/button exists, music elements + track selection (`music.mp3` / `battle.mp3`), layout helpers (round vs stacked, arc seat positions), rules modal, menu flow through the real buttons (bot picker → game → back to menu), a full round through the DOM (bet chip → deal → hole-card peek → Stay → settle → WIN dialog → next round), spectate + auto-offered entry next round (incl. dead-round retry), break-the-legs button ×3 (bat hides, legs regrow, pain face), solo game (0 bots), forced Battle Bonyas round, the v1.1 checks: SEGA footer credit, sometimes-only taunts, red BUST / shining DOUBLE DOWN / WIN! +amount banners, coin rain scaling with the win, sad/pain/happy faces, 8s win hold; the v1.2 checks: bet list / special box above the table, log below it, bubble starts hidden and goes away after 6s, taunts at 35% with idle chatter once a minute, face resets after 7s, break-legs button next to Nyau; and the v1.3 checks: special die faces 0/1/2, tumble + land, a fresh "rolled N" log line makes it roll, die hides on a new round, log below the chips and buttons |
