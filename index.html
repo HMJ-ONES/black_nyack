@@ -181,6 +181,7 @@ body.round-table .taunt::before{left:-8px;top:18px;transform:none;border:8px sol
 .win-rows tr.total td{font-size:17px;border-top:2px solid var(--gold)}
 footer{color:var(--mut);font-size:12.5px;text-align:center;margin-top:26px;line-height:1.6}
 .music-hint{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);background:var(--gold);color:#111;font-weight:800;border-radius:999px;padding:10px 18px;z-index:60;box-shadow:0 6px 20px rgba(0,0,0,.5);cursor:pointer;border:0}
+#langSelect{background:var(--panel2);color:var(--txt);border:1px solid var(--line);border-radius:10px;padding:8px 10px;font-size:14px;font-weight:700;cursor:pointer}
 </style>
 <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
 </head>
@@ -189,72 +190,81 @@ footer{color:var(--mut);font-size:12.5px;text-align:center;margin-top:26px;line-
   <header>
     <div>
       <div class="logo">🃏 BLACK <span>NYACK</span></div>
-      <div class="tag">Free browser blackjack (21) — 1–5 players vs the dealer. No sign-up, no cost, free coins only.</div>
+      <div class="tag" data-i18n="tag">Free browser blackjack (21) — 1–5 players vs the dealer. No sign-up, no cost, free coins only.</div>
     </div>
     <div class="row" style="margin-top:0">
+      <select id="langSelect" aria-label="Language">
+        <option value="en">EN</option>
+        <option value="pt">PT</option>
+        <option value="es">ES</option>
+        <option value="zh">ZH</option>
+        <option value="ja">JA</option>
+        <option value="fr">FR</option>
+        <option value="ko">KO</option>
+      </select>
       <button id="musicToggle" type="button" class="ghost small" title="Music on/off">🔊 Music on</button>
-      <button id="btnRules" type="button" class="ghost small">📖 Rules</button>
+      <button id="btnRules" type="button" class="ghost small" data-i18n="rulesBtn">📖 Rules</button>
     </div>
   </header>
 
   <div id="menuScreen">
     <div class="card">
-      <h2>Beat the dealer. Take his coins.</h2>
-      <p>Bet <b style="color:var(--txt)">5 / 10 / 20 / 40 / 50</b> casino coins to enter a round — or spectate until the next one. <b style="color:var(--txt)">Hit</b>, <b style="color:var(--txt)">stay</b>, or <b style="color:var(--txt)">double down</b>. Get <b style="color:var(--txt)">5 cards without busting</b> and you beat even a dealer 21. Watch for the <b style="color:var(--txt)">special cards</b> and the secret <b style="color:var(--txt)">Battle Bonyas</b> round — one winner takes up to <b style="color:var(--txt)">1200 coins</b>.</p>
+      <h2 data-i18n="menuH2">Beat the dealer. Take his coins.</h2>
+      <p data-i18n-html="menuIntro">Bet <b style="color:var(--txt)">5 / 10 / 20 / 40 / 50</b> casino coins to enter a round — or spectate until the next one. <b style="color:var(--txt)">Hit</b>, <b style="color:var(--txt)">stay</b>, or <b style="color:var(--txt)">double down</b>. Get <b style="color:var(--txt)">5 cards without busting</b> and you beat even a dealer 21. Watch for the <b style="color:var(--txt)">special cards</b> and the secret <b style="color:var(--txt)">Battle Bonyas</b> round — one winner takes up to <b style="color:var(--txt)">1200 coins</b>.</p>
       <div class="row">
-        <span style="font-size:14px;color:var(--mut)">Your name</span>
+        <span style="font-size:14px;color:var(--mut)" data-i18n="nameLabel">Your name</span>
         <input type="text" id="nameInput" placeholder="e.g. Henrique" maxlength="20" style="flex:1;min-width:140px">
       </div>
       <div class="btn-grid">
-        <button id="btnCreate" type="button">➕ Create lobby<br><small style="font-weight:500;font-size:12px">get a code, invite up to 4 friends / bots</small></button>
-        <button id="btnBots" type="button" class="ghost">🤖 Play vs bots<br><small style="font-weight:500;font-size:12px">solo or with bots, right now</small></button>
+        <button id="btnCreate" type="button" data-i18n-html="btnCreate">➕ Create lobby<br><small style="font-weight:500;font-size:12px">get a code, invite up to 4 friends / bots</small></button>
+        <button id="btnBots" type="button" class="ghost" data-i18n-html="btnBots">🤖 Play vs bots<br><small style="font-weight:500;font-size:12px">solo or with bots, right now</small></button>
       </div>
       <div class="row">
         <input type="text" id="joinCode" placeholder="Lobby code — e.g. KQ7B" maxlength="8" style="flex:1;text-transform:uppercase">
-        <button id="btnJoin" type="button" class="ghost">Join lobby →</button>
+        <button id="btnJoin" type="button" class="ghost" data-i18n="btnJoin">Join lobby →</button>
       </div>
       <p id="menuMsg" style="margin-top:10px;min-height:20px"></p>
     </div>
     <div class="card" style="margin-top:14px">
-      <h2>🌍 Public rooms</h2>
+      <h2 data-i18n="roomsH2">🌍 Public rooms</h2>
       <div class="row">
-        <button id="btnBrowseRooms" type="button" class="ghost">Browse public rooms</button>
-        <button id="btnRefreshRooms" type="button" class="ghost small">↻ Refresh</button>
+        <button id="btnBrowseRooms" type="button" class="ghost" data-i18n="btnBrowse">Browse public rooms</button>
+        <button id="btnRefreshRooms" type="button" class="ghost small" data-i18n="btnRefresh">↻ Refresh</button>
       </div>
-      <p id="roomsMsg" style="margin-top:10px;min-height:20px;color:var(--mut);font-size:14px">Press “Browse public rooms” to see open lobbies — or join a private lobby with its code above.</p>
+      <p id="roomsMsg" data-i18n="roomsMsg" style="margin-top:10px;min-height:20px;color:var(--mut);font-size:14px">Press “Browse public rooms” to see open lobbies — or join a private lobby with its code above.</p>
       <div id="roomsList" style="margin-top:8px"></div>
     </div>
     <div class="card rules" style="margin-top:14px">
-      <h2>How it plays (short version)</h2>
+      <h2 data-i18n="howH2">How it plays (short version)</h2>
       <ul>
-        <li><b>Bet 5, 10, 20, 40 or 50</b> casino coins to enter a round, or spectate until the next one. Everyone starts with <b>1000</b> coins; broke players rebuy 1000 free coins between rounds.</li>
-        <li><b>Hit, stay, or double down</b> (2 cards only). Get <b>5 cards without busting</b> and you beat even a dealer 21 — 5 cards totalling exactly 21 is the strongest hand there is.</li>
-        <li><b>Special cards:</b> 3 in the deck. Every time one is dealt, a die (0, 0, 1, 1, 2, 2) is rolled and the result is <b>added to a shared total</b> — every special card on the table is worth that total. Watch the die tumble and land in the SPECIAL box. Specials are always face-up.</li>
-        <li><b>Battle Bonyas:</b> a rare secret round (12%) where the single best winning hand takes a huge bonus — up to <b>1200 coins</b> on a 50-coin doubled-down bet.</li>
-        <li>The dealer stands on 17 (including soft 17). The full rules are under <b>📖 Rules</b>.</li>
-        <li>🎵 The main song loops every match; the battle song plays only during a Battle Bonyas round.</li>
+        <li data-i18n-html="howLi1"><b>Bet 5, 10, 20, 40 or 50</b> casino coins to enter a round, or spectate until the next one. Everyone starts with <b>1000</b> coins; broke players rebuy 1000 free coins between rounds.</li>
+        <li data-i18n-html="howLi2"><b>Hit, stay, or double down</b> (2 cards only). Get <b>5 cards without busting</b> and you beat even a dealer 21 — 5 cards totalling exactly 21 is the strongest hand there is.</li>
+        <li data-i18n-html="howLi3"><b>Special cards:</b> 3 in the deck. Every time one is dealt, a die (0, 0, 1, 1, 2, 2) is rolled and the result is <b>added to a shared total</b> — every special card on the table is worth that total. Watch the die tumble and land in the SPECIAL box. Specials are always face-up.</li>
+        <li data-i18n-html="howLi4"><b>Battle Bonyas:</b> a rare secret round (8%) where the single best winning hand takes a huge bonus — up to <b>1200 coins</b> on a 50-coin doubled-down bet.</li>
+        <li data-i18n-html="howLi5">The dealer stands on 17 (including soft 17). The full rules are under <b>📖 Rules</b>.</li>
+        <li data-i18n-html="howLi6">🎵 The main song loops every match; the battle song plays only during a Battle Bonyas round.</li>
       </ul>
     </div>
-    <footer>Black Nyack v1.7.2 — a fan-made game, just for fun.<br>
+    <footer data-i18n-html="footer">Black Nyack v1.7.3 — a fan-made game, just for fun.<br>
     Nyau and all SEGA characters are © SEGA. All credit to SEGA — the creator of this site holds no rights to Nyau or any SEGA property, and this game is not affiliated with or endorsed by SEGA.<br>
     Free play coins only — no real money. Hosted on Cloudflare Pages. Code on GitHub.</footer>
   </div>
 
   <div id="lobbyScreen" class="hidden">
     <div class="card">
-      <h2>Lobby <span id="lobbyCode" class="roomcode"></span></h2>
-      <p id="lobbyMsg">Share the code with your friends — they type it in Join lobby.</p>
-      <div class="row"><button id="btnCopyLobby" type="button" class="ghost small">Copy code / link</button>
-      <button id="btnLeaveLobby" type="button" class="danger small">Leave lobby</button></div>
+      <h2><span data-i18n="lobbyH2">Lobby</span> <span id="lobbyCode" class="roomcode"></span></h2>
+      <p id="lobbyMsg" data-i18n="lobbyMsg">Share the code with your friends — they type it in Join lobby.</p>
+      <div class="row"><button id="btnCopyLobby" type="button" class="ghost small" data-i18n="btnCopy">Copy code / link</button>
+      <button id="btnLeaveLobby" type="button" class="danger small" data-i18n="btnLeaveLobby">Leave lobby</button></div>
       <div id="lobbyList" style="margin-top:12px"></div>
-      <div class="row"><button id="btnStartGame" type="button">▶ Start game</button>
+      <div class="row"><button id="btnStartGame" type="button" data-i18n="btnStart">▶ Start game</button>
       <span id="lobbyWait" style="color:var(--mut);font-size:14px">You are the host — press Start when everyone is in.</span></div>
     </div>
   </div>
 
   <div id="gameScreen" class="hidden">
-    <div class="rotate-hint">🔄 Turn your phone sideways for the full round table — the dealer sits in the middle, just like on PC.</div>
-    <div id="battleBanner" class="battle-banner hidden">⚔️ BATTLE BONYAS! ⚔️<br><span style="font-size:14px">The single best winning hand this round takes a huge bonus — up to 1200 coins!</span></div>
+    <div class="rotate-hint" data-i18n="rotateHint">🔄 Turn your phone sideways for the full round table — the dealer sits in the middle, just like on PC.</div>
+    <div id="battleBanner" class="battle-banner hidden" data-i18n-html="battleBanner">⚔️ BATTLE BONYAS! ⚔️<br><span style="font-size:14px">The single best winning hand this round takes a huge bonus — up to 1200 coins!</span></div>
     <div class="status" id="statusBox">Waiting…<small id="statusSub"></small></div>
     <div class="table-topbar" id="tableTopbar">
       <div class="bet-list" id="betList"></div>
@@ -262,10 +272,10 @@ footer{color:var(--mut);font-size:12.5px;text-align:center;margin-top:26px;line-
         <div class="special-star"><span id="specialTotal">0</span></div>
         <div class="die-wrap hidden" id="specialDieWrap">
           <div class="die face-0" id="specialDie"><span class="pip"></span><span class="pip"></span><span class="pip"></span><span class="pip"></span><span class="pip"></span><span class="pip"></span><span class="pip"></span><span class="pip"></span><span class="pip"></span></div>
-          <div class="die-cap">LAST ROLL</div>
+          <div class="die-cap" data-i18n="dieCap">LAST ROLL</div>
         </div>
         <div class="special-text">
-          <div class="special-label">SPECIAL<br>CARD</div>
+          <div class="special-label" data-i18n-html="specialLabel">SPECIAL<br>CARD</div>
           <div class="special-sub" id="specialSub">Every ★ is worth 0</div>
         </div>
       </div>
@@ -275,7 +285,7 @@ footer{color:var(--mut);font-size:12.5px;text-align:center;margin-top:26px;line-
       <div class="dealer-zone" id="dealerZone">
         <svg class="dealer-arc" viewBox="0 0 230 40" aria-hidden="true"><defs><path id="arcPath" d="M15,36 A100,100 0 0,1 215,36" fill="none"/></defs><text><textPath href="#arcPath" startOffset="50%" text-anchor="middle">BLACK NYACK</textPath></text></svg>
         <div class="dealer-row">
-          <button id="breakLegsBtn" type="button" class="danger break-mini">🦵⚾<br>Break<br>legs</button>
+          <button id="breakLegsBtn" type="button" class="danger break-mini" data-i18n-html="breakLegs">🦵⚾<br>Break<br>legs</button>
           <div class="dealer-ring">
           <svg id="dealerSvg" viewBox="0 0 220 200" role="img" aria-label="Nyau the dealer">
             <ellipse cx="110" cy="186" rx="88" ry="13" fill="#ffe27a" opacity="0.45"/>
@@ -342,74 +352,74 @@ footer{color:var(--mut);font-size:12.5px;text-align:center;margin-top:26px;line-
       <div style="font-weight:800;margin-bottom:6px" id="betPrompt">Place your bet — or spectate this round</div>
       <div class="chip-rack" id="betChips"></div>
       <div class="row" style="justify-content:center">
-        <button id="btnSpectate" type="button" class="ghost">👀 Spectate this round</button>
-        <button id="btnRebuyBet" type="button" class="ghost hidden">💰 Rebuy 1000 free coins</button>
+        <button id="btnSpectate" type="button" class="ghost" data-i18n="btnSpectate">👀 Spectate this round</button>
+        <button id="btnRebuyBet" type="button" class="ghost hidden" data-i18n="btnRebuy">💰 Rebuy 1000 free coins</button>
       </div>
       <div id="betWaiting" style="color:var(--mut);font-size:13px;margin-top:8px"></div>
     </div>
     <div id="actionBox" class="hidden" style="text-align:center;margin-top:12px">
       <div style="font-weight:800;margin-bottom:8px" id="actionPrompt">Your turn</div>
       <div class="row" style="justify-content:center">
-        <button id="btnHit" type="button" class="big">🃏 Hit</button>
-        <button id="btnStay" type="button" class="big ghost">✋ Stay</button>
-        <button id="btnDouble" type="button" class="big">💰 Double down</button>
+        <button id="btnHit" type="button" class="big" data-i18n="btnHit">🃏 Hit</button>
+        <button id="btnStay" type="button" class="big ghost" data-i18n="btnStay">✋ Stay</button>
+        <button id="btnDouble" type="button" class="big" data-i18n="btnDouble">💰 Double down</button>
       </div>
     </div>
     <p id="effectPrompt" style="margin-top:10px;font-weight:700;min-height:20px"></p>
     <div class="row" style="justify-content:center">
-      <button id="btnNextRound" type="button" class="hidden">▶ Next round</button>
-      <button id="btnRebuy" type="button" class="ghost small hidden">💰 Rebuy 1000 free coins</button>
-      <button id="btnLeaveMatch" type="button" class="danger small">🚪 Leave match</button>
-      <button id="btnMenu2" type="button" class="ghost small">← Menu</button>
-      <button id="btnRules2" type="button" class="ghost small">📖 Rules</button>
+      <button id="btnNextRound" type="button" class="hidden" data-i18n="btnNextRound">▶ Next round</button>
+      <button id="btnRebuy" type="button" class="ghost small hidden" data-i18n="btnRebuy">💰 Rebuy 1000 free coins</button>
+      <button id="btnLeaveMatch" type="button" class="danger small" data-i18n="btnLeaveMatch">🚪 Leave match</button>
+      <button id="btnMenu2" type="button" class="ghost small" data-i18n="btnMenu2">← Menu</button>
+      <button id="btnRules2" type="button" class="ghost small" data-i18n="rulesBtn">📖 Rules</button>
     </div>
-    <div id="connBox" style="font-size:13px;color:var(--mut);margin-top:10px">Local game</div>
-    <div class="log-label" id="logLabel">💬 GAME LOG</div>
-    <div class="log" id="logBox">Game started.</div>
+    <div id="connBox" data-i18n="conn.local" style="font-size:13px;color:var(--mut);margin-top:10px">Local game</div>
+    <div class="log-label" id="logLabel" data-i18n="logLabel">💬 GAME LOG</div>
+    <div class="log" id="logBox" data-i18n="log.started">Game started.</div>
   </div>
 
   <div id="bannedModal" class="modal hidden"><div class="box">
-    <h2>🚫 Banned from this room</h2>
-    <p style="color:var(--mut);font-size:14px;line-height:1.6;margin-top:8px">You left and rejoined too many times in a row. This room is closed to you for now — join a different lobby.</p>
-    <div class="row" style="justify-content:center;margin-top:16px"><button id="btnBannedMenu" type="button">Back to menu</button></div>
+    <h2 data-i18n="bannedH2">🚫 Banned from this room</h2>
+    <p data-i18n="bannedP" style="color:var(--mut);font-size:14px;line-height:1.6;margin-top:8px">You left and rejoined too many times in a row. This room is closed to you for now — join a different lobby.</p>
+    <div class="row" style="justify-content:center;margin-top:16px"><button id="btnBannedMenu" type="button" data-i18n="btnBannedMenu">Back to menu</button></div>
   </div></div>
   <div id="botModal" class="modal hidden"><div class="box">
-    <h2 id="botModalTitle">How many bots?</h2><p id="botModalSub">Bots fill the remaining seats (max 5 players total).</p>
+    <h2 id="botModalTitle" data-i18n="bots.title">How many bots?</h2><p id="botModalSub" data-i18n="bots.sub">Bots fill the remaining seats (max 5 players total).</p>
     <div class="bot-pick" id="botPick"></div>
-    <div class="row" style="justify-content:center"><button id="botCancel" type="button" class="ghost">Cancel</button></div>
+    <div class="row" style="justify-content:center"><button id="botCancel" type="button" class="ghost" data-i18n="botCancel">Cancel</button></div>
   </div></div>
   <div id="roomOptModal" class="modal hidden"><div class="box">
-    <h2>Create lobby</h2>
-    <p style="color:var(--mut);font-size:14px;margin-top:6px">Who can find this room?</p>
+    <h2 data-i18n="roomOptH2">Create lobby</h2>
+    <p data-i18n="roomOptP1" style="color:var(--mut);font-size:14px;margin-top:6px">Who can find this room?</p>
     <div class="bot-pick" id="visPick">
-      <button type="button" data-vis="private">🔒 Private</button>
-      <button type="button" data-vis="public">🌍 Public</button>
+      <button type="button" data-vis="private" data-i18n="visPrivate">🔒 Private</button>
+      <button type="button" data-vis="public" data-i18n="visPublic">🌍 Public</button>
     </div>
-    <p style="color:var(--mut);font-size:14px;margin-top:14px">Max players (you + friends + bots):</p>
+    <p data-i18n="roomOptP2" style="color:var(--mut);font-size:14px;margin-top:14px">Max players (you + friends + bots):</p>
     <div class="bot-pick" id="maxPick"></div>
     <p id="roomOptMsg" style="min-height:20px;color:var(--mut);font-size:14px"></p>
     <div class="row" style="justify-content:center">
-      <button id="roomOptCreate" type="button">Create lobby</button>
-      <button id="roomOptCancel" type="button" class="ghost">Cancel</button>
+      <button id="roomOptCreate" type="button" data-i18n="roomOptCreate">Create lobby</button>
+      <button id="roomOptCancel" type="button" class="ghost" data-i18n="roomOptCancel">Cancel</button>
     </div>
   </div></div>
   <div id="rulesModal" class="modal hidden"><div class="box">
     <button id="rulesCloseX" type="button" class="modal-x" aria-label="Close rules">✕</button>
-    <h2>📖 Black Nyack — rules</h2>
+    <h2 data-i18n="rulesH2">📖 Black Nyack — rules</h2>
     <div id="rulesBody" style="font-size:14px;line-height:1.6;color:var(--mut)"></div>
-    <div class="row" style="justify-content:center;margin-top:14px"><button id="rulesClose" type="button">Got it</button></div>
+    <div class="row" style="justify-content:center;margin-top:14px"><button id="rulesClose" type="button" data-i18n="rulesClose">Got it</button></div>
   </div></div>
   <div id="winModal" class="modal hidden"><div class="box">
     <h2 id="winTitle">🏆 WIN!</h2>
     <div id="winBody"></div>
     <div class="row" style="justify-content:center;margin-top:14px">
-      <button id="winNextRound" type="button" class="hidden">▶ Next round</button>
-      <button id="winClose" type="button">Close</button>
+      <button id="winNextRound" type="button" class="hidden" data-i18n="btnNextRound">▶ Next round</button>
+      <button id="winClose" type="button" data-i18n="winClose">Close</button>
     </div>
   </div></div>
   <audio id="musicMain" src="music.mp3" loop preload="auto"></audio>
   <audio id="musicBattle" src="battle.mp3" loop preload="auto"></audio>
-  <button id="musicHint" type="button" class="music-hint hidden">🎵 Tap for music</button>
+  <button id="musicHint" type="button" class="music-hint hidden" data-i18n="musicHint">🎵 Tap for music</button>
 </div>
 <script>
 "use strict";
@@ -964,10 +974,2102 @@ if(typeof module!=='undefined'&&module.exports){ module.exports={BETS,START_STAC
    the Five-Card Poker / Wellington pattern. Local cosmetic fun (leg
    breaking, taunts) never touches game state and is never synced.
    ===================================================================== */
+/* =====================================================================
+   BLACK NYACK — i18n (v1.7.3). 7 languages: en pt es zh ja fr ko.
+   English is the default and the fallback for any missing key.
+   Static text: data-i18n (text) / data-i18n-html (markup) attributes.
+   Dynamic strings: t(key, vars). Log lines (engine stays English):
+   translateLog() maps the engine's English patterns at display time.
+   Player names, room codes and proper names (Black Nyack, Battle Bonyas,
+   Nyau) are never translated. Choice persists in localStorage 'lang'.
+   ===================================================================== */
+const I18N={
+en:{
+"tag":"Free browser blackjack (21) — 1–5 players vs the dealer. No sign-up, no cost, free coins only.",
+"rulesBtn":"📖 Rules",
+"menuH2":"Beat the dealer. Take his coins.",
+"menuIntro":"Bet <b style=\"color:var(--txt)\">5 / 10 / 20 / 40 / 50</b> casino coins to enter a round — or spectate until the next one. <b style=\"color:var(--txt)\">Hit</b>, <b style=\"color:var(--txt)\">stay</b>, or <b style=\"color:var(--txt)\">double down</b>. Get <b style=\"color:var(--txt)\">5 cards without busting</b> and you beat even a dealer 21. Watch for the <b style=\"color:var(--txt)\">special cards</b> and the secret <b style=\"color:var(--txt)\">Battle Bonyas</b> round — one winner takes up to <b style=\"color:var(--txt)\">1200 coins</b>.",
+"nameLabel":"Your name",
+"btnCreate":"➕ Create lobby<br><small style=\"font-weight:500;font-size:12px\">get a code, invite up to 4 friends / bots</small>",
+"btnBots":"🤖 Play vs bots<br><small style=\"font-weight:500;font-size:12px\">solo or with bots, right now</small>",
+"btnJoin":"Join lobby →",
+"roomsH2":"🌍 Public rooms",
+"btnBrowse":"Browse public rooms",
+"btnRefresh":"↻ Refresh",
+"roomsMsg":"Press “Browse public rooms” to see open lobbies — or join a private lobby with its code above.",
+"howH2":"How it plays (short version)",
+"howLi1":"<b>Bet 5, 10, 20, 40 or 50</b> casino coins to enter a round, or spectate until the next one. Everyone starts with <b>1000</b> coins; broke players rebuy 1000 free coins between rounds.",
+"howLi2":"<b>Hit, stay, or double down</b> (2 cards only). Get <b>5 cards without busting</b> and you beat even a dealer 21 — 5 cards totalling exactly 21 is the strongest hand there is.",
+"howLi3":"<b>Special cards:</b> 3 in the deck. Every time one is dealt, a die (0, 0, 1, 1, 2, 2) is rolled and the result is <b>added to a shared total</b> — every special card on the table is worth that total. Watch the die tumble and land in the SPECIAL box. Specials are always face-up.",
+"howLi4":"<b>Battle Bonyas:</b> a rare secret round (8%) where the single best winning hand takes a huge bonus — up to <b>1200 coins</b> on a 50-coin doubled-down bet.",
+"howLi5":"The dealer stands on 17 (including soft 17). The full rules are under <b>📖 Rules</b>.",
+"howLi6":"🎵 The main song loops every match; the battle song plays only during a Battle Bonyas round.",
+"footer":"Black Nyack v1.7.3 — a fan-made game, just for fun.<br>Nyau and all SEGA characters are © SEGA. All credit to SEGA — the creator of this site holds no rights to Nyau or any SEGA property, and this game is not affiliated with or endorsed by SEGA.<br>Free play coins only — no real money. Hosted on Cloudflare Pages. Code on GitHub.",
+"lobbyH2":"Lobby",
+"lobbyMsg":"Share the code with your friends — they type it in Join lobby.",
+"btnCopy":"Copy code / link",
+"btnLeaveLobby":"Leave lobby",
+"btnStart":"▶ Start game",
+"rotateHint":"🔄 Turn your phone sideways for the full round table — the dealer sits in the middle, just like on PC.",
+"battleBanner":"⚔️ BATTLE BONYAS! ⚔️<br><span style=\"font-size:14px\">The single best winning hand this round takes a huge bonus — up to 1200 coins!</span>",
+"specialLabel":"SPECIAL<br>CARD",
+"dieCap":"LAST ROLL",
+"btnSpectate":"👀 Spectate this round",
+"btnRebuy":"💰 Rebuy 1000 free coins",
+"btnHit":"🃏 Hit",
+"btnStay":"✋ Stay",
+"btnDouble":"💰 Double down",
+"btnNextRound":"▶ Next round",
+"btnLeaveMatch":"🚪 Leave match",
+"btnMenu2":"← Menu",
+"logLabel":"💬 GAME LOG",
+"log.started":"Game started.",
+"bannedH2":"🚫 Banned from this room",
+"bannedP":"You left and rejoined too many times in a row. This room is closed to you for now — join a different lobby.",
+"btnBannedMenu":"Back to menu",
+"roomOptH2":"Create lobby",
+"roomOptP1":"Who can find this room?",
+"roomOptP2":"Max players (you + friends + bots):",
+"roomOptCreate":"Create lobby",
+"roomOptCancel":"Cancel",
+"rulesH2":"📖 Black Nyack — rules",
+"rulesClose":"Got it",
+"winClose":"Close",
+"musicHint":"🎵 Tap for music",
+"breakLegs":"🦵⚾<br>Break<br>legs",
+"musicOn":"🔊 Music on",
+"musicOff":"🔇 Music off",
+"visPrivate":"🔒 Private",
+"visPublic":"🌍 Public",
+"botCancel":"Cancel",
+"conn.local":"Local game vs bots — no network needed. The dealer is already being rude.",
+"seat.coins":"coins",
+"betList.bet":"BET",
+"playersWord":"players",
+"status.gameOver":"🏆 Game over — everyone left.",
+"status.settledWait":"🎩 Dealer is done — results in a moment…",
+"status.settledWin":"🏆 Round {n} over — {names} beat the dealer{battle}",
+"status.settledWinBattle":" — ⚔️ {name} takes the Battle Bonyas bonus!",
+"status.settledDealer":"😤 Round {n} over — the dealer takes it. Nyau is insufferable about it.",
+"status.bettingSpec":"👀 Spectating — you're up for the next round. Stay on this screen: you'll be offered entry at the next betting round, no leaving and rejoining needed.",
+"status.betting":"🎲 Round {n} — place your bet (5 / 10 / 20 / 40 / 50) or spectate.",
+"status.turn21":"🃏 Your turn — 21 in hand! Stay and lock it in.",
+"status.turn":"🃏 Your turn — Hit, Stay, or Double Down (2 cards only).",
+"status.turnOther":"{name} is playing…",
+"status.dealerTurn":"🎩 Dealer is playing…",
+"status.waiting":"Waiting…",
+"status.sub":"Round {n} • Special total {s} • Deck {d} cards{battle}{stackPart}",
+"status.stackPart":" • Your stack: {stack} coins",
+"status.battlePart":" • ⚔️ BATTLE BONYAS",
+"betList.spectating":"spectating",
+"betList.deciding":"deciding…",
+"betList.dash":"—",
+"specialSub.yes":"Every ★ is worth {n}",
+"specialSub.no":"No special value yet — deal a ★ to roll the die",
+"dealer.label":"DEALER",
+"dealer.total":"DEALER — {total}",
+"dealer.totalBust":"DEALER — {total} BUST",
+"dealer.shows":"DEALER — shows {card}",
+"seat.bet":"bet {n}",
+"seat.doubled":"doubled",
+"seat.toMove":"to move",
+"seat.you":"(you)",
+"seat.spectatingTitle":"👀 Spectating",
+"seat.spectatingText":"You are watching this game. You're up for the next round — just stay on this screen and you'll be offered entry at the next betting round. No leaving and rejoining needed.",
+"seat.hand":"Hand",
+"seat.yourHand":"Your hand",
+"seat.bust":"BUST",
+"betPrompt":"Place your bet — or spectate this round. Your stack: {n} coins.",
+"betWaiting.yes":"Waiting for: {names}",
+"betWaiting.no":"Everyone has decided…",
+"actionPrompt.21":"Your turn — 21 in hand! Stay and lock it in.",
+"actionPrompt.turn":"Your turn — {total} in hand. Hit, Stay, or Double Down?",
+"doubleTitle.yes":"Double your bet ({n} more) for exactly one more card.",
+"doubleTitle.21":"You already have 21 — stay and take it.",
+"doubleTitle.no":"Double down needs exactly 2 cards and enough chips to match your bet.",
+"win.win":"Win",
+"win.blacknyack":"Blacknyack",
+"win.fiveCard":"5 Card",
+"win.special":"Special ×{n}",
+"win.battle":"Battle Bonyas",
+"win.stakeBack":"Stake back",
+"win.betLost":"Bet lost",
+"win.acquired":"🪙 Acquired",
+"win.capped":"Payout capped at the 1200-coin table maximum.",
+"win.battleNote":"⚔️ Battle Bonyas winner: {name} — the single best winning hand takes the bonus.",
+"winTitle.win":"🏆 WIN!",
+"winTitle.push":"🤝 PUSH",
+"winTitle.lose":"😤 Dealer takes it",
+"banner.blacknyack":"BLACK NYACK",
+"banner.five":"5 CARD",
+"banner.double":"DOUBLE DOWN",
+"banner.bust":"BUST",
+"banner.win":"WIN! +{n}",
+"banner.push":"PUSH",
+"banner.battle":"⚔️ BATTLE BONYAS!",
+"card.holePeek":"hole card — tap to peek",
+"card.specialTitle":"Special card — worth {n} this round",
+"card.worth":"worth {n}",
+"toast.legsHealed":"🦵 Nyau's legs grew back. He's walking again — break them as many times as you like. (Local fun only.)",
+"toast.crack":"🦵⚾ CRACK! He's still dealing. (Local fun only — the table doesn't care.)",
+"toast.needPlayers":"Need at least 1 player to start.",
+"toast.actionError":"That move was not allowed.",
+"menu.creating":"Creating lobby {code}…",
+"menu.live":"Lobby {code} is live — send the code to your friends.",
+"menu.createErr":"Could not create the lobby ({err}). Try again.",
+"menu.joinErr":"Could not join lobby {code} ({err}). Double-check the code.",
+"menu.joining":"Joining lobby {code}…",
+"menu.joined":"Joined lobby {code}! Waiting in the lobby…",
+"menu.stillTrying":"Still trying to reach lobby {code} — is the code right, and is the host's lobby still open?",
+"menu.noPeerJoin":"Could not load the multiplayer library (PeerJS). Check your connection and try again.",
+"menu.noPeerCreate":"Could not load the multiplayer library (PeerJS). Check your connection — bot play still works.",
+"menu.noCode":"Type a lobby code first.",
+"menu.deepLink":"Lobby {code} detected — press Join lobby to enter.",
+"menu.joinRejected":"Could not join: {err}",
+"menu.roomFull":"room is full.",
+"rooms.none":"No public rooms right now — create one, or join a private lobby with its code.",
+"rooms.dirFail":"Couldn't load the list — the directory didn't answer. Join with a code instead.",
+"rooms.noPeer":"Couldn't load the list (multiplayer library unavailable) — join with a code instead.",
+"rooms.asking":"Asking the directory…",
+"rooms.count":"{n} public room{s} open — tap one to join. (No auto-join: you always choose.)",
+"rooms.playingSpectate":"playing — spectate",
+"rooms.full":"full",
+"rooms.joinBtn":"Join →",
+"rooms.playing":"playing",
+"rooms.waiting":"waiting",
+"lobby.public":"🌍 Public room — listed in Browse public rooms while it waits for players. ",
+"lobby.private":"🔒 Private room — code-only. ",
+"lobby.max":"Max {n} players (bots included). You can start alone vs the dealer, or wait for friends.",
+"lobby.count":"{n} / {max} players.",
+"lobby.hostWait":"You are the host — press Start when everyone is in.",
+"lobby.guestWait":"Waiting for the host to start…",
+"lobby.botsNote":"You + {n} bot{s} already take {seats} seats, so the max starts there.",
+"lobby.host":"host",
+"lobby.connHost":"Lobby <b>{code}</b> — you are the host. Bets are per-player (5 / 10 / 20 / 40 / 50) or spectate. Bots run on your device.",
+"lobby.hostDisconnected":"<b>Host disconnected.</b> The lobby is gone — head back to the menu for a new game.",
+"lobby.connLost":"<b>Connection lost — reconnecting…</b> Your seat is held for 10 seconds.",
+"lobby.couldNotRejoin":"<b>Could not rejoin in time.</b> Your seat was withdrawn — rejoin from the menu to come back as a spectator.",
+"bots.title":"How many bots?",
+"bots.sub":"You + bots, 1–5 players total. 0 bots = just you vs the dealer. Fully local, works offline.",
+"bots.createTitle":"Create lobby — how many bots?",
+"bots.createSub":"Bots fill seats in your lobby (max 5 players total: humans + bots).",
+"bots.solo":"0 (solo)",
+"bots.title1":"Just you vs the dealer",
+"bots.titleN":"{n} bot{s}",
+"copy.copied":"Copied!",
+"copy.prompt":"Copy your lobby link:",
+"copy.btn":"Copy code / link",
+"copy.invite":"Black Nyack lobby {code} — join me: {link}",
+"rules.intro":"<b>Goal:</b> beat the dealer at 21 — together. Everyone at the table plays against Nyau, not against each other.",
+"rules.th1":"Outcome",
+"rules.th2":"Payout (B = your bet at risk)",
+"rules.rowLose":"Lose (bust, or dealer beats you)",
+"rules.rowLoseV":"0 — your bet is lost",
+"rules.rowPush":"Push (exact tie)",
+"rules.rowPushV":"B — your stake back, no bonuses",
+"rules.rowWin":"Win",
+"rules.rowWinV":"2 × B",
+"rules.row21":"Win with exactly 21",
+"rules.row21V":"+ 3 × B Blacknyack bonus",
+"rules.rowFive":"Win with 5 cards",
+"rules.rowFiveV":"+ 5 × B 5-card bonus",
+"rules.rowSpecial":"Win with special cards",
+"rules.rowSpecialV":"+ 2 × B per special card",
+"rules.rowBattle":"Battle Bonyas winner",
+"rules.rowBattleV":"+ 5 × B battle bonus",
+"rules.worked":"Total payout for one player in one round is capped at <b>1200 coins</b>. Worked examples: bet 50, 5-card 21 → 100 + 150 + 250 = <b>500</b>. Bet 50, double down (B = 100), 3-card 21 with 1 special, Battle Bonyas winner → 200 + 300 + 200 + 500 = <b>1200</b>.",
+"rules.li1":"<b>Bets:</b> every round, each player picks <b>5 / 10 / 20 / 40 / 50</b> coins or <b>spectates</b> that round. Spectators are automatically offered entry again next round. If nobody bets, the round is dead and everyone picks again. Everyone starts with <b>1000</b> coins; at 0 you may <b>rebuy 1000 free coins</b> between rounds. Anyone can <b>leave the match at any time</b>.",
+"rules.li2":"<b>Deal:</b> one 55-card deck (52 standard + 3 special), shuffled fresh every round. You get 2 cards: the first <b>face-up</b>, the second <b>face-down</b> (your hole card — only you see it; tap it to peek). The dealer gets 2 the same way. <b>Special cards are always face-up for everyone</b>, even as a second card.",
+"rules.li3":"<b>Card values:</b> numbered = face value, J/Q/K = 10, Ace = 1 or 11 (best without busting), special = the round's shared special total.",
+"rules.li4":"<b>Your turn — Hit, Stay, Double Down:</b> <b>Hit</b> takes one more card (up to 3 hits, 5 cards total). <b>Stay</b> keeps your hand. <b>Double down</b> is only with exactly 2 cards: you match your bet, get exactly one more card, and your turn ends.",
+"rules.li5":"<b>The 5-card rule:</b> 5 cards without busting beats <b>even a dealer 21</b>. 5 cards totalling exactly 21 is the strongest hand there is — it only ties against another 5-card 21.",
+"rules.li6":"<b>The dealer</b> reveals the hole card, then hits while under 17 and stands on 17 or more, including soft 17. If every player busts, the dealer doesn't draw.",
+"rules.li7":"<b>The special die:</b> whenever a special card is dealt to anyone, a 6-sided die (faces 0, 0, 1, 1, 2, 2) is rolled and the result is <b>added to the shared special total</b>. Every special card on the table is worth that total. Example: you roll 1, the dealer rolls 2 — every special is worth 3 this round.",
+"rules.li8":"<b>Battle Bonyas (secret random event):</b> at the start of each round there is an <b>8% chance</b> the round is a Battle Bonyas round — it lasts one round only. The <b>single best winning hand</b> among the players who beat the dealer takes the battle bonus; everyone else who beat the dealer gets their normal payout. If nobody beats the dealer, there is no battle winner.",
+"rules.li9":"🎵 <b>Music:</b> the main song loops from the start of every match; the battle song plays only during a Battle Bonyas round, then it goes back to the main loop. Use the 🔊 button to mute.",
+"rules.li10":"🦵⚾ <b>Break his legs:</b> purely for fun — a baseball bat, Nyau, unlimited uses, any time, local only. His legs grow back after a few minutes, and the bat disappears 2 seconds after the hit. It never touches the game.",
+"rules.li11":"<b>Joining late?</b> If you join a game already in progress you <b>spectate</b> — seats are fixed when the game starts, so you watch this match and join the next one from the lobby. If your connection drops mid-game, your seat is held for <b>10 seconds</b>; after that you're withdrawn and come back as a spectator.",
+"log.round1":"Black Nyack — round 1. Place your bet (5 / 10 / 20 / 40 / 50) or spectate.",
+"log.battle":"BATTLE BONYAS is live this round! The single best winning hand takes a huge bonus.",
+"log.rolled":"{name} rolled {n} — special cards now worth {total}.",
+"log.dealt":"Round {n} — cards dealt to {names}. Dealer shows one card.",
+"log.dead":"Dead round — nobody bet. Place your bets and try again.",
+"log.leftRefund":"{name} left before the deal — bet refunded.",
+"log.leftCards":"{name} left — their cards return to the deck.",
+"log.leftGame":"{name} left the game.",
+"log.noPlayers":"No players left — the round ends.",
+"log.dealerReveals":"Dealer reveals — every player busted, so the dealer does not draw.",
+"log.dealerPlays":"Dealer plays — watch him draw, one card at a time.",
+"log.dealerStands":"Dealer stands on {total}.",
+"log.dealerStandsFive":"Dealer stands on {total} with 5 cards.",
+"log.dealerBusts":"Dealer busts with {total}.",
+"log.wins":"{name} wins {payout} ({total})",
+"log.winsBattle":"{name} wins {payout} ({total}) — BATTLE BONYAS WINNER!",
+"log.pushes":"{name} pushes — stake back {payout} ({total})",
+"log.loses":"{name} loses ({total})",
+"log.roundN":"Round {n} — place your bets (5 / 10 / 20 / 40 / 50) or spectate.",
+"log.rebought":"{name} rebought {n} free chips.",
+"log.bets":"{name} bets {amount}.",
+"log.spectates":"{name} spectates this round.",
+"log.hitsBusts":"{name} hits and busts.",
+"log.hitsFive":"{name} hits and holds 5 cards.",
+"log.hits":"{name} hits.",
+"log.stays":"{name} stays.",
+"log.doublesBusts":"{name} doubles down and busts.",
+"log.doubles":"{name} doubles down.",
+"log.joinedSpectate":"{name} joined to spectate — seats are fixed once a game starts.",
+"err.rebuyPhase":"you can only rebuy between rounds",
+"err.rebuyDecided":"you already decided this round — rebuy next round",
+"err.rebuyHasChips":"you still have chips — no rebuy needed",
+"err.roundNotOver":"the round is not over yet",
+"err.alreadyDecided":"you already decided this round",
+"err.betMustBe":"bet must be one of 5, 10, 20, 40, 50",
+"err.notEnoughBet":"not enough chips for a {amount} bet",
+"err.notYourTurn":"not your turn",
+"err.notInRound":"you are not in this round",
+"err.turnOver":"your turn is over",
+"err.have21":"you already have 21 — stay and take it",
+"err.have5":"you already have 5 cards — the most you can hold",
+"err.deckEmpty":"the deck is empty",
+"err.double2":"double down is only possible with exactly 2 cards",
+"err.doubleChips":"not enough chips to double down",
+"err.bettingPhase":"betting phase — place a bet or spectate",
+"err.yourTurn":"your turn — hit, stay, or double down",
+"err.dealerPlaying":"the dealer is playing",
+"err.roundOver":"round is over — start the next round",
+"err.invalidAction":"not a valid action right now",
+"err.gameOver":"game is over",
+"err.leftGame":"you have left the game",
+"err.unknownPlayer":"unknown player",
+"err.alreadyLeft":"you already left",
+"err.badAction":"bad action",
+"err.roomFull":"room is full."
+},
+pt:{
+"tag":"Blackjack grátis no navegador (21) — 1–5 jogadores contra o dealer. Sem cadastro, sem custo, só fichas grátis.",
+"rulesBtn":"📖 Regras",
+"menuH2":"Vença o dealer. Fique com as fichas dele.",
+"menuIntro":"Aposte <b style=\"color:var(--txt)\">5 / 10 / 20 / 40 / 50</b> fichas de cassino para entrar numa rodada — ou assista até a próxima. <b style=\"color:var(--txt)\">Peça carta</b>, <b style=\"color:var(--txt)\">pare</b> ou <b style=\"color:var(--txt)\">dobre a aposta</b>. Consiga <b style=\"color:var(--txt)\">5 cartas sem estourar</b> e você vence até um 21 do dealer. Fique de olho nas <b style=\"color:var(--txt)\">cartas especiais</b> e na rodada secreta <b style=\"color:var(--txt)\">Battle Bonyas</b> — um vencedor leva até <b style=\"color:var(--txt)\">1200 fichas</b>.",
+"nameLabel":"Seu nome",
+"btnCreate":"➕ Criar lobby<br><small style=\"font-weight:500;font-size:12px\">receba um código e convide até 4 amigos / bots</small>",
+"btnBots":"🤖 Jogar contra bots<br><small style=\"font-weight:500;font-size:12px\">sozinho ou com bots, agora mesmo</small>",
+"btnJoin":"Entrar no lobby →",
+"roomsH2":"🌍 Salas públicas",
+"btnBrowse":"Ver salas públicas",
+"btnRefresh":"↻ Atualizar",
+"roomsMsg":"Toque em “Ver salas públicas” para ver os lobbies abertos — ou entre num lobby privado com o código acima.",
+"howH2":"Como se joga (versão curta)",
+"howLi1":"<b>Aposte 5, 10, 20, 40 ou 50</b> fichas de cassino para entrar numa rodada, ou assista até a próxima. Todos começam com <b>1000</b> fichas; quem fica sem fichas recebe 1000 fichas grátis entre as rodadas.",
+"howLi2":"<b>Peça carta, pare ou dobre a aposta</b> (só com 2 cartas). Consiga <b>5 cartas sem estourar</b> e você vence até um 21 do dealer — 5 cartas somando exatamente 21 é a mão mais forte que existe.",
+"howLi3":"<b>Cartas especiais:</b> 3 no baralho. Toda vez que uma é distribuída, um dado (0, 0, 1, 1, 2, 2) é rolado e o resultado é <b>somado a um total compartilhado</b> — cada carta especial na mesa vale esse total. Veja o dado girar e parar na caixa SPECIAL. As especiais ficam sempre viradas para cima.",
+"howLi4":"<b>Battle Bonyas:</b> uma rodada secreta rara (8%) em que a melhor mão vencedora leva um bônus enorme — até <b>1200 fichas</b> numa aposta de 50 dobrada.",
+"howLi5":"O dealer para no 17 (incluindo 17 suave). As regras completas estão em <b>📖 Regras</b>.",
+"howLi6":"🎵 A música principal toca em loop em todas as partidas; a música de batalha só toca durante uma rodada Battle Bonyas.",
+"footer":"Black Nyack v1.7.3 — um jogo feito por fãs, só por diversão.<br>Nyau and all SEGA characters are © SEGA. All credit to SEGA — the creator of this site holds no rights to Nyau or any SEGA property, and this game is not affiliated with or endorsed by SEGA.<br>Só fichas grátis — sem dinheiro real. Hospedado no Cloudflare Pages. Código no GitHub.",
+"lobbyH2":"Lobby",
+"lobbyMsg":"Compartilhe o código com seus amigos — eles digitam em Entrar no lobby.",
+"btnCopy":"Copiar código / link",
+"btnLeaveLobby":"Sair do lobby",
+"btnStart":"▶ Começar jogo",
+"rotateHint":"🔄 Vire o celular de lado para ver a mesa redonda completa — o dealer fica no meio, igual no PC.",
+"battleBanner":"⚔️ BATTLE BONYAS! ⚔️<br><span style=\"font-size:14px\">A melhor mão vencedora desta rodada leva um bônus enorme — até 1200 fichas!</span>",
+"specialLabel":"CARTA<br>ESPECIAL",
+"dieCap":"ÚLTIMO DADO",
+"btnSpectate":"👀 Assistir esta rodada",
+"btnRebuy":"💰 Receber 1000 fichas grátis",
+"btnHit":"🃏 Pedir carta",
+"btnStay":"✋ Parar",
+"btnDouble":"💰 Dobrar aposta",
+"btnNextRound":"▶ Próxima rodada",
+"btnLeaveMatch":"🚪 Sair da partida",
+"btnMenu2":"← Menu",
+"logLabel":"💬 REGISTRO DO JOGO",
+"log.started":"Jogo iniciado.",
+"bannedH2":"🚫 Banido desta sala",
+"bannedP":"Você saiu e voltou muitas vezes seguidas. Esta sala está fechada para você por enquanto — entre em outro lobby.",
+"btnBannedMenu":"Voltar ao menu",
+"roomOptH2":"Criar lobby",
+"roomOptP1":"Quem pode encontrar esta sala?",
+"roomOptP2":"Máx. de jogadores (você + amigos + bots):",
+"roomOptCreate":"Criar lobby",
+"roomOptCancel":"Cancelar",
+"rulesH2":"📖 Black Nyack — regras",
+"rulesClose":"Entendi",
+"winClose":"Fechar",
+"musicHint":"🎵 Toque para ouvir música",
+"breakLegs":"🦵⚾<br>Quebrar<br>as pernas",
+"musicOn":"🔊 Música ligada",
+"musicOff":"🔇 Música desligada",
+"visPrivate":"🔒 Privada",
+"visPublic":"🌍 Pública",
+"botCancel":"Cancelar",
+"conn.local":"Jogo local contra bots — sem rede. O dealer já está sendo grosso.",
+"seat.coins":"fichas",
+"betList.bet":"APOSTA",
+"playersWord":"jogadores",
+"status.gameOver":"🏆 Fim de jogo — todos saíram.",
+"status.settledWait":"🎩 O dealer terminou — resultados em instantes…",
+"status.settledWin":"🏆 Rodada {n} terminada — {names} venceram o dealer{battle}",
+"status.settledWinBattle":" — ⚔️ {name} leva o bônus do Battle Bonyas!",
+"status.settledDealer":"😤 Rodada {n} terminada — o dealer leva esta. Nyau está insuportável com isso.",
+"status.bettingSpec":"👀 Assistindo — você entra na próxima rodada. Fique nesta tela: você receberá o convite na próxima rodada de apostas, sem sair e voltar.",
+"status.betting":"🎲 Rodada {n} — faça sua aposta (5 / 10 / 20 / 40 / 50) ou assista.",
+"status.turn21":"🃏 Sua vez — 21 na mão! Pare e garanta.",
+"status.turn":"🃏 Sua vez — Peça carta, Pare ou Dobre a aposta (só com 2 cartas).",
+"status.turnOther":"{name} está jogando…",
+"status.dealerTurn":"🎩 O dealer está jogando…",
+"status.waiting":"Aguardando…",
+"status.sub":"Rodada {n} • Total especial {s} • Baralho: {d} cartas{battle}{stackPart}",
+"status.stackPart":" • Suas fichas: {stack}",
+"status.battlePart":" • ⚔️ BATTLE BONYAS",
+"betList.spectating":"assistindo",
+"betList.deciding":"decidindo…",
+"betList.dash":"—",
+"specialSub.yes":"Cada ★ vale {n}",
+"specialSub.no":"Ainda sem valor especial — distribua um ★ para rolar o dado",
+"dealer.label":"DEALER",
+"dealer.total":"DEALER — {total}",
+"dealer.totalBust":"DEALER — {total} ESTOUROU",
+"dealer.shows":"DEALER — mostra {card}",
+"seat.bet":"aposta {n}",
+"seat.doubled":"dobrou",
+"seat.toMove":"jogando",
+"seat.you":"(você)",
+"seat.spectatingTitle":"👀 Assistindo",
+"seat.spectatingText":"Você está assistindo a este jogo. Você entra na próxima rodada — fique nesta tela e receberá o convite na próxima rodada de apostas. Não precisa sair e voltar.",
+"seat.hand":"Mão",
+"seat.yourHand":"Sua mão",
+"seat.bust":"ESTOUROU",
+"betPrompt":"Faça sua aposta — ou assista esta rodada. Suas fichas: {n}.",
+"betWaiting.yes":"Aguardando: {names}",
+"betWaiting.no":"Todos já decidiram…",
+"actionPrompt.21":"Sua vez — 21 na mão! Pare e garanta.",
+"actionPrompt.turn":"Sua vez — {total} na mão. Pedir carta, Parar ou Dobrar a aposta?",
+"doubleTitle.yes":"Dobre sua aposta (mais {n}) para receber exatamente mais uma carta.",
+"doubleTitle.21":"Você já tem 21 — pare e garanta.",
+"doubleTitle.no":"Dobrar a aposta exige exatamente 2 cartas e fichas suficientes para igualar sua aposta.",
+"win.win":"Vitória",
+"win.blacknyack":"Blacknyack",
+"win.fiveCard":"5 Cartas",
+"win.special":"Especial ×{n}",
+"win.battle":"Battle Bonyas",
+"win.stakeBack":"Aposta de volta",
+"win.betLost":"Aposta perdida",
+"win.acquired":"🪙 Recebido",
+"win.capped":"Pagamento limitado ao máximo da mesa, 1200 fichas.",
+"win.battleNote":"⚔️ Vencedor do Battle Bonyas: {name} — só a melhor mão vencedora leva o bônus.",
+"winTitle.win":"🏆 VITÓRIA!",
+"winTitle.push":"🤝 EMPATE",
+"winTitle.lose":"😤 O dealer leva esta",
+"banner.blacknyack":"BLACK NYACK",
+"banner.five":"5 CARTAS",
+"banner.double":"DOBROU A APOSTA",
+"banner.bust":"ESTOUROU",
+"banner.win":"VITÓRIA! +{n}",
+"banner.push":"EMPATE",
+"banner.battle":"⚔️ BATTLE BONYAS!",
+"card.holePeek":"carta fechada — toque para espiar",
+"card.specialTitle":"Carta especial — vale {n} nesta rodada",
+"card.worth":"vale {n}",
+"toast.legsHealed":"🦵 As pernas do Nyau cresceram de volta. Ele está andando de novo — quebre quantas vezes quiser. (Só diversão local.)",
+"toast.crack":"🦵⚾ CRACK! Ele continua distribuindo. (Só diversão local — a mesa não liga.)",
+"toast.needPlayers":"Precisa de pelo menos 1 jogador para começar.",
+"toast.actionError":"Essa jogada não foi permitida.",
+"menu.creating":"Criando lobby {code}…",
+"menu.live":"Lobby {code} está no ar — envie o código aos seus amigos.",
+"menu.createErr":"Não foi possível criar o lobby ({err}). Tente de novo.",
+"menu.joinErr":"Não foi possível entrar no lobby {code} ({err}). Confira o código.",
+"menu.joining":"Entrando no lobby {code}…",
+"menu.joined":"Você entrou no lobby {code}! Aguardando no lobby…",
+"menu.stillTrying":"Ainda tentando alcançar o lobby {code} — o código está certo e o lobby do anfitrião ainda está aberto?",
+"menu.noPeerJoin":"Não foi possível carregar a biblioteca multiplayer (PeerJS). Confira sua conexão e tente de novo.",
+"menu.noPeerCreate":"Não foi possível carregar a biblioteca multiplayer (PeerJS). Confira sua conexão — jogar contra bots ainda funciona.",
+"menu.noCode":"Digite um código de lobby primeiro.",
+"menu.deepLink":"Lobby {code} detectado — toque em Entrar no lobby.",
+"menu.joinRejected":"Não foi possível entrar: {err}",
+"menu.roomFull":"a sala está cheia.",
+"rooms.none":"Nenhuma sala pública agora — crie uma, ou entre num lobby privado com o código.",
+"rooms.dirFail":"Não foi possível carregar a lista — o diretório não respondeu. Entre com um código.",
+"rooms.noPeer":"Não foi possível carregar a lista (biblioteca multiplayer indisponível) — entre com um código.",
+"rooms.asking":"Perguntando ao diretório…",
+"rooms.count":"{n} sala{s} pública{s} aberta{s} — toque numa para entrar. (Sem entrada automática: você sempre escolhe.)",
+"rooms.playingSpectate":"jogando — assistir",
+"rooms.full":"cheia",
+"rooms.joinBtn":"Entrar →",
+"rooms.playing":"jogando",
+"rooms.waiting":"aguardando",
+"lobby.public":"🌍 Sala pública — listada em Ver salas públicas enquanto espera jogadores. ",
+"lobby.private":"🔒 Sala privada — só com código. ",
+"lobby.max":"Máx. de {n} jogadores (bots incluídos). Você pode começar sozinho contra o dealer ou esperar os amigos.",
+"lobby.count":"{n} / {max} jogadores.",
+"lobby.hostWait":"Você é o anfitrião — toque em Começar quando todos estiverem dentro.",
+"lobby.guestWait":"Aguardando o anfitrião começar…",
+"lobby.botsNote":"Você + {n} bot{s} já ocupam {seats} lugares, então o máximo começa aí.",
+"lobby.host":"anfitrião",
+"lobby.connHost":"Lobby <b>{code}</b> — você é o anfitrião. As apostas são por jogador (5 / 10 / 20 / 40 / 50) ou assistir. Os bots rodam no seu aparelho.",
+"lobby.hostDisconnected":"<b>Anfitrião desconectado.</b> O lobby acabou — volte ao menu para um novo jogo.",
+"lobby.connLost":"<b>Conexão perdida — reconectando…</b> Seu lugar fica reservado por 10 segundos.",
+"lobby.couldNotRejoin":"<b>Não foi possível voltar a tempo.</b> Seu lugar foi retirado — volte pelo menu para assistir como espectador.",
+"bots.title":"Quantos bots?",
+"bots.sub":"Você + bots, 1–5 jogadores no total. 0 bots = só você contra o dealer. Totalmente local, funciona offline.",
+"bots.createTitle":"Criar lobby — quantos bots?",
+"bots.createSub":"Os bots ocupam lugares no seu lobby (máx. de 5 jogadores no total: humanos + bots).",
+"bots.solo":"0 (sozinho)",
+"bots.title1":"Só você contra o dealer",
+"bots.titleN":"{n} bot{s}",
+"copy.copied":"Copiado!",
+"copy.prompt":"Copie o link do seu lobby:",
+"copy.btn":"Copiar código / link",
+"copy.invite":"Lobby Black Nyack {code} — entre comigo: {link}",
+"rules.intro":"<b>Objetivo:</b> vencer o dealer no 21 — juntos. Todos na mesa jogam contra o Nyau, não uns contra os outros.",
+"rules.th1":"Resultado",
+"rules.th2":"Pagamento (B = sua aposta em risco)",
+"rules.rowLose":"Perde (estoura, ou o dealer vence)",
+"rules.rowLoseV":"0 — sua aposta é perdida",
+"rules.rowPush":"Empate (tie exato)",
+"rules.rowPushV":"B — sua aposta de volta, sem bônus",
+"rules.rowWin":"Vitória",
+"rules.rowWinV":"2 × B",
+"rules.row21":"Vitória com exatamente 21",
+"rules.row21V":"+ 3 × B de bônus Blacknyack",
+"rules.rowFive":"Vitória com 5 cartas",
+"rules.rowFiveV":"+ 5 × B de bônus de 5 cartas",
+"rules.rowSpecial":"Vitória com cartas especiais",
+"rules.rowSpecialV":"+ 2 × B por carta especial",
+"rules.rowBattle":"Vencedor do Battle Bonyas",
+"rules.rowBattleV":"+ 5 × B de bônus de batalha",
+"rules.worked":"O pagamento total de um jogador numa rodada é limitado a <b>1200 fichas</b>. Exemplos: aposta 50, 21 com 5 cartas → 100 + 150 + 250 = <b>500</b>. Aposta 50, dobrando (B = 100), 21 com 3 cartas e 1 especial, vencedor do Battle Bonyas → 200 + 300 + 200 + 500 = <b>1200</b>.",
+"rules.li1":"<b>Apostas:</b> a cada rodada, cada jogador escolhe <b>5 / 10 / 20 / 40 / 50</b> fichas ou <b>assiste</b> aquela rodada. Quem assiste recebe o convite de novo automaticamente na próxima rodada. Se ninguém apostar, a rodada é vazia e todos escolhem de novo. Todos começam com <b>1000</b> fichas; com 0 você pode <b>receber 1000 fichas grátis</b> entre as rodadas. Qualquer um pode <b>sair da partida a qualquer momento</b>.",
+"rules.li2":"<b>Distribuição:</b> um baralho de 55 cartas (52 normais + 3 especiais), embaralhado de novo a cada rodada. Você recebe 2 cartas: a primeira <b>virada para cima</b>, a segunda <b>virada para baixo</b> (sua carta fechada — só você vê; toque para espiar). O dealer recebe 2 do mesmo jeito. <b>As cartas especiais ficam sempre viradas para cima para todos</b>, mesmo como segunda carta.",
+"rules.li3":"<b>Valores das cartas:</b> numeradas = valor de face, J/Q/K = 10, Ás = 1 ou 11 (o melhor sem estourar), especial = o total especial compartilhado da rodada.",
+"rules.li4":"<b>Sua vez — Pedir carta, Parar, Dobrar a aposta:</b> <b>Pedir carta</b> pega mais uma carta (até 3 vezes, 5 cartas no total). <b>Parar</b> mantém sua mão. <b>Dobrar a aposta</b> é só com exatamente 2 cartas: você iguala sua aposta, recebe exatamente mais uma carta e sua vez termina.",
+"rules.li5":"<b>A regra das 5 cartas:</b> 5 cartas sem estourar vencem <b>até um 21 do dealer</b>. 5 cartas somando exatamente 21 é a mão mais forte que existe — só empata contra outro 21 de 5 cartas.",
+"rules.li6":"<b>O dealer</b> revela a carta fechada, depois compra enquanto estiver abaixo de 17 e para com 17 ou mais, incluindo 17 suave. Se todos os jogadores estourarem, o dealer não compra.",
+"rules.li7":"<b>O dado especial:</b> sempre que uma carta especial é distribuída para qualquer um, um dado de 6 lados (faces 0, 0, 1, 1, 2, 2) é rolado e o resultado é <b>somado ao total especial compartilhado</b>. Cada carta especial na mesa vale esse total. Exemplo: você rola 1, o dealer rola 2 — cada especial vale 3 nesta rodada.",
+"rules.li8":"<b>Battle Bonyas (evento secreto aleatório):</b> no início de cada rodada há <b>8% de chance</b> de a rodada ser Battle Bonyas — dura só uma rodada. A <b>melhor mão vencedora</b> entre os jogadores que venceram o dealer leva o bônus de batalha; todos os outros que venceram o dealer recebem o pagamento normal. Se ninguém vencer o dealer, não há vencedor de batalha.",
+"rules.li9":"🎵 <b>Música:</b> a música principal toca em loop desde o início de cada partida; a música de batalha só toca durante uma rodada Battle Bonyas, e depois volta ao loop principal. Use o botão 🔊 para silenciar.",
+"rules.li10":"🦵⚾ <b>Quebrar as pernas dele:</b> só por diversão — um taco de beisebol, o Nyau, usos ilimitados, a qualquer momento, só local. As pernas crescem de volta depois de alguns minutos, e o taco some 2 segundos depois do golpe. Nunca afeta o jogo.",
+"rules.li11":"<b>Entrou atrasado?</b> Se você entrar num jogo já em andamento, você <b>assiste</b> — os lugares são fixos quando o jogo começa, então você assiste a esta partida e joga a próxima a partir do lobby. Se sua conexão cair no meio do jogo, seu lugar fica reservado por <b>10 segundos</b>; depois disso você é retirado e volta como espectador.",
+"log.round1":"Black Nyack — rodada 1. Faça sua aposta (5 / 10 / 20 / 40 / 50) ou assista.",
+"log.battle":"BATTLE BONYAS nesta rodada! Só a melhor mão vencedora leva um bônus enorme.",
+"log.rolled":"{name} rolou {n} — as cartas especiais agora valem {total}.",
+"log.dealt":"Rodada {n} — cartas distribuídas para {names}. O dealer mostra uma carta.",
+"log.dead":"Rodada vazia — ninguém apostou. Façam suas apostas e tentem de novo.",
+"log.leftRefund":"{name} saiu antes da distribuição — aposta devolvida.",
+"log.leftCards":"{name} saiu — as cartas dele voltam ao baralho.",
+"log.leftGame":"{name} saiu do jogo.",
+"log.noPlayers":"Nenhum jogador restante — a rodada termina.",
+"log.dealerReveals":"O dealer revela — todos os jogadores estouraram, então o dealer não compra.",
+"log.dealerPlays":"O dealer joga — veja ele comprar, uma carta de cada vez.",
+"log.dealerStands":"O dealer para no {total}.",
+"log.dealerStandsFive":"O dealer para no {total} com 5 cartas.",
+"log.dealerBusts":"O dealer estoura com {total}.",
+"log.wins":"{name} vence {payout} ({total})",
+"log.winsBattle":"{name} vence {payout} ({total}) — VENCEDOR DO BATTLE BONYAS!",
+"log.pushes":"{name} empata — aposta de volta {payout} ({total})",
+"log.loses":"{name} perde ({total})",
+"log.roundN":"Rodada {n} — façam suas apostas (5 / 10 / 20 / 40 / 50) ou assistam.",
+"log.rebought":"{name} recebeu {n} fichas grátis.",
+"log.bets":"{name} aposta {amount}.",
+"log.spectates":"{name} assiste esta rodada.",
+"log.hitsBusts":"{name} pede carta e estoura.",
+"log.hitsFive":"{name} pede carta e fica com 5 cartas.",
+"log.hits":"{name} pede carta.",
+"log.stays":"{name} para.",
+"log.doublesBusts":"{name} dobra a aposta e estoura.",
+"log.doubles":"{name} dobra a aposta.",
+"log.joinedSpectate":"{name} entrou para assistir — os lugares são fixos quando o jogo começa.",
+"err.rebuyPhase":"só dá para receber fichas entre as rodadas",
+"err.rebuyDecided":"você já decidiu nesta rodada — receba fichas na próxima",
+"err.rebuyHasChips":"você ainda tem fichas — não precisa receber",
+"err.roundNotOver":"a rodada ainda não terminou",
+"err.alreadyDecided":"você já decidiu nesta rodada",
+"err.betMustBe":"a aposta precisa ser uma de 5, 10, 20, 40, 50",
+"err.notEnoughBet":"fichas insuficientes para uma aposta de {amount}",
+"err.notYourTurn":"não é a sua vez",
+"err.notInRound":"você não está nesta rodada",
+"err.turnOver":"sua vez já terminou",
+"err.have21":"você já tem 21 — pare e garanta",
+"err.have5":"você já tem 5 cartas — o máximo que dá para ter",
+"err.deckEmpty":"o baralho está vazio",
+"err.double2":"dobrar a aposta só é possível com exatamente 2 cartas",
+"err.doubleChips":"fichas insuficientes para dobrar a aposta",
+"err.bettingPhase":"fase de apostas — faça uma aposta ou assista",
+"err.yourTurn":"sua vez — peça carta, pare ou dobre a aposta",
+"err.dealerPlaying":"o dealer está jogando",
+"err.roundOver":"a rodada terminou — comece a próxima",
+"err.invalidAction":"não é uma jogada válida agora",
+"err.gameOver":"o jogo terminou",
+"err.leftGame":"você já saiu do jogo",
+"err.unknownPlayer":"jogador desconhecido",
+"err.alreadyLeft":"você já saiu",
+"err.badAction":"jogada inválida",
+"err.roomFull":"a sala está cheia."
+},
+es:{
+"tag":"Blackjack gratis en el navegador (21) — 1–5 jugadores contra el crupier. Sin registro, sin costo, solo fichas gratis.",
+"rulesBtn":"📖 Reglas",
+"menuH2":"Gánale al crupier. Quédate con sus fichas.",
+"menuIntro":"Apuesta <b style=\"color:var(--txt)\">5 / 10 / 20 / 40 / 50</b> fichas de casino para entrar en una ronda — o mira hasta la siguiente. <b style=\"color:var(--txt)\">Pide carta</b>, <b style=\"color:var(--txt)\">plántate</b> o <b style=\"color:var(--txt)\">dobla la apuesta</b>. Consigue <b style=\"color:var(--txt)\">5 cartas sin pasarte</b> y le ganas hasta a un 21 del crupier. Estate atento a las <b style=\"color:var(--txt)\">cartas especiales</b> y a la ronda secreta <b style=\"color:var(--txt)\">Battle Bonyas</b> — un ganador se lleva hasta <b style=\"color:var(--txt)\">1200 fichas</b>.",
+"nameLabel":"Tu nombre",
+"btnCreate":"➕ Crear sala<br><small style=\"font-weight:500;font-size:12px\">recibe un código e invita hasta 4 amigos / bots</small>",
+"btnBots":"🤖 Jugar contra bots<br><small style=\"font-weight:500;font-size:12px\">solo o con bots, ahora mismo</small>",
+"btnJoin":"Entrar a la sala →",
+"roomsH2":"🌍 Salas públicas",
+"btnBrowse":"Ver salas públicas",
+"btnRefresh":"↻ Actualizar",
+"roomsMsg":"Pulsa “Ver salas públicas” para ver las salas abiertas — o entra a una sala privada con el código de arriba.",
+"howH2":"Cómo se juega (versión corta)",
+"howLi1":"<b>Apuesta 5, 10, 20, 40 o 50</b> fichas de casino para entrar en una ronda, o mira hasta la siguiente. Todos empiezan con <b>1000</b> fichas; quien se queda sin fichas recibe 1000 fichas gratis entre rondas.",
+"howLi2":"<b>Pide carta, plántate o dobla la apuesta</b> (solo con 2 cartas). Consigue <b>5 cartas sin pasarte</b> y le ganas hasta a un 21 del crupier — 5 cartas que sumen exactamente 21 es la mejor mano que existe.",
+"howLi3":"<b>Cartas especiales:</b> 3 en la baraja. Cada vez que se reparte una, se tira un dado (0, 0, 1, 1, 2, 2) y el resultado se <b>suma a un total compartido</b> — cada carta especial en la mesa vale ese total. Mira cómo el dado gira y cae en la caja SPECIAL. Las especiales siempre están boca arriba.",
+"howLi4":"<b>Battle Bonyas:</b> una ronda secreta poco común (8%) en la que la mejor mano ganadora se lleva un gran bonus — hasta <b>1200 fichas</b> con una apuesta de 50 doblada.",
+"howLi5":"El crupier se planta en 17 (incluido el 17 blando). Las reglas completas están en <b>📖 Reglas</b>.",
+"howLi6":"🎵 La canción principal suena en bucle en cada partida; la canción de batalla solo suena durante una ronda Battle Bonyas.",
+"footer":"Black Nyack v1.7.3 — un juego hecho por fans, solo por diversión.<br>Nyau and all SEGA characters are © SEGA. All credit to SEGA — the creator of this site holds no rights to Nyau or any SEGA property, and this game is not affiliated with or endorsed by SEGA.<br>Solo fichas gratis — sin dinero real. Alojado en Cloudflare Pages. Código en GitHub.",
+"lobbyH2":"Sala",
+"lobbyMsg":"Comparte el código con tus amigos — lo escriben en Entrar a la sala.",
+"btnCopy":"Copiar código / enlace",
+"btnLeaveLobby":"Salir de la sala",
+"btnStart":"▶ Empezar partida",
+"rotateHint":"🔄 Gira el teléfono de lado para ver la mesa redonda completa — el crupier está en el medio, igual que en PC.",
+"battleBanner":"⚔️ ¡BATTLE BONYAS! ⚔️<br><span style=\"font-size:14px\">La mejor mano ganadora de esta ronda se lleva un gran bonus — ¡hasta 1200 fichas!</span>",
+"specialLabel":"CARTA<br>ESPECIAL",
+"dieCap":"ÚLTIMA TIRADA",
+"btnSpectate":"👀 Mirar esta ronda",
+"btnRebuy":"💰 Recibir 1000 fichas gratis",
+"btnHit":"🃏 Pedir carta",
+"btnStay":"✋ Plantarse",
+"btnDouble":"💰 Doblar apuesta",
+"btnNextRound":"▶ Siguiente ronda",
+"btnLeaveMatch":"🚪 Salir de la partida",
+"btnMenu2":"← Menú",
+"logLabel":"💬 REGISTRO DEL JUEGO",
+"log.started":"Partida iniciada.",
+"bannedH2":"🚫 Expulsado de esta sala",
+"bannedP":"Saliste y volviste a entrar demasiadas veces seguidas. Esta sala está cerrada para ti por ahora — entra a otra sala.",
+"btnBannedMenu":"Volver al menú",
+"roomOptH2":"Crear sala",
+"roomOptP1":"¿Quién puede encontrar esta sala?",
+"roomOptP2":"Máx. de jugadores (tú + amigos + bots):",
+"roomOptCreate":"Crear sala",
+"roomOptCancel":"Cancelar",
+"rulesH2":"📖 Black Nyack — reglas",
+"rulesClose":"Entendido",
+"winClose":"Cerrar",
+"musicHint":"🎵 Toca para escuchar música",
+"breakLegs":"🦵⚾<br>Romperle<br>las piernas",
+"musicOn":"🔊 Música activada",
+"musicOff":"🔇 Música desactivada",
+"visPrivate":"🔒 Privada",
+"visPublic":"🌍 Pública",
+"botCancel":"Cancelar",
+"conn.local":"Partida local contra bots — sin red. El crupier ya está siendo grosero.",
+"seat.coins":"fichas",
+"betList.bet":"APUESTA",
+"playersWord":"jugadores",
+"status.gameOver":"🏆 Fin de la partida — todos se fueron.",
+"status.settledWait":"🎩 El crupier terminó — resultados en un momento…",
+"status.settledWin":"🏆 Ronda {n} terminada — {names} le ganaron al crupier{battle}",
+"status.settledWinBattle":" — ⚔️ {name} se lleva el bonus del Battle Bonyas!",
+"status.settledDealer":"😤 Ronda {n} terminada — el crupier se la lleva. Nyau está insoportable con eso.",
+"status.bettingSpec":"👀 Mirando — te toca en la próxima ronda. Quédate en esta pantalla: te ofrecerán entrar en la próxima ronda de apuestas, sin salir y volver a entrar.",
+"status.betting":"🎲 Ronda {n} — haz tu apuesta (5 / 10 / 20 / 40 / 50) o mira.",
+"status.turn21":"🃏 Tu turno — ¡21 en mano! Plántate y asegúralo.",
+"status.turn":"🃏 Tu turno — Pide carta, Plántate o Dobla la apuesta (solo con 2 cartas).",
+"status.turnOther":"{name} está jugando…",
+"status.dealerTurn":"🎩 El crupier está jugando…",
+"status.waiting":"Esperando…",
+"status.sub":"Ronda {n} • Total especial {s} • Baraja: {d} cartas{battle}{stackPart}",
+"status.stackPart":" • Tus fichas: {stack}",
+"status.battlePart":" • ⚔️ BATTLE BONYAS",
+"betList.spectating":"mirando",
+"betList.deciding":"decidiendo…",
+"betList.dash":"—",
+"specialSub.yes":"Cada ★ vale {n}",
+"specialSub.no":"Aún sin valor especial — reparte un ★ para tirar el dado",
+"dealer.label":"CRUPIER",
+"dealer.total":"CRUPIER — {total}",
+"dealer.totalBust":"CRUPIER — {total} SE PASÓ",
+"dealer.shows":"CRUPIER — muestra {card}",
+"seat.bet":"apuesta {n}",
+"seat.doubled":"dobló",
+"seat.toMove":"jugando",
+"seat.you":"(tú)",
+"seat.spectatingTitle":"👀 Mirando",
+"seat.spectatingText":"Estás mirando esta partida. Te toca en la próxima ronda — quédate en esta pantalla y te ofrecerán entrar en la próxima ronda de apuestas. No hace falta salir y volver a entrar.",
+"seat.hand":"Mano",
+"seat.yourHand":"Tu mano",
+"seat.bust":"SE PASÓ",
+"betPrompt":"Haz tu apuesta — o mira esta ronda. Tus fichas: {n}.",
+"betWaiting.yes":"Esperando a: {names}",
+"betWaiting.no":"Todos ya decidieron…",
+"actionPrompt.21":"Tu turno — ¡21 en mano! Plántate y asegúralo.",
+"actionPrompt.turn":"Tu turno — {total} en mano. ¿Pedir carta, Plantarse o Doblar la apuesta?",
+"doubleTitle.yes":"Dobla tu apuesta ({n} más) para recibir exactamente una carta más.",
+"doubleTitle.21":"Ya tienes 21 — plántate y asegúralo.",
+"doubleTitle.no":"Doblar la apuesta exige exactamente 2 cartas y fichas suficientes para igualar tu apuesta.",
+"win.win":"Victoria",
+"win.blacknyack":"Blacknyack",
+"win.fiveCard":"5 Cartas",
+"win.special":"Especial ×{n}",
+"win.battle":"Battle Bonyas",
+"win.stakeBack":"Apuesta devuelta",
+"win.betLost":"Apuesta perdida",
+"win.acquired":"🪙 Ganado",
+"win.capped":"Pago limitado al máximo de la mesa, 1200 fichas.",
+"win.battleNote":"⚔️ Ganador del Battle Bonyas: {name} — solo la mejor mano ganadora se lleva el bonus.",
+"winTitle.win":"🏆 ¡VICTORIA!",
+"winTitle.push":"🤝 EMPATE",
+"winTitle.lose":"😤 El crupier se la lleva",
+"banner.blacknyack":"BLACK NYACK",
+"banner.five":"5 CARTAS",
+"banner.double":"DOBLÓ LA APUESTA",
+"banner.bust":"SE PASÓ",
+"banner.win":"¡VICTORIA! +{n}",
+"banner.push":"EMPATE",
+"banner.battle":"⚔️ ¡BATTLE BONYAS!",
+"card.holePeek":"carta tapada — toca para mirar",
+"card.specialTitle":"Carta especial — vale {n} en esta ronda",
+"card.worth":"vale {n}",
+"toast.legsHealed":"🦵 Las piernas de Nyau volvieron a crecer. Ya camina de nuevo — rómpeselas cuantas veces quieras. (Solo diversión local.)",
+"toast.crack":"🦵⚾ ¡CRACK! Sigue repartiendo. (Solo diversión local — a la mesa no le importa.)",
+"toast.needPlayers":"Hace falta al menos 1 jugador para empezar.",
+"toast.actionError":"Esa jugada no estaba permitida.",
+"menu.creating":"Creando sala {code}…",
+"menu.live":"La sala {code} está activa — envía el código a tus amigos.",
+"menu.createErr":"No se pudo crear la sala ({err}). Inténtalo de nuevo.",
+"menu.joinErr":"No se pudo entrar a la sala {code} ({err}). Revisa el código.",
+"menu.joining":"Entrando a la sala {code}…",
+"menu.joined":"¡Entraste a la sala {code}! Esperando en la sala…",
+"menu.stillTrying":"Sigo intentando llegar a la sala {code} — ¿el código es correcto y la sala del anfitrión sigue abierta?",
+"menu.noPeerJoin":"No se pudo cargar la biblioteca multijugador (PeerJS). Revisa tu conexión e inténtalo de nuevo.",
+"menu.noPeerCreate":"No se pudo cargar la biblioteca multijugador (PeerJS). Revisa tu conexión — jugar contra bots sigue funcionando.",
+"menu.noCode":"Escribe un código de sala primero.",
+"menu.deepLink":"Sala {code} detectada — pulsa Entrar a la sala.",
+"menu.joinRejected":"No se pudo entrar: {err}",
+"menu.roomFull":"la sala está llena.",
+"rooms.none":"No hay salas públicas ahora — crea una, o entra a una sala privada con el código.",
+"rooms.dirFail":"No se pudo cargar la lista — el directorio no respondió. Entra con un código.",
+"rooms.noPeer":"No se pudo cargar la lista (biblioteca multijugador no disponible) — entra con un código.",
+"rooms.asking":"Preguntando al directorio…",
+"rooms.count":"{n} sala{s} pública{s} abierta{s} — toca una para entrar. (Sin entrada automática: tú siempre eliges.)",
+"rooms.playingSpectate":"jugando — mirar",
+"rooms.full":"llena",
+"rooms.joinBtn":"Entrar →",
+"rooms.playing":"jugando",
+"rooms.waiting":"esperando",
+"lobby.public":"🌍 Sala pública — aparece en Ver salas públicas mientras espera jugadores. ",
+"lobby.private":"🔒 Sala privada — solo con código. ",
+"lobby.max":"Máx. de {n} jugadores (bots incluidos). Puedes empezar solo contra el crupier o esperar a tus amigos.",
+"lobby.count":"{n} / {max} jugadores.",
+"lobby.hostWait":"Eres el anfitrión — pulsa Empezar cuando estén todos dentro.",
+"lobby.guestWait":"Esperando a que el anfitrión empiece…",
+"lobby.botsNote":"Tú + {n} bot{s} ya ocupan {seats} lugares, así que el máximo empieza ahí.",
+"lobby.host":"anfitrión",
+"lobby.connHost":"Sala <b>{code}</b> — eres el anfitrión. Las apuestas son por jugador (5 / 10 / 20 / 40 / 50) o mirar. Los bots corren en tu dispositivo.",
+"lobby.hostDisconnected":"<b>Anfitrión desconectado.</b> La sala se acabó — vuelve al menú para una nueva partida.",
+"lobby.connLost":"<b>Conexión perdida — reconectando…</b> Tu lugar se guarda 10 segundos.",
+"lobby.couldNotRejoin":"<b>No se pudo volver a tiempo.</b> Tu lugar fue retirado — vuelve desde el menú para mirar como espectador.",
+"bots.title":"¿Cuántos bots?",
+"bots.sub":"Tú + bots, 1–5 jugadores en total. 0 bots = solo tú contra el crupier. Totalmente local, funciona sin conexión.",
+"bots.createTitle":"Crear sala — ¿cuántos bots?",
+"bots.createSub":"Los bots ocupan lugares en tu sala (máx. 5 jugadores en total: humanos + bots).",
+"bots.solo":"0 (solo)",
+"bots.title1":"Solo tú contra el crupier",
+"bots.titleN":"{n} bot{s}",
+"copy.copied":"¡Copiado!",
+"copy.prompt":"Copia el enlace de tu sala:",
+"copy.btn":"Copiar código / enlace",
+"copy.invite":"Sala Black Nyack {code} — únete a mí: {link}",
+"rules.intro":"<b>Objetivo:</b> ganarle al crupier con 21 — juntos. Todos en la mesa juegan contra Nyau, no entre sí.",
+"rules.th1":"Resultado",
+"rules.th2":"Pago (B = tu apuesta en riesgo)",
+"rules.rowLose":"Pierdes (te pasas, o el crupier te gana)",
+"rules.rowLoseV":"0 — tu apuesta se pierde",
+"rules.rowPush":"Empate (tie exacto)",
+"rules.rowPushV":"B — tu apuesta de vuelta, sin bonus",
+"rules.rowWin":"Ganas",
+"rules.rowWinV":"2 × B",
+"rules.row21":"Ganas con exactamente 21",
+"rules.row21V":"+ 3 × B de bonus Blacknyack",
+"rules.rowFive":"Ganas con 5 cartas",
+"rules.rowFiveV":"+ 5 × B de bonus de 5 cartas",
+"rules.rowSpecial":"Ganas con cartas especiales",
+"rules.rowSpecialV":"+ 2 × B por carta especial",
+"rules.rowBattle":"Ganador del Battle Bonyas",
+"rules.rowBattleV":"+ 5 × B de bonus de batalla",
+"rules.worked":"El pago total de un jugador en una ronda está limitado a <b>1200 fichas</b>. Ejemplos: apuesta 50, 21 con 5 cartas → 100 + 150 + 250 = <b>500</b>. Apuesta 50, doblando (B = 100), 21 con 3 cartas y 1 especial, ganador del Battle Bonyas → 200 + 300 + 200 + 500 = <b>1200</b>.",
+"rules.li1":"<b>Apuestas:</b> cada ronda, cada jugador elige <b>5 / 10 / 20 / 40 / 50</b> fichas o <b>mira</b> esa ronda. A quien mira se le ofrece entrar de nuevo automáticamente en la próxima ronda. Si nadie apuesta, la ronda queda vacía y todos eligen de nuevo. Todos empiezan con <b>1000</b> fichas; con 0 puedes <b>recibir 1000 fichas gratis</b> entre rondas. Cualquiera puede <b>salir de la partida en cualquier momento</b>.",
+"rules.li2":"<b>Reparto:</b> una baraja de 55 cartas (52 normales + 3 especiales), barajada de nuevo cada ronda. Recibes 2 cartas: la primera <b>boca arriba</b>, la segunda <b>boca abajo</b> (tu carta tapada — solo tú la ves; tócala para mirar). El crupier recibe 2 igual. <b>Las cartas especiales siempre están boca arriba para todos</b>, incluso como segunda carta.",
+"rules.li3":"<b>Valor de las cartas:</b> numeradas = valor nominal, J/Q/K = 10, As = 1 u 11 (lo mejor sin pasarse), especial = el total especial compartido de la ronda.",
+"rules.li4":"<b>Tu turno — Pedir carta, Plantarse, Doblar la apuesta:</b> <b>Pedir carta</b> toma una carta más (hasta 3 veces, 5 cartas en total). <b>Plantarse</b> mantiene tu mano. <b>Doblar la apuesta</b> es solo con exactamente 2 cartas: igualas tu apuesta, recibes exactamente una carta más y tu turno termina.",
+"rules.li5":"<b>La regla de las 5 cartas:</b> 5 cartas sin pasarte le ganan <b>hasta a un 21 del crupier</b>. 5 cartas que sumen exactamente 21 es la mejor mano que existe — solo empata contra otro 21 de 5 cartas.",
+"rules.li6":"<b>El crupier</b> revela la carta tapada, luego pide carta mientras tenga menos de 17 y se planta con 17 o más, incluido el 17 blando. Si todos los jugadores se pasan, el crupier no pide carta.",
+"rules.li7":"<b>El dado especial:</b> cada vez que se reparte una carta especial a cualquiera, se tira un dado de 6 caras (caras 0, 0, 1, 1, 2, 2) y el resultado se <b>suma al total especial compartido</b>. Cada carta especial en la mesa vale ese total. Ejemplo: tú tiras 1, el crupier tira 2 — cada especial vale 3 en esta ronda.",
+"rules.li8":"<b>Battle Bonyas (evento secreto aleatorio):</b> al inicio de cada ronda hay un <b>8% de probabilidad</b> de que la ronda sea Battle Bonyas — dura solo una ronda. La <b>mejor mano ganadora</b> entre los jugadores que le ganaron al crupier se lleva el bonus de batalla; todos los demás que le ganaron al crupier reciben su pago normal. Si nadie le gana al crupier, no hay ganador de batalla.",
+"rules.li9":"🎵 <b>Música:</b> la canción principal suena en bucle desde el inicio de cada partida; la canción de batalla solo suena durante una ronda Battle Bonyas, y luego vuelve al bucle principal. Usa el botón 🔊 para silenciar.",
+"rules.li10":"🦵⚾ <b>Romperle las piernas:</b> solo por diversión — un bate de béisbol, Nyau, usos ilimitados, en cualquier momento, solo local. Sus piernas vuelven a crecer al cabo de unos minutos, y el bate desaparece 2 segundos después del golpe. Nunca afecta al juego.",
+"rules.li11":"<b>¿Llegaste tarde?</b> Si entras a una partida ya en curso, <b>miras</b> — los lugares son fijos cuando empieza la partida, así que miras esta partida y juegas la siguiente desde la sala. Si tu conexión se cae a mitad de partida, tu lugar se guarda <b>10 segundos</b>; después te retiran y vuelves como espectador.",
+"log.round1":"Black Nyack — ronda 1. Haz tu apuesta (5 / 10 / 20 / 40 / 50) o mira.",
+"log.battle":"¡BATTLE BONYAS en esta ronda! Solo la mejor mano ganadora se lleva un gran bonus.",
+"log.rolled":"{name} tiró {n} — las cartas especiales ahora valen {total}.",
+"log.dealt":"Ronda {n} — cartas repartidas a {names}. El crupier muestra una carta.",
+"log.dead":"Ronda vacía — nadie apostó. Hagan sus apuestas e inténtenlo de nuevo.",
+"log.leftRefund":"{name} salió antes del reparto — apuesta devuelta.",
+"log.leftCards":"{name} salió — sus cartas vuelven a la baraja.",
+"log.leftGame":"{name} salió de la partida.",
+"log.noPlayers":"No quedan jugadores — la ronda termina.",
+"log.dealerReveals":"El crupier revela — todos los jugadores se pasaron, así que el crupier no pide carta.",
+"log.dealerPlays":"El crupier juega — mira cómo pide carta, una a la vez.",
+"log.dealerStands":"El crupier se planta en {total}.",
+"log.dealerStandsFive":"El crupier se planta en {total} con 5 cartas.",
+"log.dealerBusts":"El crupier se pasa con {total}.",
+"log.wins":"{name} gana {payout} ({total})",
+"log.winsBattle":"{name} gana {payout} ({total}) — ¡GANADOR DEL BATTLE BONYAS!",
+"log.pushes":"{name} empata — apuesta devuelta {payout} ({total})",
+"log.loses":"{name} pierde ({total})",
+"log.roundN":"Ronda {n} — hagan sus apuestas (5 / 10 / 20 / 40 / 50) o miren.",
+"log.rebought":"{name} recibió {n} fichas gratis.",
+"log.bets":"{name} apuesta {amount}.",
+"log.spectates":"{name} mira esta ronda.",
+"log.hitsBusts":"{name} pide carta y se pasa.",
+"log.hitsFive":"{name} pide carta y se queda con 5 cartas.",
+"log.hits":"{name} pide carta.",
+"log.stays":"{name} se planta.",
+"log.doublesBusts":"{name} dobla la apuesta y se pasa.",
+"log.doubles":"{name} dobla la apuesta.",
+"log.joinedSpectate":"{name} entró a mirar — los lugares son fijos cuando empieza la partida.",
+"err.rebuyPhase":"solo puedes recibir fichas entre rondas",
+"err.rebuyDecided":"ya decidiste en esta ronda — recibe fichas en la próxima",
+"err.rebuyHasChips":"aún tienes fichas — no necesitas recibir",
+"err.roundNotOver":"la ronda aún no terminó",
+"err.alreadyDecided":"ya decidiste en esta ronda",
+"err.betMustBe":"la apuesta debe ser una de 5, 10, 20, 40, 50",
+"err.notEnoughBet":"no tienes fichas suficientes para una apuesta de {amount}",
+"err.notYourTurn":"no es tu turno",
+"err.notInRound":"no estás en esta ronda",
+"err.turnOver":"tu turno ya terminó",
+"err.have21":"ya tienes 21 — plántate y asegúralo",
+"err.have5":"ya tienes 5 cartas — lo máximo que puedes tener",
+"err.deckEmpty":"la baraja está vacía",
+"err.double2":"doblar la apuesta solo es posible con exactamente 2 cartas",
+"err.doubleChips":"no tienes fichas suficientes para doblar la apuesta",
+"err.bettingPhase":"fase de apuestas — haz una apuesta o mira",
+"err.yourTurn":"tu turno — pide carta, plántate o dobla la apuesta",
+"err.dealerPlaying":"el crupier está jugando",
+"err.roundOver":"la ronda terminó — empieza la siguiente",
+"err.invalidAction":"no es una jugada válida ahora",
+"err.gameOver":"la partida terminó",
+"err.leftGame":"ya saliste de la partida",
+"err.unknownPlayer":"jugador desconocido",
+"err.alreadyLeft":"ya saliste",
+"err.badAction":"jugada no válida",
+"err.roomFull":"la sala está llena."
+},
+zh:{
+"tag":"免费浏览器二十一点（21点）——1至5名玩家对阵庄家。无需注册，无需付费，只有免费筹码。",
+"rulesBtn":"📖 规则",
+"menuH2":"击败庄家，赢走他的筹码。",
+"menuIntro":"下注 <b style=\"color:var(--txt)\">5 / 10 / 20 / 40 / 50</b> 枚赌场筹码参加一轮——或观战到下一轮。<b style=\"color:var(--txt)\">要牌</b>、<b style=\"color:var(--txt)\">停牌</b>或<b style=\"color:var(--txt)\">双倍下注</b>。拿到 <b style=\"color:var(--txt)\">5张牌且不爆牌</b>，即使庄家21点你也赢。留意 <b style=\"color:var(--txt)\">特殊牌</b>和秘密的 <b style=\"color:var(--txt)\">Battle Bonyas</b> 回合——一位赢家最多可赢 <b style=\"color:var(--txt)\">1200筹码</b>。",
+"nameLabel":"你的名字",
+"btnCreate":"➕ 创建房间<br><small style=\"font-weight:500;font-size:12px\">获取房间代码，邀请最多4位好友/机器人</small>",
+"btnBots":"🤖 与机器人对战<br><small style=\"font-weight:500;font-size:12px\">单人或带机器人，马上开始</small>",
+"btnJoin":"加入房间 →",
+"roomsH2":"🌍 公开房间",
+"btnBrowse":"浏览公开房间",
+"btnRefresh":"↻ 刷新",
+"roomsMsg":"点击“浏览公开房间”查看开放的房间——或用上方的代码加入私人房间。",
+"howH2":"玩法简介",
+"howLi1":"每轮下注 <b>5、10、20、40或50</b> 枚赌场筹码，或观战到下一轮。每人开始时有 <b>1000</b> 筹码；筹码用完的玩家可在轮间免费领取1000筹码。",
+"howLi2":"<b>要牌、停牌或双倍下注</b>（仅限2张牌时）。拿到 <b>5张牌且不爆牌</b>，即使庄家21点你也赢——5张牌正好21点是最强的牌型。",
+"howLi3":"<b>特殊牌：</b>牌堆中有3张。每次发出一张特殊牌，就会掷一次骰子（0、0、1、1、2、2），结果<b>累加到共享总值</b>——桌上每张特殊牌都值这个总值。看骰子在SPECIAL框里滚动落定。特殊牌永远明牌。",
+"howLi4":"<b>Battle Bonyas：</b>罕见的秘密回合（8%），其中最强的获胜手牌可获得巨额奖励——50筹码双倍下注最多可赢 <b>1200筹码</b>。",
+"howLi5":"庄家17点停牌（包括软17点）。完整规则见 <b>📖 规则</b>。",
+"howLi6":"🎵 主音乐每场比赛循环播放；战斗音乐仅在Battle Bonyas回合播放。",
+"footer":"Black Nyack v1.7.3 —— 粉丝自制游戏，仅供娱乐。<br>Nyau and all SEGA characters are © SEGA. All credit to SEGA — the creator of this site holds no rights to Nyau or any SEGA property, and this game is not affiliated with or endorsed by SEGA.<br>仅免费游戏筹码——不涉及真钱。托管于Cloudflare Pages。代码见GitHub。",
+"lobbyH2":"房间",
+"lobbyMsg":"把代码分享给朋友——他们在“加入房间”里输入代码。",
+"btnCopy":"复制代码/链接",
+"btnLeaveLobby":"离开房间",
+"btnStart":"▶ 开始游戏",
+"rotateHint":"🔄 把手机横过来查看完整圆桌——庄家在中间，和电脑上一样。",
+"battleBanner":"⚔️ BATTLE BONYAS！⚔️<br><span style=\"font-size:14px\">本轮最强的获胜手牌可获得巨额奖励——最多1200筹码！</span>",
+"specialLabel":"特殊牌",
+"dieCap":"上次掷骰",
+"btnSpectate":"👀 观战本轮",
+"btnRebuy":"💰 免费领取1000筹码",
+"btnHit":"🃏 要牌",
+"btnStay":"✋ 停牌",
+"btnDouble":"💰 双倍下注",
+"btnNextRound":"▶ 下一轮",
+"btnLeaveMatch":"🚪 离开比赛",
+"btnMenu2":"← 菜单",
+"logLabel":"💬 游戏记录",
+"log.started":"游戏开始。",
+"bannedH2":"🚫 你已被禁止进入此房间",
+"bannedP":"你连续多次离开又重新加入。此房间暂时对你关闭——请加入其他房间。",
+"btnBannedMenu":"返回菜单",
+"roomOptH2":"创建房间",
+"roomOptP1":"谁能找到这个房间？",
+"roomOptP2":"最多玩家数（你+好友+机器人）：",
+"roomOptCreate":"创建房间",
+"roomOptCancel":"取消",
+"rulesH2":"📖 Black Nyack —— 规则",
+"rulesClose":"知道了",
+"winClose":"关闭",
+"musicHint":"🎵 点击播放音乐",
+"breakLegs":"🦵⚾<br>打断<br>他的腿",
+"musicOn":"🔊 音乐开",
+"musicOff":"🔇 音乐关",
+"visPrivate":"🔒 私人",
+"visPublic":"🌍 公开",
+"botCancel":"取消",
+"conn.local":"本地与机器人对战——无需联网。庄家已经很讨人厌了。",
+"seat.coins":"筹码",
+"betList.bet":"下注",
+"playersWord":"名玩家",
+"status.gameOver":"🏆 游戏结束——大家都离开了。",
+"status.settledWait":"🎩 庄家已完成——结果马上公布…",
+"status.settledWin":"🏆 第{n}轮结束——{names}击败了庄家{battle}",
+"status.settledWinBattle":"——⚔️ {name}获得Battle Bonyas奖励！",
+"status.settledDealer":"😤 第{n}轮结束——庄家赢了。Nyau得意忘形。",
+"status.bettingSpec":"👀 观战中——下一轮轮到你。请留在此页面：下一轮下注时会自动邀请你加入，无需离开重进。",
+"status.betting":"🎲 第{n}轮——请下注（5 / 10 / 20 / 40 / 50）或观战。",
+"status.turn21":"🃏 轮到你了——手里21点！停牌锁定胜局。",
+"status.turn":"🃏 轮到你了——要牌、停牌或双倍下注（仅限2张牌时）。",
+"status.turnOther":"{name}正在出牌…",
+"status.dealerTurn":"🎩 庄家正在出牌…",
+"status.waiting":"等待中…",
+"status.sub":"第{n}轮 • 特殊总值{s} • 牌堆{d}张牌{battle}{stackPart}",
+"status.stackPart":" • 你的筹码：{stack}",
+"status.battlePart":" • ⚔️ BATTLE BONYAS",
+"betList.spectating":"观战中",
+"betList.deciding":"决定中…",
+"betList.dash":"—",
+"specialSub.yes":"每张★值{n}",
+"specialSub.no":"暂无特殊牌分——发出一张★即可掷骰",
+"dealer.label":"庄家",
+"dealer.total":"庄家 — {total}",
+"dealer.totalBust":"庄家 — {total}爆牌",
+"dealer.shows":"庄家 — 明牌{card}",
+"seat.bet":"下注{n}",
+"seat.doubled":"已双倍",
+"seat.toMove":"出牌中",
+"seat.you":"（你）",
+"seat.spectatingTitle":"👀 观战中",
+"seat.spectatingText":"你正在观战本场比赛。下一轮轮到你——请留在此页面，下一轮下注时会自动邀请你加入。无需离开重进。",
+"seat.hand":"手牌",
+"seat.yourHand":"你的手牌",
+"seat.bust":"爆牌",
+"betPrompt":"请下注——或观战本轮。你的筹码：{n}。",
+"betWaiting.yes":"等待：{names}",
+"betWaiting.no":"大家都已决定…",
+"actionPrompt.21":"轮到你了——手里21点！停牌锁定胜局。",
+"actionPrompt.turn":"轮到你了——手里{total}点。要牌、停牌还是双倍下注？",
+"doubleTitle.yes":"双倍下注（再加{n}）以恰好再拿一张牌。",
+"doubleTitle.21":"你已经21点了——停牌锁定胜局。",
+"doubleTitle.no":"双倍下注需要恰好2张牌，且筹码足够匹配你的下注。",
+"win.win":"获胜",
+"win.blacknyack":"Blacknyack",
+"win.fiveCard":"5张牌",
+"win.special":"特殊牌×{n}",
+"win.battle":"Battle Bonyas",
+"win.stakeBack":"退回本金",
+"win.betLost":"下注输掉",
+"win.acquired":"🪙 获得",
+"win.capped":"赔付已达牌桌上限1200筹码。",
+"win.battleNote":"⚔️ Battle Bonyas赢家：{name}——只有最强的获胜手牌获得奖励。",
+"winTitle.win":"🏆 赢了！",
+"winTitle.push":"🤝 平局",
+"winTitle.lose":"😤 庄家赢了",
+"banner.blacknyack":"BLACK NYACK",
+"banner.five":"5张牌",
+"banner.double":"双倍下注",
+"banner.bust":"爆牌",
+"banner.win":"赢了！+{n}",
+"banner.push":"平局",
+"banner.battle":"⚔️ BATTLE BONYAS！",
+"card.holePeek":"底牌——点击查看",
+"card.specialTitle":"特殊牌——本轮值{n}",
+"card.worth":"值{n}",
+"toast.legsHealed":"🦵 Nyau的腿又长回来了。他又能走路了——想打断多少次都行。（仅本地娱乐。）",
+"toast.crack":"🦵⚾ 咔嚓！他还在发牌。（仅本地娱乐——牌桌不在乎。）",
+"toast.needPlayers":"开始游戏至少需要1名玩家。",
+"toast.actionError":"该操作不被允许。",
+"menu.creating":"正在创建房间{code}…",
+"menu.live":"房间{code}已创建——把代码发给朋友吧。",
+"menu.createErr":"无法创建房间（{err}）。请重试。",
+"menu.joinErr":"无法加入房间{code}（{err}）。请检查代码。",
+"menu.joining":"正在加入房间{code}…",
+"menu.joined":"已加入房间{code}！正在房间等待…",
+"menu.stillTrying":"仍在尝试连接房间{code}——代码正确吗？房主的房间还开着吗？",
+"menu.noPeerJoin":"无法加载多人游戏库（PeerJS）。请检查网络后重试。",
+"menu.noPeerCreate":"无法加载多人游戏库（PeerJS）。请检查网络——与机器人对战仍可用。",
+"menu.noCode":"请先输入房间代码。",
+"menu.deepLink":"检测到房间{code}——点击“加入房间”进入。",
+"menu.joinRejected":"无法加入：{err}",
+"menu.roomFull":"房间已满。",
+"rooms.none":"目前没有公开房间——创建一个，或用代码加入私人房间。",
+"rooms.dirFail":"无法加载列表——目录没有回应。请用代码加入。",
+"rooms.noPeer":"无法加载列表（多人游戏库不可用）——请用代码加入。",
+"rooms.asking":"正在询问目录…",
+"rooms.count":"有{n}个公开房间——点击一个加入。（不会自动加入：始终由你选择。）",
+"rooms.playingSpectate":"游戏中——观战",
+"rooms.full":"已满",
+"rooms.joinBtn":"加入 →",
+"rooms.playing":"游戏中",
+"rooms.waiting":"等待中",
+"lobby.public":"🌍 公开房间——等待玩家期间会列在“浏览公开房间”中。",
+"lobby.private":"🔒 私人房间——仅凭代码加入。",
+"lobby.max":"最多{n}名玩家（含机器人）。你可以独自对阵庄家，或等待朋友加入。",
+"lobby.count":"{n} / {max}名玩家。",
+"lobby.hostWait":"你是房主——大家到齐后点击开始。",
+"lobby.guestWait":"等待房主开始…",
+"lobby.botsNote":"你+{n}个机器人已占{seats}个座位，所以上限从这里开始。",
+"lobby.host":"房主",
+"lobby.connHost":"房间<b>{code}</b>——你是房主。每人各自下注（5 / 10 / 20 / 40 / 50）或观战。机器人在你的设备上运行。",
+"lobby.hostDisconnected":"<b>房主已断开连接。</b>房间已关闭——请返回菜单开始新游戏。",
+"lobby.connLost":"<b>连接丢失——正在重连…</b>你的座位将保留10秒。",
+"lobby.couldNotRejoin":"<b>未能及时重连。</b>你的座位已被收回——请从菜单重新加入观战。",
+"bots.title":"多少个机器人？",
+"bots.sub":"你+机器人，共1–5名玩家。0个机器人=只有你对阵庄家。完全本地，可离线游玩。",
+"bots.createTitle":"创建房间——多少个机器人？",
+"bots.createSub":"机器人占据你房间的座位（最多5名玩家：人类+机器人）。",
+"bots.solo":"0（单人）",
+"bots.title1":"只有你对阵庄家",
+"bots.titleN":"{n}个机器人",
+"copy.copied":"已复制！",
+"copy.prompt":"复制你的房间链接：",
+"copy.btn":"复制代码/链接",
+"copy.invite":"Black Nyack房间{code}——加入我：{link}",
+"rules.intro":"<b>目标：</b>一起在21点中击败庄家。桌上所有人都是对阵Nyau，而不是互相竞争。",
+"rules.th1":"结果",
+"rules.th2":"赔付（B=你的风险下注）",
+"rules.rowLose":"输（爆牌，或庄家获胜）",
+"rules.rowLoseV":"0——下注输掉",
+"rules.rowPush":"平局（完全相同）",
+"rules.rowPushV":"B——退回本金，无奖励",
+"rules.rowWin":"赢",
+"rules.rowWinV":"2 × B",
+"rules.row21":"以正好21点获胜",
+"rules.row21V":"+ 3 × B Blacknyack奖励",
+"rules.rowFive":"以5张牌获胜",
+"rules.rowFiveV":"+ 5 × B 五张牌奖励",
+"rules.rowSpecial":"以特殊牌获胜",
+"rules.rowSpecialV":"每张特殊牌+ 2 × B",
+"rules.rowBattle":"Battle Bonyas赢家",
+"rules.rowBattleV":"+ 5 × B 战斗奖励",
+"rules.worked":"每位玩家每轮的总赔付上限为<b>1200筹码</b>。示例：下注50，5张牌21点→100+150+250=<b>500</b>。下注50，双倍下注（B=100），3张牌21点带1张特殊牌，Battle Bonyas赢家→200+300+200+500=<b>1200</b>。",
+"rules.li1":"<b>下注：</b>每轮每位玩家选择<b>5 / 10 / 20 / 40 / 50</b>筹码或<b>观战</b>该轮。观战者下一轮会自动再次获得加入邀请。如果没人下注，该轮作废，大家重新选择。每人开始时有<b>1000</b>筹码；筹码为0时可在轮间<b>免费领取1000筹码</b>。任何人可<b>随时离开比赛</b>。",
+"rules.li2":"<b>发牌：</b>一副55张牌（52张普通牌+3张特殊牌），每轮重新洗牌。你得到2张牌：第一张<b>明牌</b>，第二张<b>暗牌</b>（你的底牌——只有你能看到；点击查看）。庄家也一样。<b>特殊牌对所有人永远明牌</b>，即使作为第二张牌。",
+"rules.li3":"<b>牌值：</b>数字牌=面值，J/Q/K=10，A=1或11（取不爆牌的最佳值），特殊牌=本轮共享特殊总值。",
+"rules.li4":"<b>你的回合——要牌、停牌、双倍下注：</b><b>要牌</b>再拿一张牌（最多3次，共5张牌）。<b>停牌</b>保留手牌。<b>双倍下注</b>仅限恰好2张牌时：你追加与原下注相等的筹码，恰好再拿一张牌，回合结束。",
+"rules.li5":"<b>五张牌规则：</b>5张牌不爆牌可击败<b>庄家的21点</b>。5张牌正好21点是最强的牌型——只会与另一手5张牌21点打平。",
+"rules.li6":"<b>庄家</b>翻开底牌，然后在17点以下要牌，17点或以上停牌，包括软17点。如果所有玩家都爆牌，庄家不拿牌。",
+"rules.li7":"<b>特殊骰子：</b>每当任何人得到一张特殊牌，就会掷一次6面骰子（面0、0、1、1、2、2），结果<b>累加到共享特殊总值</b>。桌上每张特殊牌都值这个总值。例如：你掷出1，庄家掷出2——本轮每张特殊牌值3。",
+"rules.li8":"<b>Battle Bonyas（秘密随机事件）：</b>每轮开始时有<b>8%的几率</b>成为Battle Bonyas回合——仅持续一轮。在击败庄家的玩家中，<b>最强的获胜手牌</b>获得战斗奖励；其他击败庄家的玩家只获得正常赔付。如果没人击败庄家，则没有战斗赢家。",
+"rules.li9":"🎵 <b>音乐：</b>主音乐从每场比赛开始循环播放；战斗音乐仅在Battle Bonyas回合播放，之后回到主循环。用🔊按钮静音。",
+"rules.li10":"🦵⚾ <b>打断他的腿：</b>纯属娱乐——一根棒球棒、Nyau、无限次、随时、仅本地。几分钟后他的腿会长回来，球棒在击中2秒后消失。绝不影响游戏。",
+"rules.li11":"<b>加入晚了？</b>如果你在游戏进行中加入，你将<b>观战</b>——游戏开始时座位已固定，所以你观看本场比赛，下一场从房间加入。如果游戏中途断线，你的座位会保留<b>10秒</b>；之后你会被移出，并以观众身份回来。",
+"log.round1":"Black Nyack——第1轮。请下注（5 / 10 / 20 / 40 / 50）或观战。",
+"log.battle":"本轮是BATTLE BONYAS！最强的获胜手牌可获得巨额奖励。",
+"log.rolled":"{name}掷出{n}——特殊牌现在值{total}。",
+"log.dealt":"第{n}轮——已向{names}发牌。庄家亮出一张牌。",
+"log.dead":"空轮——没人下注。请重新下注。",
+"log.leftRefund":"{name}在发牌前离开——下注已退回。",
+"log.leftCards":"{name}离开——他的牌回到牌堆。",
+"log.leftGame":"{name}离开了游戏。",
+"log.noPlayers":"没有玩家了——本轮结束。",
+"log.dealerReveals":"庄家亮牌——所有玩家都爆牌了，所以庄家不拿牌。",
+"log.dealerPlays":"庄家出牌——看他一张一张地拿牌。",
+"log.dealerStands":"庄家在{total}点停牌。",
+"log.dealerStandsFive":"庄家在{total}点停牌（5张牌）。",
+"log.dealerBusts":"庄家爆牌，{total}点。",
+"log.wins":"{name}赢得{payout}（{total}）",
+"log.winsBattle":"{name}赢得{payout}（{total}）——BATTLE BONYAS赢家！",
+"log.pushes":"{name}平局——退回本金{payout}（{total}）",
+"log.loses":"{name}输了（{total}）",
+"log.roundN":"第{n}轮——请下注（5 / 10 / 20 / 40 / 50）或观战。",
+"log.rebought":"{name}领取了{n}免费筹码。",
+"log.bets":"{name}下注{amount}。",
+"log.spectates":"{name}观战本轮。",
+"log.hitsBusts":"{name}要牌后爆牌。",
+"log.hitsFive":"{name}要牌后拿到5张牌。",
+"log.hits":"{name}要牌。",
+"log.stays":"{name}停牌。",
+"log.doublesBusts":"{name}双倍下注后爆牌。",
+"log.doubles":"{name}双倍下注。",
+"log.joinedSpectate":"{name}加入观战——游戏开始时座位已固定。",
+"err.rebuyPhase":"只能在轮间领取筹码",
+"err.rebuyDecided":"本轮你已决定——下一轮再领取",
+"err.rebuyHasChips":"你还有筹码——无需领取",
+"err.roundNotOver":"本轮尚未结束",
+"err.alreadyDecided":"本轮你已决定",
+"err.betMustBe":"下注必须是5、10、20、40、50之一",
+"err.notEnoughBet":"筹码不足，无法下注{amount}",
+"err.notYourTurn":"还没轮到你",
+"err.notInRound":"你不在本轮中",
+"err.turnOver":"你的回合已结束",
+"err.have21":"你已经21点了——停牌锁定胜局",
+"err.have5":"你已有5张牌——最多只能拿5张",
+"err.deckEmpty":"牌堆已空",
+"err.double2":"双倍下注仅限恰好2张牌时",
+"err.doubleChips":"筹码不足，无法双倍下注",
+"err.bettingPhase":"下注阶段——请下注或观战",
+"err.yourTurn":"轮到你了——要牌、停牌或双倍下注",
+"err.dealerPlaying":"庄家正在出牌",
+"err.roundOver":"本轮已结束——开始下一轮",
+"err.invalidAction":"现在不是有效的操作",
+"err.gameOver":"游戏已结束",
+"err.leftGame":"你已离开游戏",
+"err.unknownPlayer":"未知玩家",
+"err.alreadyLeft":"你已离开",
+"err.badAction":"无效操作",
+"err.roomFull":"房间已满。"
+},
+ja:{
+"tag":"無料ブラウザブラックジャック（21）——ディーラー対1〜5人。登録不要、無料、フリーチップのみ。",
+"rulesBtn":"📖 ルール",
+"menuH2":"ディーラーを倒して、チップを奪え。",
+"menuIntro":"ラウンドに参加するには <b style=\"color:var(--txt)\">5 / 10 / 20 / 40 / 50</b> カジノチップを賭けてください——次のラウンドまで観戦もできます。<b style=\"color:var(--txt)\">ヒット</b>、<b style=\"color:var(--txt)\">ステイ</b>、<b style=\"color:var(--txt)\">ダブルダウン</b>。<b style=\"color:var(--txt)\">バストせずに5枚</b>引ければ、ディーラーの21にも勝てます。<b style=\"color:var(--txt)\">スペシャルカード</b>と秘密の <b style=\"color:var(--txt)\">Battle Bonyas</b> ラウンドに注目——勝者1人が最大 <b style=\"color:var(--txt)\">1200チップ</b>を獲得します。",
+"nameLabel":"あなたの名前",
+"btnCreate":"➕ ロビーを作る<br><small style=\"font-weight:500;font-size:12px\">コードを取得して、友達やボットを最大4人招待</small>",
+"btnBots":"🤖 ボットと遊ぶ<br><small style=\"font-weight:500;font-size:12px\">ソロでもボットとでも、今すぐ</small>",
+"btnJoin":"ロビーに参加 →",
+"roomsH2":"🌍 公開ルーム",
+"btnBrowse":"公開ルームを見る",
+"btnRefresh":"↻ 更新",
+"roomsMsg":"「公開ルームを見る」を押すと、開いているロビーが表示されます——上のコードでプライベートロビーにも参加できます。",
+"howH2":"遊び方（短いバージョン）",
+"howLi1":"ラウンドに参加するには <b>5、10、20、40、50</b> カジノチップのいずれかを賭けるか、次のラウンドまで観戦します。全員 <b>1000</b> チップからスタート。チップがなくなった人は、ラウンドの合間に1000チップを無料で受け取れます。",
+"howLi2":"<b>ヒット、ステイ、ダブルダウン</b>（2枚のときのみ）。<b>バストせずに5枚</b>引ければ、ディーラーの21にも勝てます——5枚でちょうど21が最強のハンドです。",
+"howLi3":"<b>スペシャルカード：</b>デッキに3枚。配られるたびにサイコロ（0、0、1、1、2、2）を振り、出た目が<b>共有の合計に加算</b>されます——テーブル上のすべてのスペシャルカードがその合計の価値になります。SPECIALボックスでサイコロが転がって止まるのを見てください。スペシャルは常に表向きです。",
+"howLi4":"<b>Battle Bonyas：</b>まれな秘密のラウンド（8%）で、最も強い勝利ハンドが大きなボーナスを獲得します——50チップをダブルダウンすれば最大 <b>1200チップ</b>。",
+"howLi5":"ディーラーは17でステイします（ソフト17を含む）。詳しいルールは <b>📖 ルール</b>へ。",
+"howLi6":"🎵 メイン曲は毎試合ループします。バトル曲はBattle Bonyasラウンドのときだけ流れます。",
+"footer":"Black Nyack v1.7.3 —— ファンメイドのゲームです。お楽しみください。<br>Nyau and all SEGA characters are © SEGA. All credit to SEGA — the creator of this site holds no rights to Nyau or any SEGA property, and this game is not affiliated with or endorsed by SEGA.<br>フリーチップのみ——リアルマネーは使いません。Cloudflare Pagesでホストしています。コードはGitHubにあります。",
+"lobbyH2":"ロビー",
+"lobbyMsg":"コードを友達と共有してください——「ロビーに参加」に入力します。",
+"btnCopy":"コード / リンクをコピー",
+"btnLeaveLobby":"ロビーを出る",
+"btnStart":"▶ ゲーム開始",
+"rotateHint":"🔄 スマホを横にすると、ラウンドテーブル全体が見えます——ディーラーは真ん中にいて、PCと同じです。",
+"battleBanner":"⚔️ BATTLE BONYAS！⚔️<br><span style=\"font-size:14px\">このラウンドで最も強い勝利ハンドが大きなボーナスを獲得します——最大1200チップ！</span>",
+"specialLabel":"スペシャル<br>カード",
+"dieCap":"直前の出目",
+"btnSpectate":"👀 このラウンドは観戦",
+"btnRebuy":"💰 1000フリーチップを受け取る",
+"btnHit":"🃏 ヒット",
+"btnStay":"✋ ステイ",
+"btnDouble":"💰 ダブルダウン",
+"btnNextRound":"▶ 次のラウンド",
+"btnLeaveMatch":"🚪 試合を抜ける",
+"btnMenu2":"← メニュー",
+"logLabel":"💬 ゲームログ",
+"log.started":"ゲーム開始。",
+"bannedH2":"🚫 このルームからは出入り禁止です",
+"bannedP":"短時間に何度も出入りしたため、このルームはしばらく利用できません——別のロビーに参加してください。",
+"btnBannedMenu":"メニューに戻る",
+"roomOptH2":"ロビーを作る",
+"roomOptP1":"このルームを見つけられるのは？",
+"roomOptP2":"最大人数（あなた＋友達＋ボット）：",
+"roomOptCreate":"ロビーを作る",
+"roomOptCancel":"キャンセル",
+"rulesH2":"📖 Black Nyack —— ルール",
+"rulesClose":"わかった",
+"winClose":"閉じる",
+"musicHint":"🎵 タップで音楽を再生",
+"breakLegs":"🦵⚾<br>足を<br>折る",
+"musicOn":"🔊 音楽オン",
+"musicOff":"🔇 音楽オフ",
+"visPrivate":"🔒 プライベート",
+"visPublic":"🌍 公開",
+"botCancel":"キャンセル",
+"conn.local":"ボットとのローカルゲーム——ネット不要です。ディーラーはもう失礼なことを言っています。",
+"seat.coins":"チップ",
+"betList.bet":"ベット",
+"playersWord":"人",
+"status.gameOver":"🏆 ゲーム終了——全員抜けました。",
+"status.settledWait":"🎩 ディーラーの番は終わり——結果はもうすぐ…",
+"status.settledWin":"🏆 ラウンド{n}終了——{names}がディーラーに勝利{battle}",
+"status.settledWinBattle":"——⚔️ {name}がBattle Bonyasボーナスを獲得！",
+"status.settledDealer":"😤 ラウンド{n}終了——ディーラーの勝ちです。ニャウは得意げです。",
+"status.bettingSpec":"👀 観戦中——次のラウンドに参加できます。この画面にいてください。次のベットラウンドで自動的に参加の案内が出ます。出入りし直す必要はありません。",
+"status.betting":"🎲 ラウンド{n}——ベット（5 / 10 / 20 / 40 / 50）するか、観戦してください。",
+"status.turn21":"🃏 あなたの番——21です！ステイして確定しましょう。",
+"status.turn":"🃏 あなたの番——ヒット、ステイ、ダブルダウン（2枚のときのみ）。",
+"status.turnOther":"{name}がプレイ中…",
+"status.dealerTurn":"🎩 ディーラーがプレイ中…",
+"status.waiting":"待機中…",
+"status.sub":"ラウンド{n} • スペシャル合計{s} • デッキ{d}枚{battle}{stackPart}",
+"status.stackPart":" • あなたのチップ：{stack}",
+"status.battlePart":" • ⚔️ BATTLE BONYAS",
+"betList.spectating":"観戦中",
+"betList.deciding":"考え中…",
+"betList.dash":"—",
+"specialSub.yes":"★1枚の価値は{n}",
+"specialSub.no":"まだスペシャル値はありません——★を配るとサイコロが振られます",
+"dealer.label":"ディーラー",
+"dealer.total":"ディーラー — {total}",
+"dealer.totalBust":"ディーラー — {total} バスト",
+"dealer.shows":"ディーラー — {card}を見せています",
+"seat.bet":"ベット{n}",
+"seat.doubled":"ダブルダウン済み",
+"seat.toMove":"プレイ中",
+"seat.you":"（あなた）",
+"seat.spectatingTitle":"👀 観戦中",
+"seat.spectatingText":"このゲームを観戦しています。次のラウンドに参加できます——この画面にいてください。次のベットラウンドで参加の案内が出ます。出入りし直す必要はありません。",
+"seat.hand":"ハンド",
+"seat.yourHand":"あなたのハンド",
+"seat.bust":"バスト",
+"betPrompt":"ベットしてください——またはこのラウンドは観戦。あなたのチップ：{n}。",
+"betWaiting.yes":"待っている人：{names}",
+"betWaiting.no":"全員決めました…",
+"actionPrompt.21":"あなたの番——21です！ステイして確定しましょう。",
+"actionPrompt.turn":"あなたの番——{total}です。ヒット、ステイ、ダブルダウン？",
+"doubleTitle.yes":"ベットを倍に（あと{n}）して、カードをちょうど1枚だけ引きます。",
+"doubleTitle.21":"もう21です——ステイして確定しましょう。",
+"doubleTitle.no":"ダブルダウンには、ちょうど2枚のカードとベットと同額のチップが必要です。",
+"win.win":"勝利",
+"win.blacknyack":"ブラックニャック",
+"win.fiveCard":"5枚",
+"win.special":"スペシャル ×{n}",
+"win.battle":"Battle Bonyas",
+"win.stakeBack":"ベット返金",
+"win.betLost":"ベット没収",
+"win.acquired":"🪙 獲得",
+"win.capped":"配当はテーブルの上限1200チップに制限されました。",
+"win.battleNote":"⚔️ Battle Bonyasの勝者：{name}——最も強い勝利ハンドだけがボーナスを獲得します。",
+"winTitle.win":"🏆 勝利！",
+"winTitle.push":"🤝 プッシュ",
+"winTitle.lose":"😤 ディーラーの勝ち",
+"banner.blacknyack":"BLACK NYACK",
+"banner.five":"5枚",
+"banner.double":"ダブルダウン",
+"banner.bust":"バスト",
+"banner.win":"勝利！+{n}",
+"banner.push":"プッシュ",
+"banner.battle":"⚔️ BATTLE BONYAS！",
+"card.holePeek":"伏せ札——タップしてのぞく",
+"card.specialTitle":"スペシャルカード——このラウンドは{n}の価値",
+"card.worth":"{n}の価値",
+"toast.legsHealed":"🦵 ニャウの足が生えて戻りました。もう歩いています——何度でも折っていいですよ。（ローカルだけのお楽しみです。）",
+"toast.crack":"🦵⚾ バキッ！まだ配っています。（ローカルだけのお楽しみ——テーブルは気にしません。）",
+"toast.needPlayers":"開始するには最低1人のプレイヤーが必要です。",
+"toast.actionError":"その手は許可されていません。",
+"menu.creating":"ロビー{code}を作成中…",
+"menu.live":"ロビー{code}ができました——友達にコードを送ってください。",
+"menu.createErr":"ロビーを作成できませんでした（{err}）。もう一度お試しください。",
+"menu.joinErr":"ロビー{code}に参加できませんでした（{err}）。コードを確認してください。",
+"menu.joining":"ロビー{code}に参加中…",
+"menu.joined":"ロビー{code}に参加しました！ロビーで待機中…",
+"menu.stillTrying":"ロビー{code}への接続を試みています——コードは合っていますか？ホストのロビーはまだ開いていますか？",
+"menu.noPeerJoin":"マルチプレイヤーのライブラリ（PeerJS）を読み込めませんでした。接続を確認してもう一度お試しください。",
+"menu.noPeerCreate":"マルチプレイヤーのライブラリ（PeerJS）を読み込めませんでした。接続を確認してください——ボットとのプレイはできます。",
+"menu.noCode":"まずロビーコードを入力してください。",
+"menu.deepLink":"ロビー{code}を検出しました——「ロビーに参加」を押して入ってください。",
+"menu.joinRejected":"参加できませんでした：{err}",
+"menu.roomFull":"ルームが満員です。",
+"rooms.none":"今は公開ルームがありません——作るか、コードでプライベートロビーに参加してください。",
+"rooms.dirFail":"リストを読み込めませんでした——ディレクトリが応答しません。コードで参加してください。",
+"rooms.noPeer":"リストを読み込めませんでした（マルチプレイヤーのライブラリが利用できません）——コードで参加してください。",
+"rooms.asking":"ディレクトリに問い合わせ中…",
+"rooms.count":"公開ルームが{n}件あります——タップして参加してください。（自動参加はありません。いつもあなたが選びます。）",
+"rooms.playingSpectate":"プレイ中——観戦",
+"rooms.full":"満員",
+"rooms.joinBtn":"参加 →",
+"rooms.playing":"プレイ中",
+"rooms.waiting":"待機中",
+"lobby.public":"🌍 公開ルーム——プレイヤーを待っている間、「公開ルームを見る」に表示されます。",
+"lobby.private":"🔒 プライベートルーム——コードのみ。",
+"lobby.max":"最大{n}人（ボット含む）。ディーラーと1人で始めるか、友達を待つこともできます。",
+"lobby.count":"{n} / {max}人。",
+"lobby.hostWait":"あなたがホストです——全員そろったら「開始」を押してください。",
+"lobby.guestWait":"ホストの開始を待っています…",
+"lobby.botsNote":"あなた＋ボット{n}人ですでに{seats}席を使っているので、最大人数はここから始まります。",
+"lobby.host":"ホスト",
+"lobby.connHost":"ロビー<b>{code}</b>——あなたがホストです。ベットは各自で（5 / 10 / 20 / 40 / 50）か観戦。ボットはあなたのデバイスで動きます。",
+"lobby.hostDisconnected":"<b>ホストが切断されました。</b>ロビーはなくなりました——メニューに戻って新しいゲームを始めてください。",
+"lobby.connLost":"<b>接続が切れました——再接続中…</b>あなたの席は10秒間確保されます。",
+"lobby.couldNotRejoin":"<b>時間内に再接続できませんでした。</b>席は取り消されました——メニューから戻って観戦者として参加してください。",
+"bots.title":"ボットは何人？",
+"bots.sub":"あなた＋ボットで合計1〜5人。0人ならディーラーとの1対1です。完全ローカルで、オフラインでも遊べます。",
+"bots.createTitle":"ロビーを作る——ボットは何人？",
+"bots.createSub":"ボットがロビーの席を埋めます（合計最大5人：人間＋ボット）。",
+"bots.solo":"0（ソロ）",
+"bots.title1":"ディーラーとの1対1",
+"bots.titleN":"ボット{n}人",
+"copy.copied":"コピーしました！",
+"copy.prompt":"ロビーのリンクをコピー：",
+"copy.btn":"コード / リンクをコピー",
+"copy.invite":"Black Nyackロビー{code}——参加してね：{link}",
+"rules.intro":"<b>目標：</b>21でディーラーに勝つこと——みんなで。テーブルにいる全員がニャウと対戦します。プレイヤー同士で戦うのではありません。",
+"rules.th1":"結果",
+"rules.th2":"配当（B＝リスクのあるベット）",
+"rules.rowLose":"負け（バスト、またはディーラーの勝ち）",
+"rules.rowLoseV":"0——ベット没収",
+"rules.rowPush":"プッシュ（完全な引き分け）",
+"rules.rowPushV":"B——ベット返金、ボーナスなし",
+"rules.rowWin":"勝ち",
+"rules.rowWinV":"2 × B",
+"rules.row21":"ちょうど21で勝ち",
+"rules.row21V":"+ 3 × B ブラックニャックボーナス",
+"rules.rowFive":"5枚で勝ち",
+"rules.rowFiveV":"+ 5 × B 5枚ボーナス",
+"rules.rowSpecial":"スペシャルカードで勝ち",
+"rules.rowSpecialV":"スペシャル1枚につき+ 2 × B",
+"rules.rowBattle":"Battle Bonyasの勝者",
+"rules.rowBattleV":"+ 5 × B バトルボーナス",
+"rules.worked":"1人のプレイヤーが1ラウンドで受け取る配当の合計は、<b>1200チップ</b>が上限です。例：50ベットで5枚21なら100＋150＋250＝<b>500</b>。50ベットでダブルダウン（B＝100）、3枚21でスペシャル1枚、Battle Bonyasの勝者なら200＋300＋200＋500＝<b>1200</b>。",
+"rules.li1":"<b>ベット：</b>毎ラウンド、各プレイヤーが <b>5 / 10 / 20 / 40 / 50</b> チップを選ぶか、そのラウンドを<b>観戦</b>します。観戦者は次のラウンドに自動的に参加の案内を受けます。誰もベットしなければ、そのラウンドは無効になり、全員が選び直します。全員 <b>1000</b> チップからスタート。0になったらラウンドの合間に <b>1000フリーチップ</b>を受け取れます。誰でも<b>いつでも試合を抜けられます</b>。",
+"rules.li2":"<b>配札：</b>55枚のデッキ（52枚の通常カード＋3枚のスペシャル）を毎ラウンド新しくシャッフルします。2枚配られます。1枚目は<b>表向き</b>、2枚目は<b>裏向き</b>（あなたの伏せ札——あなただけが見られます。タップしてのぞけます）。ディーラーも同じです。<b>スペシャルカードは2枚目でも、常に全員に表向きです</b>。",
+"rules.li3":"<b>カードの値：</b>数字＝そのままの値、J/Q/K＝10、エース＝1または11（バストしない方の良い値）、スペシャル＝そのラウンドの共有スペシャル合計。",
+"rules.li4":"<b>あなたの番——ヒット、ステイ、ダブルダウン：</b><b>ヒット</b>でカードをもう1枚（最大3回、合計5枚まで）。<b>ステイ</b>でハンドをキープ。<b>ダブルダウン</b>はちょうど2枚のときのみ。ベットと同額を追加し、カードをちょうど1枚だけ引いて、番は終了します。",
+"rules.li5":"<b>5枚ルール：</b>バストせずに5枚引けば、<b>ディーラーの21にも勝てます</b>。5枚でちょうど21が最強のハンドです——もう1つの5枚21とだけ引き分けます。",
+"rules.li6":"<b>ディーラー</b>は伏せ札をめくり、17未満ならヒットし、17以上（ソフト17を含む）でステイします。全員がバストしたら、ディーラーは引きません。",
+"rules.li7":"<b>スペシャルダイス：</b>誰かにスペシャルカードが配られるたびに、6面ダイス（目：0、0、1、1、2、2）を振り、出た目が<b>共有のスペシャル合計に加算</b>されます。テーブル上のすべてのスペシャルカードがその合計の価値になります。例：あなたが1、ディーラーが2を出せば、このラウンドのスペシャルはすべて3の価値です。",
+"rules.li8":"<b>Battle Bonyas（秘密のランダムイベント）：</b>各ラウンドの開始時に <b>8%</b> の確率でBattle Bonyasラウンドになります——1ラウンドだけ続きます。ディーラーに勝ったプレイヤーの中で<b>最も強い勝利ハンド</b>がバトルボーナスを獲得します。ディーラーに勝った他のプレイヤーは通常の配当だけを受け取ります。誰もディーラーに勝たなければ、バトルの勝者はいません。",
+"rules.li9":"🎵 <b>音楽：</b>メイン曲は毎試合の開始からループします。バトル曲はBattle Bonyasラウンドのときだけ流れ、その後メインループに戻ります。🔊ボタンでミュートできます。",
+"rules.li10":"🦵⚾ <b>足を折る：</b>ただのお楽しみです——野球バット、ニャウ、回数無制限、いつでも、ローカルのみ。足は数分で生えて戻ります。バットはヒットから2秒後に消えます。ゲームには一切影響しません。",
+"rules.li11":"<b>遅れて参加？</b>進行中のゲームに参加すると<b>観戦</b>になります——席はゲーム開始時に固定されるため、この試合は観戦し、次の試合はロビーから参加します。試合中に接続が切れても、席は <b>10秒間</b>確保されます。その後は取り消され、観戦者として戻ります。",
+"log.round1":"Black Nyack——ラウンド1。ベット（5 / 10 / 20 / 40 / 50）するか、観戦してください。",
+"log.battle":"このラウンドはBATTLE BONYASです！最も強い勝利ハンドが大きなボーナスを獲得します。",
+"log.rolled":"{name}は{n}を出した——スペシャルカードは今{total}の価値です。",
+"log.dealt":"ラウンド{n}——{names}に配札しました。ディーラーは1枚見せています。",
+"log.dead":"無効なラウンド——誰もベットしませんでした。もう一度ベットしてください。",
+"log.leftRefund":"{name}は配札前に抜けました——ベット返金。",
+"log.leftCards":"{name}は抜けました——カードはデッキに戻ります。",
+"log.leftGame":"{name}はゲームを抜けました。",
+"log.noPlayers":"プレイヤーがいなくなりました——ラウンド終了です。",
+"log.dealerReveals":"ディーラーが公開——全員バストしたので、ディーラーは引きません。",
+"log.dealerPlays":"ディーラーがプレイ——1枚ずつ引くのを見てください。",
+"log.dealerStands":"ディーラーは{total}でステイ。",
+"log.dealerStandsFive":"ディーラーは{total}でステイ（5枚）。",
+"log.dealerBusts":"ディーラーは{total}でバスト。",
+"log.wins":"{name}は{payout}獲得（{total}）",
+"log.winsBattle":"{name}は{payout}獲得（{total}）——BATTLE BONYASの勝者！",
+"log.pushes":"{name}はプッシュ——ベット返金{payout}（{total}）",
+"log.loses":"{name}は負け（{total}）",
+"log.roundN":"ラウンド{n}——ベット（5 / 10 / 20 / 40 / 50）するか、観戦してください。",
+"log.rebought":"{name}は{n}フリーチップを受け取りました。",
+"log.bets":"{name}は{amount}をベット。",
+"log.spectates":"{name}はこのラウンドを観戦。",
+"log.hitsBusts":"{name}はヒットしてバスト。",
+"log.hitsFive":"{name}はヒットして5枚になりました。",
+"log.hits":"{name}はヒット。",
+"log.stays":"{name}はステイ。",
+"log.doublesBusts":"{name}はダブルダウンしてバスト。",
+"log.doubles":"{name}はダブルダウン。",
+"log.joinedSpectate":"{name}は観戦で参加しました——席はゲーム開始時に固定されます。",
+"err.rebuyPhase":"チップはラウンドの合間にしか受け取れません",
+"err.rebuyDecided":"このラウンドはもう決めました——次のラウンドで受け取ってください",
+"err.rebuyHasChips":"まだチップがあります——受け取る必要はありません",
+"err.roundNotOver":"ラウンドはまだ終わっていません",
+"err.alreadyDecided":"このラウンドはもう決めました",
+"err.betMustBe":"ベットは5、10、20、40、50のいずれかです",
+"err.notEnoughBet":"{amount}のベットにはチップが足りません",
+"err.notYourTurn":"あなたの番ではありません",
+"err.notInRound":"あなたはこのラウンドに参加していません",
+"err.turnOver":"あなたの番は終わりました",
+"err.have21":"もう21です——ステイして確定しましょう",
+"err.have5":"もう5枚あります——これが最大です",
+"err.deckEmpty":"デッキが空です",
+"err.double2":"ダブルダウンはちょうど2枚のときのみ可能です",
+"err.doubleChips":"ダブルダウンするチップが足りません",
+"err.bettingPhase":"ベットフェーズ——ベットするか、観戦してください",
+"err.yourTurn":"あなたの番——ヒット、ステイ、ダブルダウン",
+"err.dealerPlaying":"ディーラーがプレイ中です",
+"err.roundOver":"ラウンドは終わりました——次のラウンドを始めてください",
+"err.invalidAction":"今は有効なアクションではありません",
+"err.gameOver":"ゲームは終わりました",
+"err.leftGame":"あなたはすでに抜けました",
+"err.unknownPlayer":"不明なプレイヤー",
+"err.alreadyLeft":"あなたはすでに抜けました",
+"err.badAction":"無効なアクション",
+"err.roomFull":"ルームが満員です。"
+},
+fr:{
+"tag":"Blackjack gratuit dans le navigateur (21) — 1 à 5 joueurs contre le croupier. Sans inscription, sans frais, jetons gratuits uniquement.",
+"rulesBtn":"📖 Règles",
+"menuH2":"Battez le croupier. Prenez ses jetons.",
+"menuIntro":"Misez <b style=\"color:var(--txt)\">5 / 10 / 20 / 40 / 50</b> jetons de casino pour entrer dans une manche — ou regardez jusqu'à la suivante. <b style=\"color:var(--txt)\">Tirez</b>, <b style=\"color:var(--txt)\">restez</b> ou <b style=\"color:var(--txt)\">doublez</b>. Obtenez <b style=\"color:var(--txt)\">5 cartes sans dépasser 21</b> et vous battez même un 21 du croupier. Surveillez les <b style=\"color:var(--txt)\">cartes spéciales</b> et la manche secrète <b style=\"color:var(--txt)\">Battle Bonyas</b> — un seul gagnant remporte jusqu'à <b style=\"color:var(--txt)\">1200 jetons</b>.",
+"nameLabel":"Votre nom",
+"btnCreate":"➕ Créer un salon<br><small style=\"font-weight:500;font-size:12px\">obtenez un code, invitez jusqu'à 4 amis / bots</small>",
+"btnBots":"🤖 Jouer contre des bots<br><small style=\"font-weight:500;font-size:12px\">seul ou avec des bots, tout de suite</small>",
+"btnJoin":"Rejoindre le salon →",
+"roomsH2":"🌍 Salons publics",
+"btnBrowse":"Voir les salons publics",
+"btnRefresh":"↻ Actualiser",
+"roomsMsg":"Appuyez sur « Voir les salons publics » pour voir les salons ouverts — ou rejoignez un salon privé avec son code ci-dessus.",
+"howH2":"Comment ça se joue (version courte)",
+"howLi1":"<b>Misez 5, 10, 20, 40 ou 50</b> jetons de casino pour entrer dans une manche, ou regardez jusqu'à la suivante. Tout le monde commence avec <b>1000</b> jetons ; les joueurs ruinés reçoivent 1000 jetons gratuits entre les manches.",
+"howLi2":"<b>Tirez, restez ou doublez</b> (2 cartes seulement). Obtenez <b>5 cartes sans dépasser 21</b> et vous battez même un 21 du croupier — 5 cartes totalisant exactement 21, c'est la main la plus forte qui soit.",
+"howLi3":"<b>Cartes spéciales :</b> 3 dans le paquet. Chaque fois qu'on en distribue une, on lance un dé (0, 0, 1, 1, 2, 2) et le résultat est <b>ajouté à un total partagé</b> — chaque carte spéciale sur la table vaut ce total. Regardez le dé tourner et s'arrêter dans la case SPECIAL. Les spéciales sont toujours face visible.",
+"howLi4":"<b>Battle Bonyas :</b> une manche secrète rare (8 %) où la meilleure main gagnante remporte un énorme bonus — jusqu'à <b>1200 jetons</b> sur une mise de 50 doublée.",
+"howLi5":"Le croupier s'arrête à 17 (y compris le 17 soft). Les règles complètes sont sous <b>📖 Règles</b>.",
+"howLi6":"🎵 La chanson principale tourne en boucle à chaque partie ; la chanson de bataille ne joue que pendant une manche Battle Bonyas.",
+"footer":"Black Nyack v1.7.3 — un jeu fait par des fans, juste pour le plaisir.<br>Nyau and all SEGA characters are © SEGA. All credit to SEGA — the creator of this site holds no rights to Nyau or any SEGA property, and this game is not affiliated with or endorsed by SEGA.<br>Jetons gratuits uniquement — pas d'argent réel. Hébergé sur Cloudflare Pages. Code sur GitHub.",
+"lobbyH2":"Salon",
+"lobbyMsg":"Partagez le code avec vos amis — ils le tapent dans Rejoindre le salon.",
+"btnCopy":"Copier le code / lien",
+"btnLeaveLobby":"Quitter le salon",
+"btnStart":"▶ Commencer la partie",
+"rotateHint":"🔄 Tournez votre téléphone sur le côté pour voir toute la table ronde — le croupier est au milieu, comme sur PC.",
+"battleBanner":"⚔️ BATTLE BONYAS ! ⚔️<br><span style=\"font-size:14px\">La meilleure main gagnante de cette manche remporte un énorme bonus — jusqu'à 1200 jetons !</span>",
+"specialLabel":"CARTE<br>SPÉCIALE",
+"dieCap":"DERNIER LANCER",
+"btnSpectate":"👀 Regarder cette manche",
+"btnRebuy":"💰 Recevoir 1000 jetons gratuits",
+"btnHit":"🃏 Tirer",
+"btnStay":"✋ Rester",
+"btnDouble":"💰 Doubler",
+"btnNextRound":"▶ Manche suivante",
+"btnLeaveMatch":"🚪 Quitter la partie",
+"btnMenu2":"← Menu",
+"logLabel":"💬 JOURNAL DE PARTIE",
+"log.started":"Partie commencée.",
+"bannedH2":"🚫 Banni de ce salon",
+"bannedP":"Vous êtes parti et revenu trop de fois d'affilée. Ce salon vous est fermé pour l'instant — rejoignez un autre salon.",
+"btnBannedMenu":"Retour au menu",
+"roomOptH2":"Créer un salon",
+"roomOptP1":"Qui peut trouver ce salon ?",
+"roomOptP2":"Joueurs max (vous + amis + bots) :",
+"roomOptCreate":"Créer un salon",
+"roomOptCancel":"Annuler",
+"rulesH2":"📖 Black Nyack — règles",
+"rulesClose":"Compris",
+"winClose":"Fermer",
+"musicHint":"🎵 Touchez pour la musique",
+"breakLegs":"🦵⚾<br>Casser<br>les jambes",
+"musicOn":"🔊 Musique activée",
+"musicOff":"🔇 Musique coupée",
+"visPrivate":"🔒 Privé",
+"visPublic":"🌍 Public",
+"botCancel":"Annuler",
+"conn.local":"Partie locale contre des bots — pas besoin de réseau. Le croupier est déjà désagréable.",
+"seat.coins":"jetons",
+"betList.bet":"MISE",
+"playersWord":"joueurs",
+"status.gameOver":"🏆 Partie terminée — tout le monde est parti.",
+"status.settledWait":"🎩 Le croupier a fini — résultats dans un instant…",
+"status.settledWin":"🏆 Manche {n} terminée — {names} ont battu le croupier{battle}",
+"status.settledWinBattle":" — ⚔️ {name} remporte le bonus Battle Bonyas !",
+"status.settledDealer":"😤 Manche {n} terminée — le croupier l'emporte. Nyau est insupportable à ce sujet.",
+"status.bettingSpec":"👀 Vous regardez — c'est à vous à la prochaine manche. Restez sur cet écran : on vous proposera d'entrer à la prochaine manche de mise, sans partir et revenir.",
+"status.betting":"🎲 Manche {n} — misez (5 / 10 / 20 / 40 / 50) ou regardez.",
+"status.turn21":"🃏 À vous — 21 en main ! Restez et verrouillez.",
+"status.turn":"🃏 À vous — Tirez, Restez ou Doublez (2 cartes seulement).",
+"status.turnOther":"{name} joue…",
+"status.dealerTurn":"🎩 Le croupier joue…",
+"status.waiting":"Attente…",
+"status.sub":"Manche {n} • Total spécial {s} • Paquet : {d} cartes{battle}{stackPart}",
+"status.stackPart":" • Vos jetons : {stack}",
+"status.battlePart":" • ⚔️ BATTLE BONYAS",
+"betList.spectating":"regarde",
+"betList.deciding":"réfléchit…",
+"betList.dash":"—",
+"specialSub.yes":"Chaque ★ vaut {n}",
+"specialSub.no":"Pas encore de valeur spéciale — distribuez un ★ pour lancer le dé",
+"dealer.label":"CROUPIER",
+"dealer.total":"CROUPIER — {total}",
+"dealer.totalBust":"CROUPIER — {total} DÉPASSEMENT",
+"dealer.shows":"CROUPIER — montre {card}",
+"seat.bet":"mise {n}",
+"seat.doubled":"doublé",
+"seat.toMove":"joue",
+"seat.you":"(vous)",
+"seat.spectatingTitle":"👀 Vous regardez",
+"seat.spectatingText":"Vous regardez cette partie. C'est à vous à la prochaine manche — restez sur cet écran et on vous proposera d'entrer à la prochaine manche de mise. Pas besoin de partir et revenir.",
+"seat.hand":"Main",
+"seat.yourHand":"Votre main",
+"seat.bust":"DÉPASSEMENT",
+"betPrompt":"Misez — ou regardez cette manche. Vos jetons : {n}.",
+"betWaiting.yes":"En attente de : {names}",
+"betWaiting.no":"Tout le monde a décidé…",
+"actionPrompt.21":"À vous — 21 en main ! Restez et verrouillez.",
+"actionPrompt.turn":"À vous — {total} en main. Tirer, Rester ou Doubler ?",
+"doubleTitle.yes":"Doublez votre mise ({n} de plus) pour recevoir exactement une carte de plus.",
+"doubleTitle.21":"Vous avez déjà 21 — restez et verrouillez.",
+"doubleTitle.no":"Doubler exige exactement 2 cartes et assez de jetons pour égaler votre mise.",
+"win.win":"Gain",
+"win.blacknyack":"Blacknyack",
+"win.fiveCard":"5 Cartes",
+"win.special":"Spéciale ×{n}",
+"win.battle":"Battle Bonyas",
+"win.stakeBack":"Mise rendue",
+"win.betLost":"Mise perdue",
+"win.acquired":"🪙 Gagné",
+"win.capped":"Gain plafonné au maximum de la table, 1200 jetons.",
+"win.battleNote":"⚔️ Gagnant du Battle Bonyas : {name} — seule la meilleure main gagnante remporte le bonus.",
+"winTitle.win":"🏆 GAGNÉ !",
+"winTitle.push":"🤝 ÉGALITÉ",
+"winTitle.lose":"😤 Le croupier l'emporte",
+"banner.blacknyack":"BLACK NYACK",
+"banner.five":"5 CARTES",
+"banner.double":"DOUBLÉ",
+"banner.bust":"DÉPASSEMENT",
+"banner.win":"GAGNÉ ! +{n}",
+"banner.push":"ÉGALITÉ",
+"banner.battle":"⚔️ BATTLE BONYAS !",
+"card.holePeek":"carte cachée — touchez pour regarder",
+"card.specialTitle":"Carte spéciale — vaut {n} cette manche",
+"card.worth":"vaut {n}",
+"toast.legsHealed":"🦵 Les jambes de Nyau ont repoussé. Il marche de nouveau — cassez-les autant de fois que vous voulez. (Plaisanterie locale uniquement.)",
+"toast.crack":"🦵⚾ CRAC ! Il distribue toujours. (Plaisanterie locale uniquement — la table s'en fiche.)",
+"toast.needPlayers":"Il faut au moins 1 joueur pour commencer.",
+"toast.actionError":"Ce coup n'était pas autorisé.",
+"menu.creating":"Création du salon {code}…",
+"menu.live":"Le salon {code} est en ligne — envoyez le code à vos amis.",
+"menu.createErr":"Impossible de créer le salon ({err}). Réessayez.",
+"menu.joinErr":"Impossible de rejoindre le salon {code} ({err}). Vérifiez le code.",
+"menu.joining":"Connexion au salon {code}…",
+"menu.joined":"Vous avez rejoint le salon {code} ! En attente dans le salon…",
+"menu.stillTrying":"Toujours en train de joindre le salon {code} — le code est-il bon, et le salon de l'hôte est-il toujours ouvert ?",
+"menu.noPeerJoin":"Impossible de charger la bibliothèque multijoueur (PeerJS). Vérifiez votre connexion et réessayez.",
+"menu.noPeerCreate":"Impossible de charger la bibliothèque multijoueur (PeerJS). Vérifiez votre connexion — jouer contre des bots fonctionne toujours.",
+"menu.noCode":"Tapez d'abord un code de salon.",
+"menu.deepLink":"Salon {code} détecté — appuyez sur Rejoindre le salon pour entrer.",
+"menu.joinRejected":"Impossible de rejoindre : {err}",
+"menu.roomFull":"le salon est plein.",
+"rooms.none":"Aucun salon public pour l'instant — créez-en un, ou rejoignez un salon privé avec son code.",
+"rooms.dirFail":"Impossible de charger la liste — l'annuaire n'a pas répondu. Rejoignez avec un code.",
+"rooms.noPeer":"Impossible de charger la liste (bibliothèque multijoueur indisponible) — rejoignez avec un code.",
+"rooms.asking":"Demande à l'annuaire…",
+"rooms.count":"{n} salon{s} public{s} ouvert{s} — touchez-en un pour rejoindre. (Pas de connexion automatique : c'est toujours vous qui choisissez.)",
+"rooms.playingSpectate":"en cours — regarder",
+"rooms.full":"plein",
+"rooms.joinBtn":"Rejoindre →",
+"rooms.playing":"en cours",
+"rooms.waiting":"en attente",
+"lobby.public":"🌍 Salon public — listé dans Voir les salons publics tant qu'il attend des joueurs. ",
+"lobby.private":"🔒 Salon privé — code uniquement. ",
+"lobby.max":"{n} joueurs max (bots inclus). Vous pouvez commencer seul contre le croupier, ou attendre vos amis.",
+"lobby.count":"{n} / {max} joueurs.",
+"lobby.hostWait":"Vous êtes l'hôte — appuyez sur Commencer quand tout le monde est là.",
+"lobby.guestWait":"En attente que l'hôte commence…",
+"lobby.botsNote":"Vous + {n} bot{s} prenez déjà {seats} places, donc le max commence là.",
+"lobby.host":"hôte",
+"lobby.connHost":"Salon <b>{code}</b> — vous êtes l'hôte. Les mises sont par joueur (5 / 10 / 20 / 40 / 50) ou regarder. Les bots tournent sur votre appareil.",
+"lobby.hostDisconnected":"<b>Hôte déconnecté.</b> Le salon n'existe plus — retournez au menu pour une nouvelle partie.",
+"lobby.connLost":"<b>Connexion perdue — reconnexion…</b> Votre place est gardée 10 secondes.",
+"lobby.couldNotRejoin":"<b>Impossible de revenir à temps.</b> Votre place a été retirée — revenez depuis le menu pour regarder comme spectateur.",
+"bots.title":"Combien de bots ?",
+"bots.sub":"Vous + bots, 1 à 5 joueurs au total. 0 bot = juste vous contre le croupier. Entièrement local, fonctionne hors ligne.",
+"bots.createTitle":"Créer un salon — combien de bots ?",
+"bots.createSub":"Les bots occupent des places dans votre salon (5 joueurs max au total : humains + bots).",
+"bots.solo":"0 (seul)",
+"bots.title1":"Juste vous contre le croupier",
+"bots.titleN":"{n} bot{s}",
+"copy.copied":"Copié !",
+"copy.prompt":"Copiez le lien de votre salon :",
+"copy.btn":"Copier le code / lien",
+"copy.invite":"Salon Black Nyack {code} — rejoins-moi : {link}",
+"rules.intro":"<b>But :</b> battre le croupier à 21 — ensemble. Tout le monde à la table joue contre Nyau, pas les uns contre les autres.",
+"rules.th1":"Résultat",
+"rules.th2":"Gain (B = votre mise en jeu)",
+"rules.rowLose":"Perte (dépassement, ou le croupier gagne)",
+"rules.rowLoseV":"0 — votre mise est perdue",
+"rules.rowPush":"Égalité (tie exact)",
+"rules.rowPushV":"B — votre mise rendue, sans bonus",
+"rules.rowWin":"Gain",
+"rules.rowWinV":"2 × B",
+"rules.row21":"Gain avec exactement 21",
+"rules.row21V":"+ 3 × B de bonus Blacknyack",
+"rules.rowFive":"Gain avec 5 cartes",
+"rules.rowFiveV":"+ 5 × B de bonus 5 cartes",
+"rules.rowSpecial":"Gain avec des cartes spéciales",
+"rules.rowSpecialV":"+ 2 × B par carte spéciale",
+"rules.rowBattle":"Gagnant du Battle Bonyas",
+"rules.rowBattleV":"+ 5 × B de bonus de bataille",
+"rules.worked":"Le gain total d'un joueur en une manche est plafonné à <b>1200 jetons</b>. Exemples : mise 50, 21 en 5 cartes → 100 + 150 + 250 = <b>500</b>. Mise 50, doublée (B = 100), 21 en 3 cartes avec 1 spéciale, gagnant du Battle Bonyas → 200 + 300 + 200 + 500 = <b>1200</b>.",
+"rules.li1":"<b>Mises :</b> à chaque manche, chaque joueur choisit <b>5 / 10 / 20 / 40 / 50</b> jetons ou <b>regarde</b> cette manche. Les spectateurs se voient automatiquement proposer d'entrer à nouveau à la manche suivante. Si personne ne mise, la manche est nulle et tout le monde choisit à nouveau. Tout le monde commence avec <b>1000</b> jetons ; à 0, vous pouvez <b>recevoir 1000 jetons gratuits</b> entre les manches. N'importe qui peut <b>quitter la partie à tout moment</b>.",
+"rules.li2":"<b>Distribution :</b> un paquet de 55 cartes (52 normales + 3 spéciales), mélangé à chaque manche. Vous recevez 2 cartes : la première <b>face visible</b>, la seconde <b>face cachée</b> (votre carte cachée — vous seul la voyez ; touchez-la pour regarder). Le croupier en reçoit 2 pareil. <b>Les cartes spéciales sont toujours face visible pour tout le monde</b>, même en deuxième carte.",
+"rules.li3":"<b>Valeur des cartes :</b> numérotées = valeur faciale, J/Q/K = 10, As = 1 ou 11 (le meilleur sans dépasser), spéciale = le total spécial partagé de la manche.",
+"rules.li4":"<b>Votre tour — Tirer, Rester, Doubler :</b> <b>Tirer</b> prend une carte de plus (jusqu'à 3 fois, 5 cartes au total). <b>Rester</b> garde votre main. <b>Doubler</b> n'est possible qu'avec exactement 2 cartes : vous égalez votre mise, vous recevez exactement une carte de plus, et votre tour se termine.",
+"rules.li5":"<b>La règle des 5 cartes :</b> 5 cartes sans dépasser 21 bat <b>même un 21 du croupier</b>. 5 cartes totalisant exactement 21, c'est la main la plus forte qui soit — elle ne fait égalité que contre un autre 21 en 5 cartes.",
+"rules.li6":"<b>Le croupier</b> révèle la carte cachée, puis tire tant qu'il est sous 17 et s'arrête à 17 ou plus, y compris le 17 soft. Si tous les joueurs dépassent 21, le croupier ne tire pas.",
+"rules.li7":"<b>Le dé spécial :</b> chaque fois qu'une carte spéciale est distribuée à quelqu'un, on lance un dé à 6 faces (faces 0, 0, 1, 1, 2, 2) et le résultat est <b>ajouté au total spécial partagé</b>. Chaque carte spéciale sur la table vaut ce total. Exemple : vous lancez 1, le croupier lance 2 — chaque spéciale vaut 3 cette manche.",
+"rules.li8":"<b>Battle Bonyas (événement secret aléatoire) :</b> au début de chaque manche, il y a <b>8 % de chances</b> que la manche soit une manche Battle Bonyas — elle ne dure qu'une manche. La <b>meilleure main gagnante</b> parmi les joueurs qui ont battu le croupier remporte le bonus de bataille ; tous les autres qui ont battu le croupier reçoivent leur gain normal. Si personne ne bat le croupier, il n'y a pas de gagnant de bataille.",
+"rules.li9":"🎵 <b>Musique :</b> la chanson principale tourne en boucle dès le début de chaque partie ; la chanson de bataille ne joue que pendant une manche Battle Bonyas, puis on revient à la boucle principale. Utilisez le bouton 🔊 pour couper le son.",
+"rules.li10":"🦵⚾ <b>Casser ses jambes :</b> juste pour le plaisir — une batte de baseball, Nyau, utilisations illimitées, à tout moment, en local uniquement. Ses jambes repoussent après quelques minutes, et la batte disparaît 2 secondes après le coup. Ça ne touche jamais au jeu.",
+"rules.li11":"<b>Arrivé en retard ?</b> Si vous rejoignez une partie déjà en cours, vous <b>regardez</b> — les places sont fixes quand la partie commence, donc vous regardez cette partie et vous jouez la suivante depuis le salon. Si votre connexion tombe en pleine partie, votre place est gardée <b>10 secondes</b> ; après, vous êtes retiré et vous revenez comme spectateur.",
+"log.round1":"Black Nyack — manche 1. Misez (5 / 10 / 20 / 40 / 50) ou regardez.",
+"log.battle":"BATTLE BONYAS dans cette manche ! Seule la meilleure main gagnante remporte un énorme bonus.",
+"log.rolled":"{name} a lancé {n} — les cartes spéciales valent maintenant {total}.",
+"log.dealt":"Manche {n} — cartes distribuées à {names}. Le croupier montre une carte.",
+"log.dead":"Manche nulle — personne n'a misé. Misez et réessayez.",
+"log.leftRefund":"{name} est parti avant la distribution — mise remboursée.",
+"log.leftCards":"{name} est parti — ses cartes retournent dans le paquet.",
+"log.leftGame":"{name} a quitté la partie.",
+"log.noPlayers":"Plus aucun joueur — la manche se termine.",
+"log.dealerReveals":"Le croupier révèle — tous les joueurs ont dépassé 21, donc le croupier ne tire pas.",
+"log.dealerPlays":"Le croupier joue — regardez-le tirer, une carte à la fois.",
+"log.dealerStands":"Le croupier s'arrête à {total}.",
+"log.dealerStandsFive":"Le croupier s'arrête à {total} avec 5 cartes.",
+"log.dealerBusts":"Le croupier dépasse 21 avec {total}.",
+"log.wins":"{name} gagne {payout} ({total})",
+"log.winsBattle":"{name} gagne {payout} ({total}) — GAGNANT DU BATTLE BONYAS !",
+"log.pushes":"{name} fait égalité — mise rendue {payout} ({total})",
+"log.loses":"{name} perd ({total})",
+"log.roundN":"Manche {n} — misez (5 / 10 / 20 / 40 / 50) ou regardez.",
+"log.rebought":"{name} a reçu {n} jetons gratuits.",
+"log.bets":"{name} mise {amount}.",
+"log.spectates":"{name} regarde cette manche.",
+"log.hitsBusts":"{name} tire et dépasse 21.",
+"log.hitsFive":"{name} tire et a 5 cartes.",
+"log.hits":"{name} tire.",
+"log.stays":"{name} reste.",
+"log.doublesBusts":"{name} double et dépasse 21.",
+"log.doubles":"{name} double.",
+"log.joinedSpectate":"{name} a rejoint pour regarder — les places sont fixes quand la partie commence.",
+"err.rebuyPhase":"vous ne pouvez recevoir des jetons qu'entre les manches",
+"err.rebuyDecided":"vous avez déjà décidé cette manche — recevez des jetons à la prochaine",
+"err.rebuyHasChips":"vous avez encore des jetons — pas besoin d'en recevoir",
+"err.roundNotOver":"la manche n'est pas encore terminée",
+"err.alreadyDecided":"vous avez déjà décidé cette manche",
+"err.betMustBe":"la mise doit être l'une de 5, 10, 20, 40, 50",
+"err.notEnoughBet":"pas assez de jetons pour une mise de {amount}",
+"err.notYourTurn":"ce n'est pas votre tour",
+"err.notInRound":"vous n'êtes pas dans cette manche",
+"err.turnOver":"votre tour est terminé",
+"err.have21":"vous avez déjà 21 — restez et verrouillez",
+"err.have5":"vous avez déjà 5 cartes — c'est le maximum",
+"err.deckEmpty":"le paquet est vide",
+"err.double2":"doubler n'est possible qu'avec exactement 2 cartes",
+"err.doubleChips":"pas assez de jetons pour doubler",
+"err.bettingPhase":"phase de mise — misez ou regardez",
+"err.yourTurn":"à vous — tirez, restez ou doublez",
+"err.dealerPlaying":"le croupier joue",
+"err.roundOver":"la manche est terminée — commencez la suivante",
+"err.invalidAction":"ce n'est pas une action valide maintenant",
+"err.gameOver":"la partie est terminée",
+"err.leftGame":"vous avez quitté la partie",
+"err.unknownPlayer":"joueur inconnu",
+"err.alreadyLeft":"vous êtes déjà parti",
+"err.badAction":"mauvaise action",
+"err.roomFull":"le salon est plein."
+},
+ko:{
+"tag":"무료 브라우저 블랙잭(21)——딜러와 1~5명이 대결합니다. 가입 불필요, 무료, 무료 코인만 사용합니다.",
+"rulesBtn":"📖 규칙",
+"menuH2":"딜러를 이기고 코인을 가져가세요.",
+"menuIntro":"라운드에 참가하려면 <b style=\"color:var(--txt)\">5 / 10 / 20 / 40 / 50</b> 카지노 코인을 베팅하세요——또는 다음 라운드까지 관전하세요.<b style=\"color:var(--txt)\">히트</b>, <b style=\"color:var(--txt)\">스테이</b>, <b style=\"color:var(--txt)\">더블 다운</b>. <b style=\"color:var(--txt)\">버스트 없이 5장</b>을 받으면 딜러의 21도 이깁니다. <b style=\"color:var(--txt)\">스페셜 카드</b>와 비밀의 <b style=\"color:var(--txt)\">Battle Bonyas</b> 라운드를 주목하세요——한 명의 승자가 최대 <b style=\"color:var(--txt)\">1200코인</b>을 가져갑니다.",
+"nameLabel":"이름",
+"btnCreate":"➕ 로비 만들기<br><small style=\"font-weight:500;font-size:12px\">코드를 받아 친구/봇 최대 4명 초대</small>",
+"btnBots":"🤖 봇과 대결<br><small style=\"font-weight:500;font-size:12px\">혼자 또는 봇과 함께, 지금 바로</small>",
+"btnJoin":"로비 참가 →",
+"roomsH2":"🌍 공개 방",
+"btnBrowse":"공개 방 둘러보기",
+"btnRefresh":"↻ 새로고침",
+"roomsMsg":"“공개 방 둘러보기”를 눌러 열린 로비를 확인하세요——또는 위의 코드로 비공개 로비에 참가하세요.",
+"howH2":"게임 방법(요약)",
+"howLi1":"라운드에 참가하려면 <b>5, 10, 20, 40 또는 50</b> 카지노 코인을 베팅하거나 다음 라운드까지 관전하세요. 모두 <b>1000</b> 코인으로 시작합니다. 코인이 떨어진 플레이어는 라운드 사이에 1000 무료 코인을 받습니다.",
+"howLi2":"<b>히트, 스테이, 더블 다운</b>(2장일 때만). <b>버스트 없이 5장</b>을 받으면 딜러의 21도 이깁니다——5장으로 정확히 21이 가장 강한 핸드입니다.",
+"howLi3":"<b>스페셜 카드:</b> 덱에 3장 있습니다. 스페셜 카드가 나올 때마다 주사위(0, 0, 1, 1, 2, 2)를 굴려 결과가 <b>공유 총합에 더해집니다</b>——테이블의 모든 스페셜 카드는 그 총합만큼의 가치가 됩니다. SPECIAL 상자에서 주사위가 굴러 멈추는 것을 보세요. 스페셜 카드는 항상 앞면입니다.",
+"howLi4":"<b>Battle Bonyas:</b> 드문 비밀 라운드(8%)로, 가장 강한 승리 핸드가 큰 보너스를 가져갑니다——50코인 더블 다운 시 최대 <b>1200코인</b>.",
+"howLi5":"딜러는 17에서 스테이합니다(소프트 17 포함). 전체 규칙은 <b>📖 규칙</b>에서 확인하세요.",
+"howLi6":"🎵 메인 음악은 매 경기마다 반복 재생됩니다. 배틀 음악은 Battle Bonyas 라운드에서만 재생됩니다.",
+"footer":"Black Nyack v1.7.3 —— 팬이 만든 게임입니다. 재미로만 즐겨주세요.<br>Nyau and all SEGA characters are © SEGA. All credit to SEGA — the creator of this site holds no rights to Nyau or any SEGA property, and this game is not affiliated with or endorsed by SEGA.<br>무료 플레이 코인만 사용합니다——실제 돈은 없습니다. Cloudflare Pages에서 호스팅합니다. 코드는 GitHub에 있습니다.",
+"lobbyH2":"로비",
+"lobbyMsg":"코드를 친구들과 공유하세요——친구들은 “로비 참가”에 코드를 입력합니다.",
+"btnCopy":"코드/링크 복사",
+"btnLeaveLobby":"로비 나가기",
+"btnStart":"▶ 게임 시작",
+"rotateHint":"🔄 휴대폰을 가로로 돌리면 원형 테이블 전체가 보입니다——딜러는 PC와 똑같이 가운데에 있습니다.",
+"battleBanner":"⚔️ BATTLE BONYAS! ⚔️<br><span style=\"font-size:14px\">이번 라운드에서 가장 강한 승리 핸드가 큰 보너스를 가져갑니다——최대 1200코인!</span>",
+"specialLabel":"스페셜<br>카드",
+"dieCap":"마지막 주사위",
+"btnSpectate":"👀 이번 라운드 관전",
+"btnRebuy":"💰 무료 코인 1000개 받기",
+"btnHit":"🃏 히트",
+"btnStay":"✋ 스테이",
+"btnDouble":"💰 더블 다운",
+"btnNextRound":"▶ 다음 라운드",
+"btnLeaveMatch":"🚪 경기 나가기",
+"btnMenu2":"← 메뉴",
+"logLabel":"💬 게임 기록",
+"log.started":"게임 시작.",
+"bannedH2":"🚫 이 방에서 차단되었습니다",
+"bannedP":"연속으로 너무 여러 번 나갔다 들어왔습니다. 이 방은 당분간 닫혀 있습니다——다른 로비에 참가하세요.",
+"btnBannedMenu":"메뉴로 돌아가기",
+"roomOptH2":"로비 만들기",
+"roomOptP1":"이 방을 찾을 수 있는 사람은?",
+"roomOptP2":"최대 인원(나 + 친구 + 봇):",
+"roomOptCreate":"로비 만들기",
+"roomOptCancel":"취소",
+"rulesH2":"📖 Black Nyack —— 규칙",
+"rulesClose":"알겠습니다",
+"winClose":"닫기",
+"musicHint":"🎵 음악을 들으려면 누르세요",
+"breakLegs":"🦵⚾<br>다리<br>부러뜨리기",
+"musicOn":"🔊 음악 켜짐",
+"musicOff":"🔇 음악 꺼짐",
+"visPrivate":"🔒 비공개",
+"visPublic":"🌍 공개",
+"botCancel":"취소",
+"conn.local":"봇과의 로컬 게임——네트워크가 필요 없습니다. 딜러가 벌써 무례하게 굴고 있습니다.",
+"seat.coins":"코인",
+"betList.bet":"베팅",
+"playersWord":"명",
+"status.gameOver":"🏆 게임 종료——모두 나갔습니다.",
+"status.settledWait":"🎩 딜러가 끝났습니다——결과가 곧 나옵니다…",
+"status.settledWin":"🏆 {n}라운드 종료——{names}이(가) 딜러를 이겼습니다{battle}",
+"status.settledWinBattle":"——⚔️ {name}이(가) Battle Bonyas 보너스를 가져갑니다!",
+"status.settledDealer":"😤 {n}라운드 종료——딜러가 가져갑니다. Nyau가 몹시 거만해합니다.",
+"status.bettingSpec":"👀 관전 중——다음 라운드에 참가합니다. 이 화면에 머무르세요. 다음 베팅 라운드에 자동으로 참가 제안이 뜹니다. 나갔다 들어올 필요가 없습니다.",
+"status.betting":"🎲 {n}라운드——베팅(5 / 10 / 20 / 40 / 50)하거나 관전하세요.",
+"status.turn21":"🃏 당신의 차례——21점입니다! 스테이하고 확정하세요.",
+"status.turn":"🃏 당신의 차례——히트, 스테이, 더블 다운(2장일 때만).",
+"status.turnOther":"{name}이(가) 플레이 중…",
+"status.dealerTurn":"🎩 딜러가 플레이 중…",
+"status.waiting":"대기 중…",
+"status.sub":"{n}라운드 • 스페셜 총합 {s} • 덱 {d}장{battle}{stackPart}",
+"status.stackPart":" • 내 코인: {stack}",
+"status.battlePart":" • ⚔️ BATTLE BONYAS",
+"betList.spectating":"관전 중",
+"betList.deciding":"결정 중…",
+"betList.dash":"—",
+"specialSub.yes":"★ 한 장당 {n}",
+"specialSub.no":"아직 스페셜 값이 없습니다——★가 나오면 주사위를 굴립니다",
+"dealer.label":"딜러",
+"dealer.total":"딜러 — {total}",
+"dealer.totalBust":"딜러 — {total} 버스트",
+"dealer.shows":"딜러 — {card} 공개",
+"seat.bet":"베팅 {n}",
+"seat.doubled":"더블 다운",
+"seat.toMove":"플레이 중",
+"seat.you":"(나)",
+"seat.spectatingTitle":"👀 관전 중",
+"seat.spectatingText":"이 게임을 관전하고 있습니다. 다음 라운드에 참가합니다——이 화면에 머무르면 다음 베팅 라운드에 자동으로 참가 제안이 뜹니다. 나갔다 들어올 필요가 없습니다.",
+"seat.hand":"핸드",
+"seat.yourHand":"내 핸드",
+"seat.bust":"버스트",
+"betPrompt":"베팅하세요——또는 이번 라운드를 관전하세요. 내 코인: {n}개.",
+"betWaiting.yes":"기다리는 중: {names}",
+"betWaiting.no":"모두 결정했습니다…",
+"actionPrompt.21":"당신의 차례——21점입니다! 스테이하고 확정하세요.",
+"actionPrompt.turn":"당신의 차례——{total}점입니다. 히트, 스테이, 더블 다운?",
+"doubleTitle.yes":"베팅을 두 배로({n} 추가) 하고 카드를 정확히 한 장 더 받습니다.",
+"doubleTitle.21":"이미 21점입니다——스테이하고 확정하세요.",
+"doubleTitle.no":"더블 다운은 정확히 2장일 때만 가능하며, 베팅과 같은 금액의 코인이 필요합니다.",
+"win.win":"승리",
+"win.blacknyack":"Blacknyack",
+"win.fiveCard":"5장",
+"win.special":"스페셜 ×{n}",
+"win.battle":"Battle Bonyas",
+"win.stakeBack":"베팅 반환",
+"win.betLost":"베팅 잃음",
+"win.acquired":"🪙 획득",
+"win.capped":"지급이 테이블 최대 한도인 1200코인으로 제한되었습니다.",
+"win.battleNote":"⚔️ Battle Bonyas 승자: {name}——가장 강한 승리 핸드만 보너스를 가져갑니다.",
+"winTitle.win":"🏆 승리!",
+"winTitle.push":"🤝 푸시",
+"winTitle.lose":"😤 딜러가 가져갑니다",
+"banner.blacknyack":"BLACK NYACK",
+"banner.five":"5장",
+"banner.double":"더블 다운",
+"banner.bust":"버스트",
+"banner.win":"승리! +{n}",
+"banner.push":"푸시",
+"banner.battle":"⚔️ BATTLE BONYAS!",
+"card.holePeek":"히든 카드——눌러서 보기",
+"card.specialTitle":"스페셜 카드——이번 라운드에 {n}의 가치",
+"card.worth":"{n}의 가치",
+"toast.legsHealed":"🦵 Nyau의 다리가 다시 자랐습니다. 다시 걷고 있어요——원하는 만큼 부러뜨리세요.(로컬에서만 즐기는 장난입니다.)",
+"toast.crack":"🦵⚾ 쾅! 여전히 카드를 나눠주고 있어요.(로컬에서만 즐기는 장난——테이블은 신경 쓰지 않습니다.)",
+"toast.needPlayers":"시작하려면 최소 1명의 플레이어가 필요합니다.",
+"toast.actionError":"그 행동은 허용되지 않았습니다.",
+"menu.creating":"로비 {code} 만드는 중…",
+"menu.live":"로비 {code}이(가) 열렸습니다——친구들에게 코드를 보내세요.",
+"menu.createErr":"로비를 만들 수 없습니다({err}). 다시 시도하세요.",
+"menu.joinErr":"로비 {code}에 참가할 수 없습니다({err}). 코드를 확인하세요.",
+"menu.joining":"로비 {code}에 참가하는 중…",
+"menu.joined":"로비 {code}에 참가했습니다! 로비에서 대기 중…",
+"menu.stillTrying":"로비 {code}에 계속 연결을 시도 중입니다——코드가 맞나요? 호스트의 로비가 아직 열려 있나요?",
+"menu.noPeerJoin":"멀티플레이어 라이브러리(PeerJS)를 불러올 수 없습니다. 연결을 확인하고 다시 시도하세요.",
+"menu.noPeerCreate":"멀티플레이어 라이브러리(PeerJS)를 불러올 수 없습니다. 연결을 확인하세요——봇과의 플레이는 계속됩니다.",
+"menu.noCode":"먼저 로비 코드를 입력하세요.",
+"menu.deepLink":"로비 {code}을(를) 감지했습니다——“로비 참가”를 눌러 들어가세요.",
+"menu.joinRejected":"참가할 수 없습니다: {err}",
+"menu.roomFull":"방이 가득 찼습니다.",
+"rooms.none":"지금은 공개 방이 없습니다——방을 만들거나 코드로 비공개 로비에 참가하세요.",
+"rooms.dirFail":"목록을 불러올 수 없습니다——디렉터리가 응답하지 않습니다. 코드로 참가하세요.",
+"rooms.noPeer":"목록을 불러올 수 없습니다(멀티플레이어 라이브러리를 사용할 수 없습니다)——코드로 참가하세요.",
+"rooms.asking":"디렉터리에 문의하는 중…",
+"rooms.count":"공개 방 {n}개가 열려 있습니다——눌러서 참가하세요.(자동 참가는 없습니다. 항상 당신이 선택합니다.)",
+"rooms.playingSpectate":"플레이 중——관전",
+"rooms.full":"가득 참",
+"rooms.joinBtn":"참가 →",
+"rooms.playing":"플레이 중",
+"rooms.waiting":"대기 중",
+"lobby.public":"🌍 공개 방——플레이어를 기다리는 동안 “공개 방 둘러보기”에 표시됩니다.",
+"lobby.private":"🔒 비공개 방——코드로만 참가합니다.",
+"lobby.max":"최대 {n}명(봇 포함). 딜러와 혼자 시작하거나 친구를 기다릴 수 있습니다.",
+"lobby.count":"{n} / {max}명.",
+"lobby.hostWait":"당신이 호스트입니다——모두 들어오면 시작을 누르세요.",
+"lobby.guestWait":"호스트가 시작하기를 기다리는 중…",
+"lobby.botsNote":"나 + 봇 {n}개가 이미 {seats}자리를 차지하고 있어, 최대 인원은 여기서 시작합니다.",
+"lobby.host":"호스트",
+"lobby.connHost":"로비 <b>{code}</b>——당신이 호스트입니다. 각자 베팅(5 / 10 / 20 / 40 / 50)하거나 관전하세요. 봇은 당신의 기기에서 실행됩니다.",
+"lobby.hostDisconnected":"<b>호스트의 연결이 끊겼습니다.</b> 로비가 사라졌습니다——메뉴로 돌아가 새 게임을 시작하세요.",
+"lobby.connLost":"<b>연결이 끊겼습니다——다시 연결하는 중…</b> 자리가 10초간 유지됩니다.",
+"lobby.couldNotRejoin":"<b>시간 안에 다시 들어오지 못했습니다.</b> 자리가 회수되었습니다——메뉴에서 다시 들어와 관전자로 돌아오세요.",
+"bots.title":"봇은 몇 명?",
+"bots.sub":"나 + 봇, 총 1~5명. 0명이면 딜러와 1:1입니다. 완전 로컬이며 오프라인에서도 됩니다.",
+"bots.createTitle":"로비 만들기——봇은 몇 명?",
+"bots.createSub":"봇이 로비의 자리를 채웁니다(총 최대 5명: 사람 + 봇).",
+"bots.solo":"0(혼자)",
+"bots.title1":"딜러와 1:1",
+"bots.titleN":"봇 {n}명",
+"copy.copied":"복사했습니다!",
+"copy.prompt":"로비 링크를 복사하세요:",
+"copy.btn":"코드/링크 복사",
+"copy.invite":"Black Nyack 로비 {code}——함께해요: {link}",
+"rules.intro":"<b>목표:</b> 21에서 딜러를 함께 이기는 것입니다. 테이블의 모든 사람은 서로가 아니라 Nyau와 대결합니다.",
+"rules.th1":"결과",
+"rules.th2":"지급(B=위험에 처한 베팅)",
+"rules.rowLose":"패배(버스트, 또는 딜러 승리)",
+"rules.rowLoseV":"0——베팅을 잃습니다",
+"rules.rowPush":"푸시(정확한 무승부)",
+"rules.rowPushV":"B——베팅 반환, 보너스 없음",
+"rules.rowWin":"승리",
+"rules.rowWinV":"2 × B",
+"rules.row21":"정확히 21로 승리",
+"rules.row21V":"+ 3 × B Blacknyack 보너스",
+"rules.rowFive":"5장으로 승리",
+"rules.rowFiveV":"+ 5 × B 5장 보너스",
+"rules.rowSpecial":"스페셜 카드로 승리",
+"rules.rowSpecialV":"스페셜 카드 한 장당 + 2 × B",
+"rules.rowBattle":"Battle Bonyas 승자",
+"rules.rowBattleV":"+ 5 × B 배틀 보너스",
+"rules.worked":"한 플레이어가 한 라운드에서 받는 총 지급은 <b>1200코인</b>으로 제한됩니다. 예: 50 베팅, 5장 21 → 100 + 150 + 250 = <b>500</b>. 50 베팅, 더블 다운(B = 100), 스페셜 1장과 함께 3장 21, Battle Bonyas 승자 → 200 + 300 + 200 + 500 = <b>1200</b>.",
+"rules.li1":"<b>베팅:</b> 매 라운드마다 각 플레이어는 <b>5 / 10 / 20 / 40 / 50</b> 코인을 선택하거나 해당 라운드를 <b>관전</b>합니다. 관전자는 다음 라운드에 자동으로 다시 참가 제안을 받습니다. 아무도 베팅하지 않으면 라운드는 무효가 되고 모두 다시 선택합니다. 모두 <b>1000</b> 코인으로 시작합니다. 0이 되면 라운드 사이에 <b>1000 무료 코인</b>을 받을 수 있습니다. 누구나 <b>언제든 경기를 나갈 수 있습니다</b>.",
+"rules.li2":"<b>딜:</b> 55장 덱(일반 52장 + 스페셜 3장)을 매 라운드 새로 섞습니다. 2장을 받습니다. 첫 번째는 <b>앞면</b>, 두 번째는 <b>뒷면</b>(히든 카드——나만 볼 수 있습니다. 눌러서 보세요). 딜러도 마찬가지입니다. <b>스페셜 카드는 두 번째 카드라도 모든 사람에게 항상 앞면입니다</b>.",
+"rules.li3":"<b>카드 값:</b> 숫자 = 액면가, J/Q/K = 10, 에이스 = 1 또는 11(버스트하지 않는 더 좋은 값), 스페셜 = 해당 라운드의 공유 스페셜 총합.",
+"rules.li4":"<b>내 차례——히트, 스테이, 더블 다운:</b> <b>히트</b>는 카드를 한 장 더 받습니다(최대 3번, 총 5장). <b>스테이</b>는 핸드를 유지합니다. <b>더블 다운</b>은 정확히 2장일 때만 가능합니다. 베팅과 같은 금액을 추가하고 카드를 정확히 한 장 더 받은 뒤 차례가 끝납니다.",
+"rules.li5":"<b>5장 규칙:</b> 버스트 없이 5장을 받으면 <b>딜러의 21도 이깁니다</b>. 5장으로 정확히 21이 가장 강한 핸드입니다——다른 5장 21과만 무승부가 됩니다.",
+"rules.li6":"<b>딜러</b>는 히든 카드를 공개한 뒤 17 미만이면 히트하고 17 이상(소프트 17 포함)에서 스테이합니다. 모든 플레이어가 버스트하면 딜러는 카드를 받지 않습니다.",
+"rules.li7":"<b>스페셜 주사위:</b> 누군가에게 스페셜 카드가 나올 때마다 6면 주사위(면 0, 0, 1, 1, 2, 2)를 굴려 결과가 <b>공유 스페셜 총합에 더해집니다</b>. 테이블의 모든 스페셜 카드는 그 총합만큼의 가치가 됩니다. 예: 내가 1, 딜러가 2를 굴리면 이번 라운드의 모든 스페셜은 3의 가치입니다.",
+"rules.li8":"<b>Battle Bonyas(비밀 랜덤 이벤트):</b> 매 라운드 시작 시 <b>8% 확률</b>로 Battle Bonyas 라운드가 됩니다——한 라운드만 지속됩니다. 딜러를 이긴 플레이어 중 <b>가장 강한 승리 핸드</b>가 배틀 보너스를 가져갑니다. 딜러를 이긴 다른 플레이어는 일반 지급만 받습니다. 아무도 딜러를 이기지 못하면 배틀 승자는 없습니다.",
+"rules.li9":"🎵 <b>음악:</b> 메인 음악은 매 경기 시작부터 반복 재생됩니다. 배틀 음악은 Battle Bonyas 라운드에서만 재생되다가 다시 메인 루프로 돌아갑니다. 🔊 버튼으로 음소거하세요.",
+"rules.li10":"🦵⚾ <b>다리 부러뜨리기:</b> 순전히 재미로——야구 방망이, Nyau, 무제한 사용, 언제든, 로컬에서만. 몇 분 후 다리가 다시 자라고, 방망이는 타격 2초 후에 사라집니다. 게임에는 절대 영향을 주지 않습니다.",
+"rules.li11":"<b>늦게 참가했나요?</b> 진행 중인 게임에 참가하면 <b>관전</b>합니다——자리는 게임 시작 시 고정되므로 이번 경기는 관전하고 다음 경기는 로비에서 참가합니다. 게임 중 연결이 끊기면 자리가 <b>10초간</b> 유지됩니다. 그 후에는 제외되고 관전자로 돌아옵니다.",
+"log.round1":"Black Nyack——1라운드. 베팅(5 / 10 / 20 / 40 / 50)하거나 관전하세요.",
+"log.battle":"이번 라운드는 BATTLE BONYAS입니다! 가장 강한 승리 핸드만 큰 보너스를 가져갑니다.",
+"log.rolled":"{name}이(가) {n}을(를) 굴렸습니다——스페셜 카드는 이제 {total}의 가치입니다.",
+"log.dealt":"{n}라운드——{names}에게 카드를 나눠줬습니다. 딜러가 한 장을 공개합니다.",
+"log.dead":"무효 라운드——아무도 베팅하지 않았습니다. 베팅하고 다시 시도하세요.",
+"log.leftRefund":"{name}이(가) 딜 전 나가서 베팅을 환불받았습니다.",
+"log.leftCards":"{name}이(가) 나갔습니다——카드가 덱으로 돌아갑니다.",
+"log.leftGame":"{name}이(가) 게임을 나갔습니다.",
+"log.noPlayers":"남은 플레이어가 없습니다——라운드가 끝납니다.",
+"log.dealerReveals":"딜러 공개——모든 플레이어가 버스트했으므로 딜러는 카드를 받지 않습니다.",
+"log.dealerPlays":"딜러가 플레이합니다——한 장씩 받는 것을 보세요.",
+"log.dealerStands":"딜러는 {total}에서 스테이합니다.",
+"log.dealerStandsFive":"딜러는 {total}에서 스테이합니다(5장).",
+"log.dealerBusts":"딜러가 {total}으로 버스트했습니다.",
+"log.wins":"{name}이(가) {payout} 획득({total})",
+"log.winsBattle":"{name}이(가) {payout} 획득({total})——BATTLE BONYAS 승자!",
+"log.pushes":"{name}이(가) 푸시——베팅 반환 {payout}({total})",
+"log.loses":"{name}이(가) 패배({total})",
+"log.roundN":"{n}라운드——베팅(5 / 10 / 20 / 40 / 50)하거나 관전하세요.",
+"log.rebought":"{name}이(가) 무료 코인 {n}개를 받았습니다.",
+"log.bets":"{name}이(가) {amount}를 베팅했습니다.",
+"log.spectates":"{name}이(가) 이번 라운드를 관전합니다.",
+"log.hitsBusts":"{name}이(가) 히트하고 버스트했습니다.",
+"log.hitsFive":"{name}이(가) 히트하고 5장을 받았습니다.",
+"log.hits":"{name}이(가) 히트했습니다.",
+"log.stays":"{name}이(가) 스테이했습니다.",
+"log.doublesBusts":"{name}이(가) 더블 다운하고 버스트했습니다.",
+"log.doubles":"{name}이(가) 더블 다운했습니다.",
+"log.joinedSpectate":"{name}이(가) 관전으로 참가했습니다——자리는 게임 시작 시 고정됩니다.",
+"err.rebuyPhase":"라운드 사이에만 코인을 받을 수 있습니다",
+"err.rebuyDecided":"이번 라운드에 이미 결정했습니다——다음 라운드에 받으세요",
+"err.rebuyHasChips":"아직 코인이 있습니다——받을 필요가 없습니다",
+"err.roundNotOver":"라운드가 아직 끝나지 않았습니다",
+"err.alreadyDecided":"이번 라운드에 이미 결정했습니다",
+"err.betMustBe":"베팅은 5, 10, 20, 40, 50 중 하나여야 합니다",
+"err.notEnoughBet":"{amount} 베팅에 코인이 부족합니다",
+"err.notYourTurn":"당신의 차례가 아닙니다",
+"err.notInRound":"당신은 이번 라운드에 참가하지 않았습니다",
+"err.turnOver":"당신의 차례가 끝났습니다",
+"err.have21":"이미 21점입니다——스테이하고 확정하세요",
+"err.have5":"이미 5장이 있습니다——가질 수 있는 최대 장수입니다",
+"err.deckEmpty":"덱이 비어 있습니다",
+"err.double2":"더블 다운은 정확히 2장일 때만 가능합니다",
+"err.doubleChips":"더블 다운할 코인이 부족합니다",
+"err.bettingPhase":"베팅 단계——베팅하거나 관전하세요",
+"err.yourTurn":"당신의 차례——히트, 스테이, 더블 다운",
+"err.dealerPlaying":"딜러가 플레이 중입니다",
+"err.roundOver":"라운드가 끝났습니다——다음 라운드를 시작하세요",
+"err.invalidAction":"지금은 유효한 행동이 아닙니다",
+"err.gameOver":"게임이 끝났습니다",
+"err.leftGame":"이미 게임을 나갔습니다",
+"err.unknownPlayer":"알 수 없는 플레이어",
+"err.alreadyLeft":"이미 나갔습니다",
+"err.badAction":"잘못된 행동",
+"err.roomFull":"방이 가득 찼습니다."
+}
+};
+
+/* Nyau's lines, translated. TAUNTS (English) stays canonical in index.html;
+   these tables only supply the other languages. pickTaunt/pickPainLine
+   consult them when the current language is not English. */
+const TAUNTS_I18N={
+pt:{general:[
+"Vou ganhar. Eu sempre ganho. É praticamente o meu trabalho.",
+"As fichas sempre foram minhas. Você só está guardando para mim.",
+"Vai com calma, pode demorar. Eu tenho o dia todo. Você não.",
+"Eu faria isso dormindo. Provavelmente estou dormindo.",
+"Você sabe que a casa sempre ganha, né? Eu sou a casa.",
+"Deixa as fichas aquecidas para mim, tá?",
+"Eu nunca perco. Só deixo você achar que tem uma chance. Por um tempo.",
+"Minhas orelhas dão sorte. Minhas patas dão mais sorte ainda.",
+"Você está jogando contra MIM. Pensa nisso.",
+"Eu distribuo as cartas, pego as fichas e fico fabuloso. Esse é o trabalho.",
+"Um dia você vai me vencer. Hoje não. Provavelmente nunca.",
+"Nem estou tentando e já estou ganhando.",
+"Boas cartas. Pena que o dealer sou eu.",
+"A mesa me adora. A mesa é minha, na verdade.",
+"Bem-vindo à MINHA mesa. As fichas já são praticamente minhas.",
+"Eu nunca perdi. Nem uma vez. Pergunte a qualquer um. (Não pergunte a ninguém.)",
+"Você joga como a minha avó. E ela é uma cadeira.",
+"Anda logo. Minhas orelhas já estão cansadas só de ver você pensando."],
+pain:["AI! MINHAS PERNAS! ...Quer saber? Continuo distribuindo. Senta aí.","MINHAS PERNAS! Isso doeu! Muito! ...Continuo distribuindo.","De novo?! Minhas pernas! Tá bom. TÁ BOM. O jogo continua."]},
+es:{general:[
+"Voy a ganar. Siempre gano. Es básicamente mi trabajo.",
+"Las fichas siempre fueron mías. Solo las estás guardando para mí.",
+"Tómate tu tiempo. Yo tengo todo el día. Tú no.",
+"Podría hacer esto dormido. Probablemente estoy dormido.",
+"¿Sabes que la casa siempre gana, no? Yo soy la casa.",
+"Tenme las fichas calentitas, ¿vale?",
+"Nunca pierdo. Solo te dejo creer que tienes una oportunidad. Por un rato.",
+"Mis orejas dan suerte. Mis patas dan más suerte.",
+"Estás jugando contra MÍ. Que te quede claro.",
+"Reparto las cartas, me llevo las fichas y me veo fabuloso. Ese es el trabajo.",
+"Un día me ganarás. Hoy no. Probablemente nunca.",
+"Ni siquiera me esfuerzo y ya estoy ganando.",
+"Buenas cartas. Una pena lo del crupier.",
+"La mesa me quiere. La mesa es mía, en realidad.",
+"Bienvenido a MI mesa. Las fichas ya son prácticamente mías.",
+"Nunca he perdido. Ni una vez. Pregúntale a cualquiera. (No le preguntes a nadie.)",
+"Juegas como mi abuela. Y ella es una silla.",
+"Date prisa. Mis orejas ya se cansan solo de verte pensar."],
+pain:["¡AY! ¡MIS PIERNAS! ...¿Sabes qué? Sigo repartiendo. Siéntate.","¡MIS PIERNAS! ¡Eso dolió! ¡Mucho! ...Sigo repartiendo.","¿Otra vez?! ¡Mis piernas! Vale. VALE. El juego continúa."]},
+zh:{general:[
+"我会赢。我总是赢。这基本上就是我的工作。",
+"筹码一直都是我的。你只是在替我保管。",
+"慢慢来，我有一整天的时间。你没有。",
+"我闭着眼睛都能玩。我可能正在睡觉。",
+"你知道庄家总是赢的，对吧？我就是庄家。",
+"帮我把筹码捂热，好吗？",
+"我从不输。我只是让你以为你有机会。就一会儿。",
+"我的耳朵很幸运。我的爪子更幸运。",
+"你在和我对战。好好想想吧。",
+"我发牌，我收筹码，我还很帅。这就是工作。",
+"总有一天你会赢我。不是今天。大概永远不会。",
+"我都没认真就已经在赢了。",
+"牌不错。可惜庄家是我。",
+"牌桌爱我。其实牌桌就是我的。",
+"欢迎来到我的牌桌。筹码基本上已经是我的了。",
+"我从没输过。一次都没有。随便问谁。（别问任何人。）",
+"你打牌像我奶奶。而她是一把椅子。",
+"快点。光看你思考，我的耳朵都累了。"],
+pain:["哎哟！我的腿！……你知道吗？我还要继续发牌。坐下。","我的腿！好疼！非常疼！……我还要继续发牌。","又来？！我的腿！好吧。好吧。游戏继续。"]},
+ja:{general:[
+"俺が勝つ。いつも勝つ。それが俺の仕事だからな。",
+"チップは最初から俺のものだ。お前は預かっているだけだ。",
+"ゆっくり考えろよ。俺は一日中ヒマだ。お前は違うけどな。",
+"寝ながらでもできる。たぶん今も寝てる。",
+"ハウスはいつも勝つって知ってるか？俺がハウスだ。",
+"チップを温めておいてくれよな。",
+"俺は負けたことがない。少しの間だけ、勝てるかもって思わせてやるだけさ。",
+"俺の耳はラッキーだ。足はもっとラッキーだ。",
+"お前は俺と戦ってるんだ。よく考えてみろ。",
+"カードを配って、チップを取って、カッコよく決める。それが仕事さ。",
+"いつか俺に勝てる日が来るよ。今日じゃない。たぶん永遠に来ないけどな。",
+"本気も出してないのに、もう勝ってる。",
+"いいカードだな。ディーラーが俺なのが残念だな。",
+"テーブルは俺が大好きだ。実際、テーブルは俺のものだ。",
+"俺のテーブルへようこそ。チップはもうほぼ俺のものだ。",
+"負けたことは一度もない。一度もだ。誰にでも聞いてみろ。（誰にも聞くなよ。）",
+"お前のプレイは俺のばあちゃんみたいだ。ばあちゃんは椅子だけどな。",
+"早くしろ。お前が考えるのを見てるだけで、俺の耳が疲れてきた。"],
+pain:["イテッ！足が！……まあいい。まだ配るぞ。座ってろ。","足が！痛い！すごく痛い！……まだ配るぞ。","またかよ？！足が！わかった。わかったよ。ゲームは続ける。"]},
+fr:{general:[
+"Je vais gagner. Je gagne toujours. C'est quasiment mon travail.",
+"Les jetons ont toujours été à moi. Tu les gardes juste pour moi.",
+"Prends ton temps. J'ai toute la journée. Toi, non.",
+"Je pourrais faire ça en dormant. Je dors probablement.",
+"Tu sais que la maison gagne toujours, non ? Je suis la maison.",
+"Garde les jetons au chaud pour moi, d'accord ?",
+"Je ne perds jamais. Je te laisse juste croire que tu as une chance. Un moment.",
+"Mes oreilles portent chance. Mes pattes portent encore plus chance.",
+"Tu joues contre MOI. Laisse ça te rentrer dans la tête.",
+"Je distribue les cartes, je prends les jetons, je suis fabuleux. C'est le travail.",
+"Un jour, tu me battras. Pas aujourd'hui. Probablement jamais.",
+"Je n'essaie même pas et je gagne déjà.",
+"Belles cartes. Dommage pour le croupier.",
+"La table m'adore. La table est à moi, en fait.",
+"Bienvenue à MA table. Les jetons sont déjà quasiment à moi.",
+"Je n'ai jamais perdu. Jamais. Demande à n'importe qui. (Ne demande à personne.)",
+"Tu joues comme ma grand-mère. Et elle, c'est une chaise.",
+"Dépêche-toi. Mes oreilles sont fatiguées rien qu'à te regarder réfléchir."],
+pain:["AÏE ! MES JAMBES ! ...Tu sais quoi ? Je distribue quand même. Assieds-toi.","MES JAMBES ! Ça fait mal ! Très mal ! ...Je distribue quand même.","Encore ?! Mes jambes ! D'accord. D'ACCORD. La partie continue."]},
+ko:{general:[
+"내가 이길 거야. 난 항상 이겨. 그게 basically 내 일이야.",
+"코인은 원래부터 내 거야. 넌 잠깐 맡고 있을 뿐이야.",
+"천천히 해. 난 하루 종일 시간이 있어. 넌 없지.",
+"자는 동안에도 할 수 있어. 아마 지금 자고 있을 거야.",
+"하우스는 항상 이긴다는 거 알지? 내가 하우스야.",
+"코인을 따뜻하게 보관해 줄래?",
+"난 절대 안 져. 잠깐 네가 기회가 있다고 믿게 해줄 뿐이야.",
+"내 귀는 행운이야. 내 발은 더 행운이야.",
+"넌 나와 대결하고 있어. 그걸 곱씹어 봐.",
+"내가 카드를 나누고, 코인을 가져가고, 멋지게 보이는 거야. 그게 일이야.",
+"언젠가 넌 날 이길 거야. 오늘이 아니야. 아마 영원히 아니야.",
+"애쓰지도 않는데 벌써 이기고 있어.",
+"좋은 패네. 딜러가 나라서 아쉽네.",
+"테이블은 날 사랑해. 사실 테이블은 내 거야.",
+"내 테이블에 온 걸 환영해. 코인은 사실상 이미 내 거야.",
+"난 한 번도 진 적이 없어. 단 한 번도. 누구한테든 물어봐.(아무한테도 묻지 마.)",
+"넌 우리 할머니처럼 플레이해. 할머니는 의자야.",
+"빨리 해. 네가 생각하는 걸 보는 것만으로 내 귀가 피곤해."],
+pain:["아야! 내 다리! ……뭐 어때? 난 계속 카드를 나눌 거야. 앉아.","내 다리! 아파! 엄청 아파! ……난 계속 카드를 나눌 거야.","또?! 내 다리! 알았어. 알았다고. 게임은 계속해."]}
+};
+
+const LANGS=['en','pt','es','zh','ja','fr','ko'];
+function resolveLang(code){
+  if(!code) return 'en';
+  const c=String(code).toLowerCase().replace('_','-').split('-')[0];
+  return LANGS.indexOf(c)>=0?c:'en';
+}
+function t(key, vars){
+  const d=I18N[currentLang]||{};
+  let s=(key in d)?d[key]:((key in I18N.en)?I18N.en[key]:key);
+  if(vars) for(const k of Object.keys(vars)) s=s.split('{'+k+'}').join(String(vars[k]));
+  return s;
+}
+/* The engine's log lines stay English (single source of truth, tests pin
+   them); the UI translates them at display time by matching the exact
+   English patterns. Order matters: the more specific pattern first. */
+const LOG_PATTERNS=[
+ {re:/^Black Nyack — round 1\. Place your bet \(5 \/ 10 \/ 20 \/ 40 \/ 50\) or spectate\.$/, key:'log.round1', vars:[]},
+ {re:/^BATTLE BONYAS is live this round! The single best winning hand takes a huge bonus\.$/, key:'log.battle', vars:[]},
+ {re:/^(.*) rolled (\d+) — special cards now worth (\d+)\.$/, key:'log.rolled', vars:['name','n','total']},
+ {re:/^Round (\d+) — cards dealt to (.*)\. Dealer shows one card\.$/, key:'log.dealt', vars:['n','names']},
+ {re:/^Dead round — nobody bet\. Place your bets and try again\.$/, key:'log.dead', vars:[]},
+ {re:/^(.*) left before the deal — bet refunded\.$/, key:'log.leftRefund', vars:['name']},
+ {re:/^(.*) left — their cards return to the deck\.$/, key:'log.leftCards', vars:['name']},
+ {re:/^(.*) left the game\.$/, key:'log.leftGame', vars:['name']},
+ {re:/^No players left — the round ends\.$/, key:'log.noPlayers', vars:[]},
+ {re:/^Dealer reveals — every player busted, so the dealer does not draw\.$/, key:'log.dealerReveals', vars:[]},
+ {re:/^Dealer plays — watch him draw, one card at a time\.$/, key:'log.dealerPlays', vars:[]},
+ {re:/^Dealer stands on (\d+) with 5 cards\.$/, key:'log.dealerStandsFive', vars:['total']},
+ {re:/^Dealer stands on (\d+)\.$/, key:'log.dealerStands', vars:['total']},
+ {re:/^Dealer busts with (\d+)\.$/, key:'log.dealerBusts', vars:['total']},
+ {re:/^(.*) wins (\d+) \((\d+)\) — BATTLE BONYAS WINNER!$/, key:'log.winsBattle', vars:['name','payout','total']},
+ {re:/^(.*) wins (\d+) \((\d+)\)$/, key:'log.wins', vars:['name','payout','total']},
+ {re:/^(.*) pushes — stake back (\d+) \((\d+)\)$/, key:'log.pushes', vars:['name','payout','total']},
+ {re:/^(.*) loses \((\d+)\)$/, key:'log.loses', vars:['name','total']},
+ {re:/^Round (\d+) — place your bets \(5 \/ 10 \/ 20 \/ 40 \/ 50\) or spectate\.$/, key:'log.roundN', vars:['n']},
+ {re:/^(.*) rebought (\d+) free chips\.$/, key:'log.rebought', vars:['name','n']},
+ {re:/^(.*) bets (\d+)\.$/, key:'log.bets', vars:['name','amount']},
+ {re:/^(.*) spectates this round\.$/, key:'log.spectates', vars:['name']},
+ {re:/^(.*) hits and busts\.$/, key:'log.hitsBusts', vars:['name']},
+ {re:/^(.*) hits and holds 5 cards\.$/, key:'log.hitsFive', vars:['name']},
+ {re:/^(.*) hits\.$/, key:'log.hits', vars:['name']},
+ {re:/^(.*) stays\.$/, key:'log.stays', vars:['name']},
+ {re:/^(.*) doubles down and busts\.$/, key:'log.doublesBusts', vars:['name']},
+ {re:/^(.*) doubles down\.$/, key:'log.doubles', vars:['name']},
+ {re:/^(.*) joined to spectate — seats are fixed once a game starts\.$/, key:'log.joinedSpectate', vars:['name']}
+];
+function translateLog(line){
+  if(currentLang==='en') return line;
+  for(const p of LOG_PATTERNS){
+    const m=p.re.exec(line);
+    if(!m) continue;
+    const vars={};
+    p.vars.forEach((k,i)=>{ vars[k]=m[i+1]; });
+    return t(p.key, vars);
+  }
+  return line;
+}
+/* Engine action errors (and the host's "room is full.") arrive in English;
+   translate the known ones, pass anything else through untouched. */
+const ERROR_MAP={
+ 'you can only rebuy between rounds':'err.rebuyPhase',
+ 'you already decided this round — rebuy next round':'err.rebuyDecided',
+ 'you still have chips — no rebuy needed':'err.rebuyHasChips',
+ 'the round is not over yet':'err.roundNotOver',
+ 'you already decided this round':'err.alreadyDecided',
+ 'bet must be one of 5, 10, 20, 40, 50':'err.betMustBe',
+ 'not your turn':'err.notYourTurn',
+ 'you are not in this round':'err.notInRound',
+ 'your turn is over':'err.turnOver',
+ 'you already have 21 — stay and take it':'err.have21',
+ 'you already have 5 cards — the most you can hold':'err.have5',
+ 'the deck is empty':'err.deckEmpty',
+ 'double down is only possible with exactly 2 cards':'err.double2',
+ 'not enough chips to double down':'err.doubleChips',
+ 'betting phase — place a bet or spectate':'err.bettingPhase',
+ 'your turn — hit, stay, or double down':'err.yourTurn',
+ 'the dealer is playing':'err.dealerPlaying',
+ 'round is over — start the next round':'err.roundOver',
+ 'not a valid action right now':'err.invalidAction',
+ 'game is over':'err.gameOver',
+ 'you have left the game':'err.leftGame',
+ 'unknown player':'err.unknownPlayer',
+ 'you already left':'err.alreadyLeft',
+ 'bad action':'err.badAction',
+ 'room is full.':'err.roomFull'
+};
+function translateError(msg){
+  if(!msg) return msg;
+  if(currentLang!=='en'){
+    if(ERROR_MAP[msg]) return t(ERROR_MAP[msg]);
+    const m=/^not enough chips for a (\d+) bet$/.exec(msg);
+    if(m) return t('err.notEnoughBet', {amount:m[1]});
+  }
+  return msg;
+}
+/* Nyau's lines in the current language (English tables stay canonical). */
+function tauntLinesFor(kind){
+  if(currentLang==='en') return kind==='pain'?PAIN_LINES:TAUNTS.general;
+  const tab=TAUNTS_I18N[currentLang];
+  if(tab&&tab[kind]&&tab[kind].length) return tab[kind];
+  return kind==='pain'?PAIN_LINES:TAUNTS.general;
+}
+let currentLang='en';
+function applyI18n(){
+  try{ document.documentElement.lang=currentLang; }catch(e){}
+  const sel=$('langSelect'); if(sel) sel.value=currentLang;
+  document.querySelectorAll('[data-i18n]').forEach(el=>{ el.textContent=t(el.getAttribute('data-i18n')); });
+  document.querySelectorAll('[data-i18n-html]').forEach(el=>{ el.innerHTML=t(el.getAttribute('data-i18n-html')); });
+  document.querySelectorAll('[data-i18n-ph]').forEach(el=>{ el.placeholder=t(el.getAttribute('data-i18n-ph')); });
+  const mt=$('musicToggle'); if(mt) mt.textContent=t(musicOn?'musicOn':'musicOff');
+  if(!$('lobbyScreen').classList.contains('hidden')) renderLobby();
+  if(!$('rulesModal').classList.contains('hidden')) $('rulesBody').innerHTML=rulesHtml();
+  if(view) render();
+}
+function setLang(lang){
+  currentLang=resolveLang(lang);
+  try{ localStorage.setItem('lang', currentLang); }catch(e){}
+  applyI18n();
+}
+function initI18n(){
+  let stored=null;
+  try{ stored=localStorage.getItem('lang'); }catch(e){}
+  let nav='';
+  try{ nav=navigator.language||navigator.userLanguage||''; }catch(e){}
+  currentLang=resolveLang(stored||nav||'en');
+  applyI18n();
+}
 const $=id=>document.getElementById(id);
 function show(id,on){ const el=$(id); if(el) el.classList.toggle('hidden',!on); }
 function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
-function toast(msg){ const el=$('effectPrompt'); if(el) el.textContent=msg||''; }
+function toast(msg){ const el=$('effectPrompt'); if(el) el.textContent=translateError(msg)||''; }
 function pace(a,b){ return a+Math.random()*(b-a); }
 
 /* ---------- state (UI-side) ---------- */
@@ -1042,7 +3144,7 @@ function startMatchMusic(){
 function stopMusic(){ musicStarted=false; currentTrack=null; pauseBoth(); show('musicHint', false); }
 function toggleMusic(){
   musicOn=!musicOn;
-  $('musicToggle').textContent=musicOn?'🔊 Music on':'🔇 Music off';
+  $('musicToggle').textContent=t(musicOn?'musicOn':'musicOff');
   if(!musicOn){ pauseBoth(); currentTrack=null; }
   else if(musicStarted){ currentTrack=null; ensureMusic(); }
 }
@@ -1097,13 +3199,13 @@ let dieQueue=[], dieRolling=false, dieTimer=null, dieTick=null, seenRollsThisRou
 const TAUNTS={
   general:["I'm gonna win. I always win. It's basically my job.","The coins were always mine. You're just holding them for me.","Go on, take your time. I've got all day. You don't.","I could do this in my sleep. I probably am.","You know the house always wins, right? I'm the house.","Keep the coins warm for me, will you?","I never lose. I just let you think you have a chance. For a bit.","My ears are lucky. My paws are luckier.","You're playing against ME. Let that sink in.","I deal the cards, I take the coins, I look fabulous. That's the job.","One day you'll beat me. Not today. Probably not ever.","I'm not even trying and I'm still winning.","Nice cards. Shame about the dealer.","The table loves me. The table is mine, actually.","Welcome to MY table. The coins are basically already mine.","I have never lost. Not once. Ask anyone. (Don't ask anyone.)","You play like my grandmother. And she is a chair.","Hurry up. My ears are getting tired just watching you think."]
 };
-function pickTaunt(){ const arr=TAUNTS.general; return arr[Math.floor(Math.random()*arr.length)]; }
+function pickTaunt(){ const arr=tauntLinesFor('general'); return arr[Math.floor(Math.random()*arr.length)]; }
 /* The one exception: breaking his legs. That is not a game event — it is the
    player's own direct action on their own screen, so a pain line is always in
    sync with what just happened. His face shows the pain every time; the
    words only sometimes (dealerSay still gates on tauntChance). */
 const PAIN_LINES=["OW! MY LEGS! ...You know what? I'm still dealing. Sit down.","MY LEGS! That hurt! A lot! ...I'm still dealing.","Again?! My legs! Fine. FINE. The game goes on."];
-function pickPainLine(){ return PAIN_LINES[Math.floor(Math.random()*PAIN_LINES.length)]; }
+function pickPainLine(){ const arr=tauntLinesFor('pain'); return arr[Math.floor(Math.random()*arr.length)]; }
 /* The bubble only appears when he actually speaks, and goes away a few
    seconds later — most of the time there is no bubble at all. */
 function hideBubble(){ const el=$('tauntBubble'); if(el) el.classList.add('hidden'); }
@@ -1223,7 +3325,7 @@ function healLegs(){
   const legs=$('dealerLegs'); if(legs) legs.classList.remove('broken');
   updateDealerFace();
   dealerSay('healed');
-  toast('🦵 Nyau\'s legs grew back. He\'s walking again — break them as many times as you like. (Local fun only.)');
+  toast(t('toast.legsHealed'));
 }
 function breakLegs(){
   legBreaks++;
@@ -1243,7 +3345,7 @@ function breakLegs(){
     zone.appendChild(fl);
     setTimeout(()=>{ if(fl.parentNode) fl.parentNode.removeChild(fl); }, 1000);
   }
-  toast('🦵⚾ CRACK! He\'s still dealing. (Local fun only — the table doesn\'t care.)');
+  toast(t('toast.crack'));
 }
 
 /* ---- round-table layout: landscape / desktop = the round table from the
@@ -1291,7 +3393,7 @@ function cardHtml(c, big){
   if(!known) return '<div class="'+cls+' back">'+(big?'<span style="font-size:26px">🂠</span><span class="pts">?</span>':'?')+'</div>';
   if(c.special){
     const w=(view&&view.round)?view.round.specialTotal:0;
-    return '<div class="'+cls+' special" title="Special card — worth '+w+' this round">'+(big?'<span>★</span><span class="suit">SP</span><span class="pts">worth '+w+'</span>':'<span>★</span><span>SP</span>')+'</div>';
+    return '<div class="'+cls+' special" title="'+esc(t('card.specialTitle',{n:w}))+'">'+(big?'<span>★</span><span class="suit">SP</span><span class="pts">'+esc(t('card.worth',{n:w}))+'</span>':'<span>★</span><span>SP</span>')+'</div>';
   }
   return '<div class="'+cls+(red?' red':'')+'">'+(big?'<span>'+esc(c.rank)+'</span><span class="suit">'+esc(c.suit)+'</span>':'<span>'+esc(c.rank)+'</span><span>'+esc(c.suit)+'</span>')+'</div>';
 }
@@ -1315,7 +3417,7 @@ function isMyHoleCard(p, idx, c){
 }
 function myCardHtml(c, idx, p){
   if(isMyHoleCard(p, idx, c) && !myHoleRevealed[c.id]){
-    return '<div class="card-big back" data-hole="'+esc(c.id)+'" title="Your hole card — tap to peek"><span style="font-size:26px">🂠</span><span class="pts">hole card — tap to peek</span></div>';
+    return '<div class="card-big back" data-hole="'+esc(c.id)+'" title="'+esc(t('card.holePeek'))+'"><span style="font-size:26px">🂠</span><span class="pts">'+esc(t('card.holePeek'))+'</span></div>';
   }
   return cardHtml(c, true);
 }
@@ -1377,22 +3479,22 @@ function startDealerReveal(){
 
 function bannerFor(p){
   const settled=view&&view.phase==='settled';
-  if(p.busted) return '<div class="banner bust">BUST</div>';
+  if(p.busted) return '<div class="banner bust">'+esc(t('banner.bust'))+'</div>';
   if(settled && resultsShown && view.results && view.results[p.id]){
     const r=view.results[p.id];
     if(r.outcome==='win'){
-      if(r.battleWinner) return '<div class="banner battle">⚔️ BATTLE BONYAS!</div><div class="banner win" style="top:64%">WIN! +'+r.payout+'</div>';
-      return '<div class="banner win">WIN! +'+r.payout+'</div>';
+      if(r.battleWinner) return '<div class="banner battle">'+esc(t('banner.battle'))+'</div><div class="banner win" style="top:64%">'+esc(t('banner.win',{n:r.payout}))+'</div>';
+      return '<div class="banner win">'+esc(t('banner.win',{n:r.payout}))+'</div>';
     }
-    if(r.outcome==='push') return '<div class="banner push">PUSH</div>';
+    if(r.outcome==='push') return '<div class="banner push">'+esc(t('banner.push'))+'</div>';
     return '';
   }
   const n=p.cards?p.cards.length:0;
   const total=p.total;
-  if(n>=5 && total===21) return '<div class="banner gold">BLACK NYACK</div>';
-  if(n>=5) return '<div class="banner gold">5 CARD</div>';
-  if(total===21) return '<div class="banner gold">BLACK NYACK</div>';
-  if(p.doubled) return '<div class="banner gold">DOUBLE DOWN</div>';
+  if(n>=5 && total===21) return '<div class="banner gold">'+esc(t('banner.blacknyack'))+'</div>';
+  if(n>=5) return '<div class="banner gold">'+esc(t('banner.five'))+'</div>';
+  if(total===21) return '<div class="banner gold">'+esc(t('banner.blacknyack'))+'</div>';
+  if(p.doubled) return '<div class="banner gold">'+esc(t('banner.double'))+'</div>';
   return '';
 }
 function seatColor(seat){ return SEAT_COLORS[(seat||0)%SEAT_COLORS.length]; }
@@ -1438,29 +3540,29 @@ function render(){
 
   /* status */
   let status='';
-  if(view.phase==='over'){ status='🏆 Game over — everyone left.'; }
+  if(view.phase==='over'){ status=t('status.gameOver'); }
   else if(settled){
-    if(!resultsShown){ status='🎩 Dealer is done — results in a moment…'; }
+    if(!resultsShown){ status=t('status.settledWait'); }
     else {
       const wins=view.results?Object.keys(view.results).filter(id=>view.results[id].outcome==='win').map(id=>{ const p=view.players.find(x=>x.id===id); return p?p.name:id; }):[];
       const bw=view.round&&view.round.battleWinnerId?view.players.find(x=>x.id===view.round.battleWinnerId):null;
-      status=wins.length?('🏆 Round '+view.roundNumber+' over — '+wins.join(' & ')+' beat the dealer'+(bw?' — ⚔️ '+bw.name+' takes the Battle Bonyas bonus!':'')):'😤 Round '+view.roundNumber+' over — the dealer takes it. Nyau is insufferable about it.';
+      status=wins.length?t('status.settledWin',{n:view.roundNumber,names:wins.join(' & '),battle:bw?t('status.settledWinBattle',{name:bw.name}):''}):t('status.settledDealer',{n:view.roundNumber});
     }
   }
   else if(view.phase==='betting'){
-    status=isSpec?'👀 Spectating — you\'re up for the next round. Stay on this screen: you\'ll be offered entry at the next betting round, no leaving and rejoining needed.':'🎲 Round '+view.roundNumber+' — place your bet (5 / 10 / 20 / 40 / 50) or spectate.';
+    status=isSpec?t('status.bettingSpec'):t('status.betting',{n:view.roundNumber});
   }
   else if(view.phase==='playerTurns'){
-    status=isMyTurn?(me&&me.total===21?'🃏 Your turn — 21 in hand! Stay and lock it in.':'🃏 Your turn — Hit, Stay, or Double Down (2 cards only).'):(turnP?turnP.name+' is playing…':'');
+    status=isMyTurn?(me&&me.total===21?t('status.turn21'):t('status.turn')):(turnP?t('status.turnOther',{name:turnP.name}):'');
   }
-  else if(view.phase==='dealerTurn'){ status='🎩 Dealer is playing…'; }
-  else { status='Waiting…'; }
-  const sub='Round '+view.roundNumber+' • Special total '+(view.round?view.round.specialTotal:0)+' • Deck '+view.deckCount+' cards'+(view.round&&view.round.battle?' • ⚔️ BATTLE BONYAS':'')+(me?' • Your stack: '+me.stack+' coins':'');
+  else if(view.phase==='dealerTurn'){ status=t('status.dealerTurn'); }
+  else { status=t('status.waiting'); }
+  const sub=t('status.sub',{n:view.roundNumber,s:(view.round?view.round.specialTotal:0),d:view.deckCount,battle:(view.round&&view.round.battle)?t('status.battlePart'):'',stackPart:me?t('status.stackPart',{stack:me.stack}):''});
   $('statusBox').innerHTML=esc(status)+'<small>'+esc(sub)+'</small>';
 
   /* bet list (top-left, like the screenshots) */
   $('betList').innerHTML=view.players.filter(p=>!p.left).map(p=>{
-    const right=p.bet>0?('<b>'+p.bet+' BET</b>'):(p.spectating?'<span class="tag2">spectating</span>':(view.phase==='betting'?'<span class="tag2">deciding…</span>':'<span class="tag2">—</span>'));
+    const right=p.bet>0?('<b>'+p.bet+' '+esc(t('betList.bet'))+'</b>'):(p.spectating?'<span class="tag2">'+esc(t('betList.spectating'))+'</span>':(view.phase==='betting'?'<span class="tag2">'+esc(t('betList.deciding'))+'</span>':'<span class="tag2">'+esc(t('betList.dash'))+'</span>'));
     return '<div class="bl-row"><span><span class="dot" style="background:'+seatColor(p.seat)+'"></span>'+esc(p.name)+(p.isBot?' 🤖':'')+' <span class="tag2">• '+p.stack+'</span></span><span>'+right+'</span></div>';
   }).join('');
 
@@ -1468,7 +3570,7 @@ function render(){
   const st=view.round?view.round.specialTotal:0;
   const rolled=((view.round&&view.round.rolls)||[]).length>0; // a 0-roll is still a roll — the die landed on blank
   $('specialTotal').textContent=st;
-  $('specialSub').textContent=rolled?('Every ★ is worth '+st):'No special value yet — deal a ★ to roll the die';
+  $('specialSub').textContent=rolled?t('specialSub.yes',{n:st}):t('specialSub.no');
   // a new round starts with a clean die; rolls in this round re-show it
   if(view.roundNumber!==lastDieRound){ lastDieRound=view.roundNumber; hideDie(); dieQueue.length=0; clearTimeout(dieTimer); clearInterval(dieTick); dieRolling=false; seenRollsThisRound=0; }
   detectSpecialRolls();
@@ -1480,14 +3582,14 @@ function render(){
      up-card shows. */
   const d=view.dealer;
   const dCards=d.cards.map((c,i)=>(settled&&!resultsShown&&i>=dealerRevealCount)?{hidden:true}:c).map(c=>cardHtml(c,false)).join('');
-  let dLabel='DEALER';
+  let dLabel=t('dealer.label');
   let dBanner='';
   if(d.total!==null&&d.total!==undefined){
-    dLabel='DEALER — '+fmtTotal(d.total,d.low)+(d.total>21?' BUST':'');
-    if(d.total>21) dBanner='<div class="banner bust">BUST</div>';
+    dLabel=d.total>21?t('dealer.totalBust',{total:fmtTotal(d.total,d.low)}):t('dealer.total',{total:fmtTotal(d.total,d.low)});
+    if(d.total>21) dBanner='<div class="banner bust">'+esc(t('banner.bust'))+'</div>';
   } else {
     const up=d.cards.find(c=>c&&c.rank);
-    if(up) dLabel='DEALER — shows '+cardValueLabel(up);
+    if(up) dLabel=t('dealer.shows',{card:cardValueLabel(up)});
   }
   $('dealerHand').innerHTML='<div class="dh-label">'+esc(dLabel)+'</div><div class="hand-wrap"><div class="scards">'+dCards+'</div>'+dBanner+'</div>';
 
@@ -1498,43 +3600,43 @@ function render(){
     const dEl=document.createElement('div');
     dEl.className='seat'+(active?' active':'');
     dEl.setAttribute('data-pid', p.id);
-    const totalLine=(settled&&resultsShown)?(p.total!==null&&p.total!==undefined?(' • <b>'+fmtTotal(p.total,p.low)+'</b>'):''):(p.busted?' • <b>BUST</b>':'');
-    dEl.innerHTML='<div class="sname"><span class="dot" style="background:'+seatColor(p.seat)+'"></span>'+esc(p.name)+(p.isBot?' 🤖':'')+' <span class="tag2">• '+p.stack+' coins'+(p.bet>0?' • bet '+p.bet:'')+(p.doubled?' • doubled':'')+(active?' • to move':'')+'</span></div>'+
+    const totalLine=(settled&&resultsShown)?(p.total!==null&&p.total!==undefined?(' • <b>'+fmtTotal(p.total,p.low)+'</b>'):''):(p.busted?' • <b>'+esc(t('seat.bust'))+'</b>':'');
+    dEl.innerHTML='<div class="sname"><span class="dot" style="background:'+seatColor(p.seat)+'"></span>'+esc(p.name)+(p.isBot?' 🤖':'')+' <span class="tag2">• '+p.stack+' '+esc(t('seat.coins'))+(p.bet>0?' • '+esc(t('seat.bet',{n:p.bet})):'')+(p.doubled?' • '+esc(t('seat.doubled')):'')+(active?' • '+esc(t('seat.toMove')):'')+'</span></div>'+
       '<div class="hand-wrap"><div class="scards" data-pid="'+p.id+'">'+p.cards.map(c=>miniCardHtml(c)).join('')+'</div>'+bannerFor(p)+'</div>'+
-      (totalLine?'<div class="hand-total">Hand'+totalLine+'</div>':'');
+      (totalLine?'<div class="hand-total">'+esc(t('seat.hand'))+totalLine+'</div>':'');
     oppBox.appendChild(dEl);
   });
 
   /* my seat */
   const myBox=$('mySeat'); myBox.innerHTML='';
   if(!me||isSpectator){
-    myBox.innerHTML='<div class="seat" data-pid="spectator"><div class="sname">👀 Spectating</div><div style="color:var(--mut);font-size:14px;line-height:1.5;padding:6px 0">You are watching this game. You\'re up for the next round — just stay on this screen and you\'ll be offered entry at the next betting round. No leaving and rejoining needed.</div></div>';
+    myBox.innerHTML='<div class="seat" data-pid="spectator"><div class="sname">'+esc(t('seat.spectatingTitle'))+'</div><div style="color:var(--mut);font-size:14px;line-height:1.5;padding:6px 0">'+esc(t('seat.spectatingText'))+'</div></div>';
   } else {
     const md=document.createElement('div');
     md.className='seat me'+(isMyTurn?' active':'');
     md.setAttribute('data-pid', me.id);
-    const totalLine=(me.total!==null&&me.total!==undefined)?(' • <b>'+fmtTotal(me.total,me.low)+'</b>'+(me.busted?' — BUST':'')):'';
-    md.innerHTML='<div class="sname"><span class="dot" style="background:'+seatColor(me.seat)+'"></span>'+esc(me.name)+' (you) <span class="tag2">• '+me.stack+' coins'+(me.bet>0?' • bet '+me.bet:'')+(me.doubled?' • doubled':'')+'</span></div>'+
+    const totalLine=(me.total!==null&&me.total!==undefined)?(' • <b>'+fmtTotal(me.total,me.low)+'</b>'+(me.busted?' — '+esc(t('seat.bust')):'')):'';
+    md.innerHTML='<div class="sname"><span class="dot" style="background:'+seatColor(me.seat)+'"></span>'+esc(me.name)+' '+esc(t('seat.you'))+' <span class="tag2">• '+me.stack+' '+esc(t('seat.coins'))+(me.bet>0?' • '+esc(t('seat.bet',{n:me.bet})):'')+(me.doubled?' • '+esc(t('seat.doubled')):'')+'</span></div>'+
       '<div class="hand-wrap"><div class="scards" id="myCards">'+me.cards.map((c,i)=>myCardHtml(c,i,me)).join('')+'</div>'+bannerFor(me)+'</div>'+
-      '<div class="hand-total">Your hand'+totalLine+'</div>';
+      '<div class="hand-total">'+esc(t('seat.yourHand'))+totalLine+'</div>';
     myBox.appendChild(md);
   }
 
   /* betting panel */
   show('betBox', !!isMyBet);
   if(isMyBet){
-    $('betPrompt').textContent='Place your bet — or spectate this round. Your stack: '+me.stack+' coins.';
+    $('betPrompt').textContent=t('betPrompt',{n:me.stack});
     const chips=$('betChips'); chips.innerHTML='';
     BETS.forEach(b=>{
       const btn=document.createElement('button');
       btn.type='button'; btn.className='chip c'+b; btn.textContent=''+b;
       btn.disabled=me.stack<b;
-      btn.title=b+' coins';
+      btn.title=b+' '+t('seat.coins');
       btn.onclick=()=>sendAction({type:'placeBet', amount:b});
       chips.appendChild(btn);
     });
     const waiting=view.players.filter(p=>!p.left&&p.bet<=0&&!p.spectating&&p.id!==myId).map(p=>p.name);
-    $('betWaiting').textContent=waiting.length?('Waiting for: '+waiting.join(', ')):'Everyone has decided…';
+    $('betWaiting').textContent=waiting.length?t('betWaiting.yes',{names:waiting.join(', ')}):t('betWaiting.no');
     show('btnRebuyBet', me.stack===0);
   } else { show('btnRebuyBet', false); }
 
@@ -1543,12 +3645,12 @@ function render(){
   if(isMyTurn){
     const acts=actionsFor(me);
     $('actionPrompt').textContent=me.total===21
-      ?'Your turn — 21 in hand! Stay and lock it in.'
-      :'Your turn — '+me.total+' in hand. Hit, Stay, or Double Down?';
+      ?t('actionPrompt.21')
+      :t('actionPrompt.turn',{total:me.total});
     $('btnHit').disabled=!acts.hit;
     $('btnDouble').disabled=!acts.dbl;
-    $('btnDouble').title=acts.dbl?'Double your bet ('+me.bet+' more) for exactly one more card.'
-      :(me.total===21?'You already have 21 — stay and take it.':'Double down needs exactly 2 cards and enough chips to match your bet.');
+    $('btnDouble').title=acts.dbl?t('doubleTitle.yes',{n:me.bet})
+      :(me.total===21?t('doubleTitle.21'):t('doubleTitle.no'));
   }
 
   /* next round / rebuy — only once the results are showing, so nobody can
@@ -1564,7 +3666,7 @@ function render(){
   const settleLines=(settled&&!resultsShown)?1+view.players.filter(p=>!p.left&&p.cardCount>0).length:0;
   const logLines=(view.log||[]);
   const shownLog=settleLines>0?logLines.slice(0, Math.max(0, logLines.length-settleLines)):logLines;
-  $('logBox').innerHTML=shownLog.map(l=>'<div>'+esc(l)+'</div>').join('');
+  $('logBox').innerHTML=shownLog.map(l=>'<div>'+esc(translateLog(l))+'</div>').join('');
   const logEl=$('logBox'); logEl.scrollTop=logEl.scrollHeight;
 
   if(settled&&dialogReady) showWinDialog();
@@ -1586,52 +3688,53 @@ function showWinDialog(){
   const bd=r.breakdown||{};
   const rows=[];
   if(r.outcome==='win'){
-    if(bd.win) rows.push(['Win', bd.win]);
-    if(bd.blacknyack) rows.push(['Blacknyack', bd.blacknyack]);
-    if(bd.fiveCard) rows.push(['5 Card', bd.fiveCard]);
-    if(bd.special) rows.push(['Special ×'+(r.specials||0), bd.special]);
-    if(bd.battle) rows.push(['Battle Bonyas', bd.battle]);
+    if(bd.win) rows.push([t('win.win'), bd.win]);
+    if(bd.blacknyack) rows.push([t('win.blacknyack'), bd.blacknyack]);
+    if(bd.fiveCard) rows.push([t('win.fiveCard'), bd.fiveCard]);
+    if(bd.special) rows.push([t('win.special',{n:r.specials||0}), bd.special]);
+    if(bd.battle) rows.push([t('win.battle'), bd.battle]);
   } else if(r.outcome==='push'){
-    rows.push(['Stake back', r.payout]);
+    rows.push([t('win.stakeBack'), r.payout]);
   } else {
-    rows.push(['Bet lost', 0]);
+    rows.push([t('win.betLost'), 0]);
   }
   const bw=view.round&&view.round.battleWinnerId?view.players.find(x=>x.id===view.round.battleWinnerId):null;
   if(r.outcome==='win'&&r.battleWinner) dealerSay('battleWin');
   else if(r.outcome==='win') dealerSay('playerWin');
   else if(r.outcome==='lose') dealerSay('dealerWin');
-  $('winTitle').textContent=r.outcome==='win'?'🏆 WIN!':(r.outcome==='push'?'🤝 PUSH':'😤 Dealer takes it');
+  $('winTitle').textContent=r.outcome==='win'?t('winTitle.win'):(r.outcome==='push'?t('winTitle.push'):t('winTitle.lose'));
+  const battleNote=bw&&bw.id!==myId?esc(t('win.battleNote',{name:bw.name})).split(esc(bw.name)).join('<b style="color:var(--txt)">'+esc(bw.name)+'</b>'):'';
   $('winBody').innerHTML='<table class="win-rows">'+rows.map(x=>'<tr><td>'+esc(x[0])+'</td><td>🪙 '+x[1]+'</td></tr>').join('')+
-    '<tr class="total"><td>🪙 Acquired</td><td>🪙 '+r.payout+'</td></tr></table>'+
-    (bw&&bw.id!==myId?'<p style="color:var(--mut);font-size:13.5px">⚔️ Battle Bonyas winner: <b style="color:var(--txt)">'+esc(bw.name)+'</b> — the single best winning hand takes the bonus.</p>':'')+
-    (r.capped?'<p style="color:var(--mut);font-size:13.5px">Payout capped at the 1200-coin table maximum.</p>':'');
+    '<tr class="total"><td>'+esc(t('win.acquired'))+'</td><td>🪙 '+r.payout+'</td></tr></table>'+
+    (battleNote?'<p style="color:var(--mut);font-size:13.5px">'+battleNote+'</p>':'')+
+    (r.capped?'<p style="color:var(--mut);font-size:13.5px">'+esc(t('win.capped'))+'</p>':'');
   show('winModal', true);
 }
 
 /* ---- rules ---- */
 function rulesHtml(){
-  return '<p><b>Goal:</b> beat the dealer at 21 — together. Everyone at the table plays against Nyau, not against each other.</p>'+
-  '<table class="points"><tr><th>Outcome</th><th>Payout (B = your bet at risk)</th></tr>'+
-  '<tr><td>Lose (bust, or dealer beats you)</td><td>0 — your bet is lost</td></tr>'+
-  '<tr><td>Push (exact tie)</td><td>B — your stake back, no bonuses</td></tr>'+
-  '<tr><td>Win</td><td>2 × B</td></tr>'+
-  '<tr><td>Win with exactly 21</td><td>+ 3 × B Blacknyack bonus</td></tr>'+
-  '<tr><td>Win with 5 cards</td><td>+ 5 × B 5-card bonus</td></tr>'+
-  '<tr><td>Win with special cards</td><td>+ 2 × B per special card</td></tr>'+
-  '<tr><td>Battle Bonyas winner</td><td>+ 5 × B battle bonus</td></tr></table>'+
-  '<p>Total payout for one player in one round is capped at <b>1200 coins</b>. Worked examples: bet 50, 5-card 21 → 100 + 150 + 250 = <b>500</b>. Bet 50, double down (B = 100), 3-card 21 with 1 special, Battle Bonyas winner → 200 + 300 + 200 + 500 = <b>1200</b>.</p>'+
+  return '<p>'+t('rules.intro')+'</p>'+
+  '<table class="points"><tr><th>'+t('rules.th1')+'</th><th>'+t('rules.th2')+'</th></tr>'+
+  '<tr><td>'+t('rules.rowLose')+'</td><td>'+t('rules.rowLoseV')+'</td></tr>'+
+  '<tr><td>'+t('rules.rowPush')+'</td><td>'+t('rules.rowPushV')+'</td></tr>'+
+  '<tr><td>'+t('rules.rowWin')+'</td><td>'+t('rules.rowWinV')+'</td></tr>'+
+  '<tr><td>'+t('rules.row21')+'</td><td>'+t('rules.row21V')+'</td></tr>'+
+  '<tr><td>'+t('rules.rowFive')+'</td><td>'+t('rules.rowFiveV')+'</td></tr>'+
+  '<tr><td>'+t('rules.rowSpecial')+'</td><td>'+t('rules.rowSpecialV')+'</td></tr>'+
+  '<tr><td>'+t('rules.rowBattle')+'</td><td>'+t('rules.rowBattleV')+'</td></tr></table>'+
+  '<p>'+t('rules.worked')+'</p>'+
   '<ul style="margin:8px 0 8px 18px">'+
-  '<li><b>Bets:</b> every round, each player picks <b>5 / 10 / 20 / 40 / 50</b> coins or <b>spectates</b> that round. Spectators are automatically offered entry again next round. If nobody bets, the round is dead and everyone picks again. Everyone starts with <b>1000</b> coins; at 0 you may <b>rebuy 1000 free coins</b> between rounds. Anyone can <b>leave the match at any time</b>.</li>'+
-  '<li><b>Deal:</b> one 55-card deck (52 standard + 3 special), shuffled fresh every round. You get 2 cards: the first <b>face-up</b>, the second <b>face-down</b> (your hole card — only you see it; tap it to peek). The dealer gets 2 the same way. <b>Special cards are always face-up for everyone</b>, even as a second card.</li>'+
-  '<li><b>Card values:</b> numbered = face value, J/Q/K = 10, Ace = 1 or 11 (best without busting), special = the round\'s shared special total.</li>'+
-  '<li><b>Your turn — Hit, Stay, Double Down:</b> <b>Hit</b> takes one more card (up to 3 hits, 5 cards total). <b>Stay</b> keeps your hand. <b>Double down</b> is only with exactly 2 cards: you match your bet, get exactly one more card, and your turn ends.</li>'+
-  '<li><b>The 5-card rule:</b> 5 cards without busting beats <b>even a dealer 21</b>. 5 cards totalling exactly 21 is the strongest hand there is — it only ties against another 5-card 21.</li>'+
-  '<li><b>The dealer</b> reveals the hole card, then hits while under 17 and stands on 17 or more, including soft 17. If every player busts, the dealer doesn\'t draw.</li>'+
-  '<li><b>The special die:</b> whenever a special card is dealt to anyone, a 6-sided die (faces 0, 0, 1, 1, 2, 2) is rolled and the result is <b>added to the shared special total</b>. Every special card on the table is worth that total. Example: you roll 1, the dealer rolls 2 — every special is worth 3 this round.</li>'+
-  '<li><b>Battle Bonyas (secret random event):</b> at the start of each round there is an <b>8% chance</b> the round is a Battle Bonyas round — it lasts one round only. The <b>single best winning hand</b> among the players who beat the dealer takes the battle bonus; everyone else who beat the dealer gets their normal payout. If nobody beats the dealer, there is no battle winner.</li>'+
-  '<li>🎵 <b>Music:</b> the main song loops from the start of every match; the battle song plays only during a Battle Bonyas round, then it goes back to the main loop. Use the 🔊 button to mute.</li>'+
-  '<li>🦵⚾ <b>Break his legs:</b> purely for fun — a baseball bat, Nyau, unlimited uses, any time, local only. His legs grow back after a few minutes, and the bat disappears 2 seconds after the hit. It never touches the game.</li>'+
-  '<li><b>Joining late?</b> If you join a game already in progress you <b>spectate</b> — seats are fixed when the game starts, so you watch this match and join the next one from the lobby. If your connection drops mid-game, your seat is held for <b>10 seconds</b>; after that you\'re withdrawn and come back as a spectator.</li></ul>';
+  '<li>'+t('rules.li1')+'</li>'+
+  '<li>'+t('rules.li2')+'</li>'+
+  '<li>'+t('rules.li3')+'</li>'+
+  '<li>'+t('rules.li4')+'</li>'+
+  '<li>'+t('rules.li5')+'</li>'+
+  '<li>'+t('rules.li6')+'</li>'+
+  '<li>'+t('rules.li7')+'</li>'+
+  '<li>'+t('rules.li8')+'</li>'+
+  '<li>'+t('rules.li9')+'</li>'+
+  '<li>'+t('rules.li10')+'</li>'+
+  '<li>'+t('rules.li11')+'</li></ul>';
 }
 function openRules(){ $('rulesBody').innerHTML=rulesHtml(); show('rulesModal',true); }
 
@@ -1698,7 +3801,7 @@ function startLocalGame(names, seed, opts){
   gameId++;
   winDialogShownFor=0; lastRoundSeen=0; prevPhase=''; prevBusted=false; prevFive=false; resetRevealState();
   show('menuScreen',false); show('lobbyScreen',false); show('gameScreen',true);
-  $('connBox').textContent='Local game vs bots — no network needed. The dealer is already being rude.';
+  $('connBox').textContent=t('conn.local');
   startMatchMusic();
   refreshView(); render(); scheduleBots(); startTauntTimer();
 }
@@ -1805,8 +3908,8 @@ function openBotPicker(title, sub, onPick){
   $('botModalTitle').textContent=title; $('botModalSub').textContent=sub;
   const box=$('botPick'); box.innerHTML='';
   for(let n=0;n<=4;n++){
-    const b=document.createElement('button'); b.type='button'; b.textContent=n===0?'0 (solo)':(''+n);
-    b.title=n===0?'Just you vs the dealer':n+' bot'+(n===1?'':'s');
+    const b=document.createElement('button'); b.type='button'; b.textContent=n===0?t('bots.solo'):(''+n);
+    b.title=n===0?t('bots.title1'):t('bots.titleN',{n:n,s:n===1?'':'s'});
     b.onclick=()=>{ show('botModal',false); onPick(n); };
     box.appendChild(b);
   }
@@ -1814,11 +3917,11 @@ function openBotPicker(title, sub, onPick){
 }
 function renderLobby(){
   $('lobbyCode').textContent=roomCode||'';
-  $('lobbyMsg').textContent=(roomVisibility==='public'?'🌍 Public room — listed in Browse public rooms while it waits for players. ':'🔒 Private room — code-only. ')+'Max '+roomMaxPlayers+' players (bots included). You can start alone vs the dealer, or wait for friends.';
-  $('lobbyList').innerHTML=lobbyPlayers.map(p=>'<div class="lobby-player"><span>'+esc(p.name)+(p.isBot?' 🤖':'')+'</span><span style="color:var(--mut)">'+(p.isHost?'host':'')+'</span></div>').join('')+
-    '<p style="color:var(--mut);font-size:13px;margin-top:8px">'+lobbyPlayers.length+' / '+roomMaxPlayers+' players.</p>';
+  $('lobbyMsg').textContent=(roomVisibility==='public'?t('lobby.public'):t('lobby.private'))+t('lobby.max',{n:roomMaxPlayers});
+  $('lobbyList').innerHTML=lobbyPlayers.map(p=>'<div class="lobby-player"><span>'+esc(p.name)+(p.isBot?' 🤖':'')+'</span><span style="color:var(--mut)">'+(p.isHost?t('lobby.host'):'')+'</span></div>').join('')+
+    '<p style="color:var(--mut);font-size:13px;margin-top:8px">'+esc(t('lobby.count',{n:lobbyPlayers.length,max:roomMaxPlayers}))+'</p>';
   show('btnStartGame', isHost);
-  $('lobbyWait').textContent=isHost?'You are the host — press Start when everyone is in.':'Waiting for the host to start…';
+  $('lobbyWait').textContent=isHost?t('lobby.hostWait'):t('lobby.guestWait');
 }
 function showLobby(){
   show('menuScreen',false); show('gameScreen',false); show('lobbyScreen',true); renderLobby();
@@ -1840,20 +3943,20 @@ function openRoomOptions(){
   const paintMax=()=>{ maxBox.querySelectorAll('button').forEach(b=>{ b.style.outline=(parseInt(b.textContent,10)===roomMaxPlayers)?'3px solid var(--gold)':'none'; }); };
   if(roomMaxPlayers<minMax) roomMaxPlayers=minMax;
   paintMax();
-  $('roomOptMsg').textContent=pendingLobbyBots>0?('You + '+pendingLobbyBots+' bot'+(pendingLobbyBots===1?'':'s')+' already take '+(1+pendingLobbyBots)+' seats, so the max starts there.'):'';
+  $('roomOptMsg').textContent=pendingLobbyBots>0?t('lobby.botsNote',{n:pendingLobbyBots,s:pendingLobbyBots===1?'':'s',seats:1+pendingLobbyBots}):'';
   show('roomOptModal',true);
 }
 function doCreateLobby(){
   lobbyBots=pendingLobbyBots;
   const code=makeCode(); roomCode=code;
-  setMenuMsg('Creating lobby '+code+'…');
+  setMenuMsg(t('menu.creating',{code:code}));
   try{ if(peer) peer.destroy(); }catch(e){}
   peer=new Peer(peerIdFor(code));
   peer.on('open',()=>{
     isHost=true; playMode='online'; leaving=false;
     lobbyPlayers=[{id:'host',name:myPlayerName(),isBot:false,isHost:true}];
     for(let i=0;i<lobbyBots;i++) lobbyPlayers.push({id:'bot'+i,name:botNames(lobbyBots)[i],isBot:true});
-    setMenuMsg('Lobby '+code+' is live — send the code to your friends.');
+    setMenuMsg(t('menu.live',{code:code}));
     showLobby(); startHeartbeat();
     if(roomVisibility==='public') registerPublicRoom();
   });
@@ -1864,7 +3967,7 @@ function doCreateLobby(){
     c.on('close',()=>{ onGuestDisconnect(cid); });
     c.on('open',()=>{ try{ c.send({t:'welcome', yourId:cid, code:roomCode}); }catch(e){} });
   });
-  peer.on('error',err=>{ setMenuMsg('Could not create the lobby ('+(err&&err.type||'error')+'). Try again.'); });
+  peer.on('error',err=>{ setMenuMsg(t('menu.createErr',{err:(err&&err.type||'error')})); });
 }
 function startHeartbeat(){
   stopHeartbeat();
@@ -1910,30 +4013,30 @@ function renderRoomsList(rooms, directoryOk){
   const box=$('roomsList');
   if(!rooms.length){
     $('roomsMsg').textContent=directoryOk===false
-      ? 'Couldn\'t load the list — the directory didn\'t answer. Join with a code instead.'
-      : 'No public rooms right now — create one, or join a private lobby with its code.';
+      ? t('rooms.dirFail')
+      : t('rooms.none');
     box.innerHTML='';
     return;
   }
-  $('roomsMsg').textContent=rooms.length+' public room'+(rooms.length===1?'':'s')+' open — tap one to join. (No auto-join: you always choose.)';
+  $('roomsMsg').textContent=t('rooms.count',{n:rooms.length,s:rooms.length===1?'':'s'});
   box.innerHTML=rooms.map(r=>{
     const full=r.players>=r.maxPlayers;
     const playing=r.status==='playing';
-    return '<div class="lobby-player"><span>🌍 <b>'+esc(r.hostName)+'</b> <span style="color:var(--mut)">· '+esc(r.code)+' · '+r.players+'/'+r.maxPlayers+' players'+(r.bots?' · '+r.bots+' bot'+(r.bots===1?'':'s'):'')+' · '+(playing?'playing':'waiting')+'</span></span>'+
-      (playing?'<span style="color:var(--mut)">playing — spectate</span>'
-        : full?'<span style="color:var(--mut)">full</span>'
-        : '<button type="button" class="small" data-room="'+esc(r.code)+'">Join →</button>')+'</div>';
+    return '<div class="lobby-player"><span>🌍 <b>'+esc(r.hostName)+'</b> <span style="color:var(--mut)">· '+esc(r.code)+' · '+r.players+'/'+r.maxPlayers+' '+esc(t('playersWord'))+(r.bots?' · '+esc(t('bots.titleN',{n:r.bots,s:r.bots===1?'':'s'})):'')+' · '+(playing?t('rooms.playing'):t('rooms.waiting'))+'</span></span>'+
+      (playing?'<span style="color:var(--mut)">'+esc(t('rooms.playingSpectate'))+'</span>'
+        : full?'<span style="color:var(--mut)">'+esc(t('rooms.full'))+'</span>'
+        : '<button type="button" class="small" data-room="'+esc(r.code)+'">'+esc(t('rooms.joinBtn'))+'</button>')+'</div>';
   }).join('');
   box.querySelectorAll('[data-room]').forEach(b=>{ b.addEventListener('click',()=>joinRoom(b.getAttribute('data-room'))); });
 }
 function browsePublicRooms(){
-  if(typeof Peer==='undefined'){ $('roomsMsg').textContent='Couldn\'t load the list (multiplayer library unavailable) — join with a code instead.'; renderRoomsList([], false); return; }
-  $('roomsMsg').textContent='Asking the directory…';
+  if(typeof Peer==='undefined'){ $('roomsMsg').textContent=t('rooms.noPeer'); renderRoomsList([], false); return; }
+  $('roomsMsg').textContent=t('rooms.asking');
   $('roomsList').innerHTML='';
   const rooms=[];
   let probe, opened=false, finished=false;
   const finish=()=>{ if(finished) return; finished=true; try{ probe.destroy(); }catch(e){} renderRoomsList(rooms, opened); };
-  try{ probe=new Peer(); }catch(e){ $('roomsMsg').textContent='Couldn\'t load the list — join with a code instead.'; return; }
+  try{ probe=new Peer(); }catch(e){ $('roomsMsg').textContent=t('rooms.dirFail'); return; }
   setTimeout(finish, 5000);
   probe.on('open',()=>{
     opened=true;
@@ -1963,7 +4066,7 @@ function startHostedGame(){
     nextPlayers.push({id:cid, name:spectators[cid].name, isBot:false});
     delete spectators[cid];
   }
-  if(nextPlayers.length<1){ toast('Need at least 1 player to start.'); return; }
+  if(nextPlayers.length<1){ toast(t('toast.needPlayers')); return; }
   lobbyPlayers=nextPlayers;
   unregisterPublicRoom();
   const names=lobbyPlayers.map(p=>({name:p.name,isBot:p.isBot}));
@@ -1985,7 +4088,7 @@ function startHostedGame(){
   gameId++;
   winDialogShownFor=0; lastRoundSeen=0; prevPhase=''; prevBusted=false; prevFive=false; resetRevealState();
   show('lobbyScreen',false); show('menuScreen',false); show('gameScreen',true);
-  $('connBox').innerHTML='Lobby <b>'+roomCode+'</b> — you are the host. Bets are per-player (5 / 10 / 20 / 40 / 50) or spectate. Bots run on your device.';
+  $('connBox').innerHTML=t('lobby.connHost',{code:esc(roomCode)});
   startMatchMusic();
   for(const cid of Object.keys(conns)){
     if(!idMap[cid]) continue;
@@ -1996,8 +4099,8 @@ function startHostedGame(){
 
 /* ---------- multiplayer: join / host messages / disconnects ---------- */
 function joinRoom(code){
-  if(typeof Peer==='undefined'){ setMenuMsg('Could not load the multiplayer library (PeerJS). Check your connection and try again.'); return; }
-  roomCode=code; setMenuMsg('Joining lobby '+code+'…');
+  if(typeof Peer==='undefined'){ setMenuMsg(t('menu.noPeerJoin')); return; }
+  roomCode=code; setMenuMsg(t('menu.joining',{code:code}));
   try{ if(peer) peer.destroy(); }catch(e){}
   peer=new Peer();
   peer.on('open',()=>{
@@ -2005,22 +4108,22 @@ function joinRoom(code){
     conn=c;
     c.on('data',msg=>handleGuestMsg(msg));
     c.on('close',()=>{ onGuestConnClose(); });
-    c.on('open',()=>{ setMenuMsg('Joined lobby '+code+'! Waiting in the lobby…'); sendToHost({t:'join', name:myPlayerName(), clientId:getClientId()}); });
-    setTimeout(()=>{ if(!conn||!conn.open) setMenuMsg('Still trying to reach lobby '+code+' — is the code right, and is the host\'s lobby still open?'); },6000);
+    c.on('open',()=>{ setMenuMsg(t('menu.joined',{code:code})); sendToHost({t:'join', name:myPlayerName(), clientId:getClientId()}); });
+    setTimeout(()=>{ if(!conn||!conn.open) setMenuMsg(t('menu.stillTrying',{code:code})); },6000);
   });
-  peer.on('error',err=>{ setMenuMsg('Could not join lobby '+code+' ('+(err&&err.type||'error')+'). Double-check the code.'); });
+  peer.on('error',err=>{ setMenuMsg(t('menu.joinErr',{code:code,err:(err&&err.type||'error')})); });
 }
 let reconnectTimer=null, disconnectAt=0, reconnectAttempt=0;
 function onGuestConnClose(){
   stopHeartbeat(); stopHelloLoop();
   if(leaving||!roomCode||reconnectTimer) return;
-  if(view&&(view.phase==='over')){ $('connBox').innerHTML='<b>Host disconnected.</b> The lobby is gone — head back to the menu for a new game.'; return; }
+  if(view&&(view.phase==='over')){ $('connBox').innerHTML=t('lobby.hostDisconnected'); return; }
   disconnectAt=Date.now(); reconnectAttempt=0;
-  $('connBox').innerHTML='<b>Connection lost — reconnecting…</b> Your seat is held for 10 seconds.';
+  $('connBox').innerHTML=t('lobby.connLost');
   const attempt=()=>{
     reconnectTimer=null;
     if(!roomCode) return;
-    if(Date.now()-disconnectAt>9000){ $('connBox').innerHTML='<b>Could not rejoin in time.</b> Your seat was withdrawn — rejoin from the menu to come back as a spectator.'; return; }
+    if(Date.now()-disconnectAt>9000){ $('connBox').innerHTML=t('lobby.couldNotRejoin'); return; }
     reconnectAttempt++;
     joinRoom(roomCode);
     reconnectTimer=setTimeout(attempt, reconnectAttempt===1?2500:3000);
@@ -2140,7 +4243,7 @@ function handleGuestMsg(msg){
   else if(msg.t==='seat'){ myId=msg.yourId; playMode='online'; isSpectator=false; }
   else if(msg.t==='spectating'){ isSpectator=true; if(reconnectTimer){ clearTimeout(reconnectTimer); reconnectTimer=null; } }
   else if(msg.t==='join-rejected'){
-    setMenuMsg('Could not join: '+(msg.error||'room is full.'));
+    setMenuMsg(t('menu.joinRejected',{err:translateError(msg.error||'room is full.')}));
     try{ if(conn) conn.close(); }catch(e){}
     try{ if(peer) peer.destroy(); }catch(e){}
     conn=null; peer=null; roomCode=null;
@@ -2162,7 +4265,7 @@ function handleGuestMsg(msg){
     show('menuScreen',false); show('lobbyScreen',false); show('gameScreen',true);
     render();
   }
-  else if(msg.t==='action-error'){ toast(msg.error||'That move was not allowed.'); }
+  else if(msg.t==='action-error'){ toast(msg.error||t('toast.actionError')); }
   else if(msg.t==='ping'){
     if(view&&msg.hash!==viewHashOf(view)) sendToHost({t:'need-sync'});
   }
@@ -2171,14 +4274,14 @@ function handleGuestMsg(msg){
 /* ---------- wiring ---------- */
 $('botCancel').onclick=()=>show('botModal',false);
 $('btnBots').onclick=()=>{
-  openBotPicker('How many bots?', 'You + bots, 1–5 players total. 0 bots = just you vs the dealer. Fully local, works offline.', (n)=>{
+  openBotPicker(t('bots.title'), t('bots.sub'), (n)=>{
     const names=[{name:myPlayerName(),isBot:false}].concat(botNames(n).map(x=>({name:x,isBot:true})));
     startLocalGame(names);
   });
 };
 $('btnCreate').onclick=()=>{
-  if(typeof Peer==='undefined'){ setMenuMsg('Could not load the multiplayer library (PeerJS). Check your connection — bot play still works.'); return; }
-  openBotPicker('Create lobby — how many bots?', 'Bots fill seats in your lobby (max 5 players total: humans + bots).', (n)=>{
+  if(typeof Peer==='undefined'){ setMenuMsg(t('menu.noPeerCreate')); return; }
+  openBotPicker(t('bots.createTitle'), t('bots.createSub'), (n)=>{
     pendingLobbyBots=n; openRoomOptions();
   });
 };
@@ -2186,16 +4289,16 @@ $('roomOptCancel').onclick=()=>show('roomOptModal',false);
 $('roomOptCreate').onclick=()=>{ show('roomOptModal',false); doCreateLobby(); };
 $('btnJoin').onclick=()=>{
   const code=($('joinCode').value||'').trim().toUpperCase();
-  if(!code){ setMenuMsg('Type a lobby code first.'); return; }
+  if(!code){ setMenuMsg(t('menu.noCode')); return; }
   joinRoom(code);
 };
 $('btnBrowseRooms').onclick=browsePublicRooms;
 $('btnRefreshRooms').onclick=browsePublicRooms;
 $('btnCopyLobby').onclick=async()=>{
   const link=location.origin+location.pathname+'?room='+roomCode;
-  const txt='Black Nyack lobby '+roomCode+' — join me: '+link;
-  try{ await navigator.clipboard.writeText(txt); $('btnCopyLobby').textContent='Copied!'; setTimeout(()=>$('btnCopyLobby').textContent='Copy code / link',1500); }
-  catch(e){ prompt('Copy your lobby link:',txt); }
+  const txt=t('copy.invite',{code:roomCode,link:link});
+  try{ await navigator.clipboard.writeText(txt); $('btnCopyLobby').textContent=t('copy.copied'); setTimeout(()=>$('btnCopyLobby').textContent=t('copy.btn'),1500); }
+  catch(e){ prompt(t('copy.prompt'),txt); }
 };
 $('btnLeaveLobby').onclick=backToMenu;
 $('btnStartGame').onclick=()=>{ if(isHost) startHostedGame(); };
@@ -2216,6 +4319,7 @@ $('rulesClose').onclick=()=>show('rulesModal',false);
 $('rulesCloseX').onclick=()=>show('rulesModal',false);
 $('musicToggle').onclick=toggleMusic;
 $('musicHint').onclick=()=>{ show('musicHint',false); if(musicStarted){ currentTrack=null; ensureMusic(); } };
+$('langSelect').addEventListener('change', e=>setLang(e.target.value));
 $('breakLegsBtn').onclick=breakLegs;
 $('mySeat').addEventListener('click', e=>{
   const h=e.target.closest?e.target.closest('[data-hole]'):null;
@@ -2225,7 +4329,7 @@ $('mySeat').addEventListener('click', e=>{
   try{
     const q=new URLSearchParams(location.search);
     const room=(q.get('room')||'').trim().toUpperCase();
-    if(room){ $('joinCode').value=room; setMenuMsg('Lobby '+room+' detected — press Join lobby to enter.'); }
+    if(room){ $('joinCode').value=room; setMenuMsg(t('menu.deepLink',{code:room})); }
   }catch(e){}
 })();
 if(typeof window!=='undefined' && window.matchMedia){
@@ -2236,6 +4340,7 @@ if(typeof window!=='undefined' && window.matchMedia){
 }
 window.addEventListener('resize', ()=>{ applyLayoutMode(); positionRoundSeats(); });
 applyLayoutMode();
+initI18n();
 </script>
 </body>
 </html>

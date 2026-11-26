@@ -4,13 +4,34 @@
 in the same format as Wellington and Five-Card Poker: a single `index.html`, no sign-up,
 no cost, multiplayer peer-to-peer via PeerJS, hosted free on Cloudflare Pages.
 
-> **v1.7.2:** special cards are rarer — 3 in the deck instead of 6.
+> **v1.7.3:** 7-language switcher (EN / PT / ES / ZH / JA / FR / KO) at the
+> top of the page — every menu, lobby, table, rules, win-dialog, log and
+> Nyau taunt line translated; choice persists in localStorage.
 > All tests green: `npm test` (see [Tests](#tests)).
 
 - **Repo:** https://github.com/HMJ-ONES/black_nyack
 - **Live:** https://black-nyack.pages.dev *(connected + verified Nov 22 — home page and both songs serve 200)*
 - **Players:** 1–5 at a round table, dealer in the middle (mobile sideways = same round table as PC)
 - **Currency:** casino coins — free play coins only, no real money
+
+## v1.7.3 — 7 languages (Nov 25)
+
+- **Language switcher at the top of the page** — EN | PT | ES | ZH | JA |
+  FR | KO, visible on the menu, the lobby and in-game, without scrolling
+  and clear of the table, the bet chips and the break-legs button. The
+  choice is saved in localStorage (`lang`); on load the saved choice wins,
+  else the browser language is mapped to one of the 7, else English.
+  English is the fallback for any missing key.
+- **Everything user-visible is translated** — static text via `data-i18n`
+  attributes, dynamic strings (status lines, bet/action prompts, win
+  dialog, toasts, lobby and public-room messages, engine error strings)
+  through a `t(key)` function, and the game log lines at display time
+  (the engine itself still logs in English — its log strings are pinned
+  by tests). Nyau's 18 general taunts and 3 pain lines are translated
+  too; the English tables stay canonical. Player names, room codes and
+  proper names (Black Nyack, Battle Bonyas, Nyau) are never translated,
+  and the SEGA footer disclaimer stays in English verbatim in every
+  language. No gameplay, rules, balance or payout changes.
 
 ## v1.7.2 — Specials are rarer: 3 in the deck (Nov 25)
 
@@ -471,10 +492,10 @@ as Five-Card Poker (read `index.html`, extract the `<script>` block containing
 
 ```bash
 npm test
-# node test/engine.test.js && node test/payout.test.js && node test/battle.test.js && node test/ui.test.js
+# node test/engine.test.js && node test/payout.test.js && node test/battle.test.js && node test/ui.test.js && node test/fairness.test.js && node test/i18n.test.js
 ```
 
-Current (v1.3, Nov 22): engine **131**, payout **37**, battle **29**, UI **141** — **338 total, 0 failed**.
+Current (v1.7.3, Nov 25): engine **163**, payout **37**, battle **29**, UI **177**, fairness **8**, i18n **132** — **546 total, 0 failed**.
 
 | File | Covers |
 |---|---|
@@ -482,6 +503,7 @@ Current (v1.3, Nov 22): engine **131**, payout **37**, battle **29**, UI **141**
 | `test/payout.test.js` | The payout table (plain win, dealer bust, 21 bonus, 5-card bonus, special bonus, push, lose, bust-vs-bust) and all four regression cases: (a) 50 / 5-card 21 → **500**; (b) 50 doubled / 3-card 21 / 1 special / battle winner → **1200**; (c) same without battle → **700**; (d) doubled 3-card 21 / 2 specials / battle winner → 1400 uncapped, **capped to 1200** |
 | `test/battle.test.js` | 8% odds (constant + statistical check over 500 seeded rounds), single winner, ranking (class → total → specials → earliest seat), no winner when the dealer wins all / pushes / everyone busts, re-trigger across rounds, battle lasts exactly one round, battle bonus never leaks to other winners |
 | `test/ui.test.js` | jsdom DOM smoke test: every screen/panel/button exists, music elements + track selection (`music.mp3` / `battle.mp3`), layout helpers (round vs stacked, arc seat positions), rules modal, menu flow through the real buttons (bot picker → game → back to menu), a full round through the DOM (bet chip → deal → hole-card peek → Stay → settle → WIN dialog → next round), spectate + auto-offered entry next round (incl. dead-round retry), break-the-legs button ×3 (bat hides, legs regrow, pain face), solo game (0 bots), forced Battle Bonyas round, the v1.1 checks: SEGA footer credit, sometimes-only taunts, red BUST / shining DOUBLE DOWN / WIN! +amount banners, coin rain scaling with the win, sad/pain/happy faces, 8s win hold; the v1.2 checks: bet list / special box above the table, log below it, bubble starts hidden and goes away after 6s, taunts at 35% with idle chatter once a minute, face resets after 7s, break-legs button next to Nyau; and the v1.3 checks: special die faces 0/1/2, tumble + land, a fresh "rolled N" log line makes it roll, die hides on a new round, log below the chips and buttons |
+| `test/i18n.test.js` | 7-language switcher (jsdom): switcher in the header with all 7 languages, dictionary completeness (every key in all 7 languages, no empties, placeholder names match English), 18 general taunts + 3 pain lines per language, switching changes visible text (menu, buttons, in-game status, log, rules, taunts), choice persists in localStorage and wins on a fresh load, unknown codes fall back to English, SEGA disclaimer stays English verbatim in every language, footer v1.7.3 |
 
 ## Deploy to Cloudflare Pages ($0)
 
@@ -515,6 +537,7 @@ test/engine.test.js   engine unit tests + 500-round bot soak (node)
 test/payout.test.js   payout table + the four regression cases (node)
 test/battle.test.js   Battle Bonyas tests (node)
 test/ui.test.js       DOM smoke test: menu flow, full round, spectate, legs, music (jsdom)
+test/i18n.test.js      7-language switcher: dictionary, switching, persistence, log + taunt translation (jsdom)
 wrangler.toml         Cloudflare Pages config (Pages needs no config; no Worker)
 README.md             this file
 LICENSE               MIT

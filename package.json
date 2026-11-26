@@ -3,9 +3,9 @@
   "name": "black_nyack",
   "private": true,
   "scripts": {
-    "test": "node test/engine.test.js && node test/payout.test.js && node test/battle.test.js && node test/ui.test.js && node test/fairness.test.js"
+    "test": "node test/engine.test.js && node test/payout.test.js && node test/battle.test.js && node test/ui.test.js && node test/fairness.test.js && node test/i18n.test.js"
   },
-  "version": "1.7.2",
+  "version": "1.7.3",
   "devDependencies": {
     "jsdom": "^31.0.1"
   }
